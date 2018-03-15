@@ -2,7 +2,8 @@
   "name": "gdmn-db",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/src/index.js",
+  "types": "./dist/definitions/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,5 +12,9 @@
   "license": "ISC",
   "dependencies": {
     "node-firebird": "git://github.com/gsbelarus/node-firebird.git"
+  },
+  "devDependencies": {
+    "@types/node": "^9.4.7",
+    "typescript": "^2.7.2"
   }
 }
