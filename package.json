@@ -8,5 +8,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "node-firebird": "git://github.com/gsbelarus/node-firebird.git"
+  }
 }
