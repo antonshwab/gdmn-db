@@ -35,11 +35,11 @@ const ATransaction_1 = __importDefault(require("./ATransaction"));
  * })()
  * </code></pre>
  */
-class DatabaseObj {
+class ADatabase {
     /**
      * Example:
      * <pre><code>
-     * const result = DatabaseObj.executeConnection(new XXDatabase(), {}, async (database) => {
+     * const result = ADatabase.executeConnection(new XXDatabase(), {}, async (database) => {
      *      const transaction = await database.createTransaction();
      *      return await transaction.query("some sql");
      * })}
@@ -47,7 +47,7 @@ class DatabaseObj {
      *
      * @param {DB} database
      * @param {Opt} options
-     * @param {Executor<DB extends DatabaseObj<Opt, T>, R>} callback
+     * @param {Executor<DB extends ADatabase<Opt, T>, R>} callback
      * @returns {Promise<R>}
      */
     static async executeConnection(database, options, callback) {
@@ -67,7 +67,7 @@ class DatabaseObj {
     /**
      * Example:
      * <pre><code>
-     * const result2 = DatabaseObj.executeTransaction(new XXDatabase(), {}, async (transaction) => {
+     * const result2 = ADatabase.executeTransaction(new XXDatabase(), {}, async (transaction) => {
      *      return await transaction.query("some sql");
      * })}
      * </code></pre>
@@ -78,10 +78,10 @@ class DatabaseObj {
      * @returns {Promise<R>}
      */
     static async executeTransaction(database, options, callback) {
-        return await DatabaseObj.executeConnection(database, options, async (database) => {
+        return await ADatabase.executeConnection(database, options, async (database) => {
             return await ATransaction_1.default.executeTransaction(await database.createTransaction(), callback);
         });
     }
 }
-exports.default = DatabaseObj;
+exports.default = ADatabase;
 //# sourceMappingURL=ADatabase.js.map

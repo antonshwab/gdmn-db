@@ -33,12 +33,12 @@ export type Executor<Subject, Result> = ((subject: Subject) => Result) | ((subje
  * })()
  * </code></pre>
  */
-export default abstract class DatabaseObj<Options, T extends ATransaction> {
+export default abstract class ADatabase<Options, T extends ATransaction> {
 
     /**
      * Example:
      * <pre><code>
-     * const result = DatabaseObj.executeConnection(new XXDatabase(), {}, async (database) => {
+     * const result = ADatabase.executeConnection(new XXDatabase(), {}, async (database) => {
      *      const transaction = await database.createTransaction();
      *      return await transaction.query("some sql");
      * })}
@@ -46,10 +46,10 @@ export default abstract class DatabaseObj<Options, T extends ATransaction> {
      *
      * @param {DB} database
      * @param {Opt} options
-     * @param {Executor<DB extends DatabaseObj<Opt, T>, R>} callback
+     * @param {Executor<DB extends ADatabase<Opt, T>, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeConnection<Opt, T extends ATransaction, DB extends DatabaseObj<Opt, T>, R>(
+    static async executeConnection<Opt, T extends ATransaction, DB extends ADatabase<Opt, T>, R>(
         database: DB,
         options: Opt,
         callback: Executor<DB, R>
@@ -69,7 +69,7 @@ export default abstract class DatabaseObj<Options, T extends ATransaction> {
     /**
      * Example:
      * <pre><code>
-     * const result2 = DatabaseObj.executeTransaction(new XXDatabase(), {}, async (transaction) => {
+     * const result2 = ADatabase.executeTransaction(new XXDatabase(), {}, async (transaction) => {
      *      return await transaction.query("some sql");
      * })}
      * </code></pre>
@@ -79,12 +79,12 @@ export default abstract class DatabaseObj<Options, T extends ATransaction> {
      * @param {Executor<T extends ATransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransaction<Opt, T extends ATransaction, DB extends DatabaseObj<Opt, T>, R>(
+    static async executeTransaction<Opt, T extends ATransaction, DB extends ADatabase<Opt, T>, R>(
         database: DB,
         options: Opt,
         callback: Executor<T, R>
     ): Promise<R> {
-        return await DatabaseObj.executeConnection(database, options, async (database) => {
+        return await ADatabase.executeConnection(database, options, async (database) => {
             return await ATransaction.executeTransaction(await database.createTransaction(), callback);
         });
     }

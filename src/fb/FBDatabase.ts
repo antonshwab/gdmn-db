@@ -80,7 +80,7 @@ export abstract class FBase<Source extends (firebird.Database | firebird.Transac
 
 export class FBTransaction extends FBase<firebird.Transaction> {
 
-    public isInTransaction(): boolean {//TODO
+    public isInTransaction(): boolean {
         return Boolean(this._source);
     }
 
@@ -149,7 +149,7 @@ export default class FBDatabase extends FBase<firebird.Database> {
         return firebird.escape(value);
     }
 
-    public isAttached(): boolean {//TODO
+    public isAttached(): boolean {
         return Boolean(this._source);
     }
 

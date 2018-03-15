@@ -35,7 +35,7 @@ export default abstract class DatabaseObj<Options, T extends ATransaction> {
     /**
      * Example:
      * <pre><code>
-     * const result = DatabaseObj.executeConnection(new XXDatabase(), {}, async (database) => {
+     * const result = ADatabase.executeConnection(new XXDatabase(), {}, async (database) => {
      *      const transaction = await database.createTransaction();
      *      return await transaction.query("some sql");
      * })}
@@ -50,7 +50,7 @@ export default abstract class DatabaseObj<Options, T extends ATransaction> {
     /**
      * Example:
      * <pre><code>
-     * const result2 = DatabaseObj.executeTransaction(new XXDatabase(), {}, async (transaction) => {
+     * const result2 = ADatabase.executeTransaction(new XXDatabase(), {}, async (transaction) => {
      *      return await transaction.query("some sql");
      * })}
      * </code></pre>
