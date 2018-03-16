@@ -2,7 +2,7 @@ import {ADatabase} from "../ADatabase";
 import FBDatabase, {DBOptions} from "./FBDatabase";
 import {FirebirdTransaction} from "./FirebirdTransaction";
 
-export {DBOptions};
+export {DBOptions as FirebirdOptions};
 
 export class FirebirdDatabase extends ADatabase<DBOptions, FirebirdTransaction> {
 
