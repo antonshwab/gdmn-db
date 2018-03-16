@@ -1,6 +1,6 @@
 import { Executor } from "./ADatabase";
 export declare type QuerySeqCallback = (row: any, index: number, next: () => void) => void;
-export default abstract class ATransaction {
+export declare abstract class ATransaction {
     /**
      * Example:
      * <pre><code>

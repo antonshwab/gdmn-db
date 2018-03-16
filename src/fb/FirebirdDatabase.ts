@@ -1,10 +1,10 @@
-import ADatabase from "../ADatabase";
+import {ADatabase} from "../ADatabase";
 import FBDatabase, {DBOptions} from "./FBDatabase";
-import FirebirdTransaction from "./FirebirdTransaction";
+import {FirebirdTransaction} from "./FirebirdTransaction";
 
 export {DBOptions};
 
-export default class FirebirdDatabase extends ADatabase<DBOptions, FirebirdTransaction> {
+export class FirebirdDatabase extends ADatabase<DBOptions, FirebirdTransaction> {
 
     private _database = new FBDatabase();
 

@@ -1,9 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-}
 Object.defineProperty(exports, "__esModule", { value: true });
-const ATransaction_1 = __importDefault(require("./ATransaction"));
+const ATransaction_1 = require("./ATransaction");
 /**
  * Example:
  * <pre><code>
@@ -79,9 +76,9 @@ class ADatabase {
      */
     static async executeTransaction(database, options, callback) {
         return await ADatabase.executeConnection(database, options, async (database) => {
-            return await ATransaction_1.default.executeTransaction(await database.createTransaction(), callback);
+            return await ATransaction_1.ATransaction.executeTransaction(await database.createTransaction(), callback);
         });
     }
 }
-exports.default = ADatabase;
+exports.ADatabase = ADatabase;
 //# sourceMappingURL=ADatabase.js.map

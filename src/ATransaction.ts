@@ -2,7 +2,7 @@ import {Executor} from "./ADatabase";
 
 export type QuerySeqCallback = (row: any, index: number, next: () => void) => void
 
-export default abstract class ATransaction {
+export abstract class ATransaction {
 
     /**
      * Example:

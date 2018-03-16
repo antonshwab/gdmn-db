@@ -31,5 +31,5 @@ class ATransaction {
         }
     }
 }
-exports.default = ATransaction;
+exports.ATransaction = ATransaction;
 //# sourceMappingURL=ATransaction.js.map

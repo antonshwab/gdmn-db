@@ -1,10 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-}
 Object.defineProperty(exports, "__esModule", { value: true });
-const ATransaction_1 = __importDefault(require("../ATransaction"));
-class FirebirdTransaction extends ATransaction_1.default {
+const ATransaction_1 = require("../ATransaction");
+class FirebirdTransaction extends ATransaction_1.ATransaction {
     constructor(database) {
         super();
         this._database = database;
@@ -28,5 +25,5 @@ class FirebirdTransaction extends ATransaction_1.default {
         return await this._transaction.sequentially(query, params, callback);
     }
 }
-exports.default = FirebirdTransaction;
+exports.FirebirdTransaction = FirebirdTransaction;
 //# sourceMappingURL=FirebirdTransaction.js.map

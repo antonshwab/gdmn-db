@@ -1,6 +1,6 @@
-import ATransaction, { QuerySeqCallback } from "../ATransaction";
+import { ATransaction, QuerySeqCallback } from "../ATransaction";
 import FBDatabase from "./FBDatabase";
-export default class FirebirdTransaction extends ATransaction {
+export declare class FirebirdTransaction extends ATransaction {
     private _database;
     private _transaction;
     constructor(database: FBDatabase);

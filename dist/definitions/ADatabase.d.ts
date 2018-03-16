@@ -1,4 +1,4 @@
-import ATransaction from "./ATransaction";
+import { ATransaction } from "./ATransaction";
 export declare type Executor<Subject, Result> = ((subject: Subject) => Result) | ((subject: Subject) => Promise<Result>);
 /**
  * Example:
@@ -31,7 +31,7 @@ export declare type Executor<Subject, Result> = ((subject: Subject) => Result) |
  * })()
  * </code></pre>
  */
-export default abstract class ADatabase<Options, T extends ATransaction> {
+export declare abstract class ADatabase<Options, T extends ATransaction> {
     /**
      * Example:
      * <pre><code>
