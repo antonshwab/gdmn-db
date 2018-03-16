@@ -7,5 +7,6 @@ __export(require("./ADatabase"));
 __export(require("./ATransaction"));
 __export(require("./fb/FirebirdDatabase"));
 __export(require("./fb/FirebirdTransaction"));
+__export(require("./fb/FirebirdDBStructure"));
 __export(require("./DBStructure"));
 //# sourceMappingURL=index.js.map
