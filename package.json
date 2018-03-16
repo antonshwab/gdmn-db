@@ -2,7 +2,7 @@
   "name": "gdmn-db",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/src/index.js",
+  "main": "./dist/index.js",
   "types": "./dist/definitions/index.d.ts",
   "scripts": {
     "tsc": "tsc",
