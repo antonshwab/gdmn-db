@@ -31,7 +31,7 @@ export declare type Executor<Subject, Result> = ((subject: Subject) => Result) |
  * })()
  * </code></pre>
  */
-export default abstract class DatabaseObj<Options, T extends ATransaction> {
+export default abstract class ADatabase<Options, T extends ATransaction> {
     /**
      * Example:
      * <pre><code>
@@ -43,10 +43,10 @@ export default abstract class DatabaseObj<Options, T extends ATransaction> {
      *
      * @param {DB} database
      * @param {Opt} options
-     * @param {Executor<DB extends DatabaseObj<Opt, T>, R>} callback
+     * @param {Executor<DB extends ADatabase<Opt, T>, R>} callback
      * @returns {Promise<R>}
      */
-    static executeConnection<Opt, T extends ATransaction, DB extends DatabaseObj<Opt, T>, R>(database: DB, options: Opt, callback: Executor<DB, R>): Promise<R>;
+    static executeConnection<Opt, T extends ATransaction, DB extends ADatabase<Opt, T>, R>(database: DB, options: Opt, callback: Executor<DB, R>): Promise<R>;
     /**
      * Example:
      * <pre><code>
@@ -60,7 +60,7 @@ export default abstract class DatabaseObj<Options, T extends ATransaction> {
      * @param {Executor<T extends ATransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static executeTransaction<Opt, T extends ATransaction, DB extends DatabaseObj<Opt, T>, R>(database: DB, options: Opt, callback: Executor<T, R>): Promise<R>;
+    static executeTransaction<Opt, T extends ATransaction, DB extends ADatabase<Opt, T>, R>(database: DB, options: Opt, callback: Executor<T, R>): Promise<R>;
     abstract connect(options: Options): Promise<void>;
     abstract disconnect(): Promise<void>;
     abstract createTransaction(): Promise<T>;
