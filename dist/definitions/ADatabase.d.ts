@@ -1,4 +1,5 @@
 import { ATransaction } from "./ATransaction";
+import { AConnectionPool } from "./AConnectionPool";
 export declare type Executor<Subject, Result> = ((subject: Subject) => Result) | ((subject: Subject) => Promise<Result>);
 /**
  * Example:
@@ -34,12 +35,12 @@ export declare type Executor<Subject, Result> = ((subject: Subject) => Result) |
 export declare abstract class ADatabase<Options, T extends ATransaction> {
     /**
      * Example:
-     * <pre><code>
-     * const result = ADatabase.executeConnection(new XXDatabase(), {}, async (database) => {
-     *      const transaction = await database.createTransaction();
+     * <pre>
+     * const result = ADatabase.executeConnection(new XXDatabase(), {}, async (source) => {
+     *      const transaction = await source.createTransaction();
      *      return await transaction.query("some sql");
      * })}
-     * </code></pre>
+     * </pre>
      *
      * @param {DB} database
      * @param {Opt} options
@@ -49,11 +50,11 @@ export declare abstract class ADatabase<Options, T extends ATransaction> {
     static executeConnection<Opt, T extends ATransaction, DB extends ADatabase<Opt, T>, R>(database: DB, options: Opt, callback: Executor<DB, R>): Promise<R>;
     /**
      * Example:
-     * <pre><code>
-     * const result2 = ADatabase.executeTransaction(new XXDatabase(), {}, async (transaction) => {
+     * <pre>
+     * const result = ADatabase.executeTransaction(new XXDatabase(), {}, async (transaction) => {
      *      return await transaction.query("some sql");
      * })}
-     * </code></pre>
+     * </pre>
      *
      * @param {DB} database
      * @param {Opt} options
@@ -61,6 +62,43 @@ export declare abstract class ADatabase<Options, T extends ATransaction> {
      * @returns {Promise<R>}
      */
     static executeTransaction<Opt, T extends ATransaction, DB extends ADatabase<Opt, T>, R>(database: DB, options: Opt, callback: Executor<T, R>): Promise<R>;
+    /**
+     * Example:
+     * <pre>
+     * const connectionPool = new XXConnectionPool();
+     * connectionPool.create({});
+     *
+     * const result = ADatabase.executeConnectionPool(connectionPool, async (source) => {
+     *      const transaction = await source.createTransaction();
+     *      return await transaction.query("some sql");
+     * })}
+     *
+     * connectionPool.destroy();
+     * </pre>
+     *
+     * @param {Pool} connectionPool
+     * @param {Executor<DB extends ADatabase<Opt, T>, R>} callback
+     * @returns {Promise<R>}
+     */
+    static executeConnectionPool<Opt, T extends ATransaction, DB extends ADatabase<Opt, T>, Pool extends AConnectionPool<Opt, T, DB>, R>(connectionPool: Pool, callback: Executor<DB, R>): Promise<R>;
+    /**
+     * Example:
+     * <pre>
+     * const connectionPool = new XXConnectionPool();
+     * connectionPool.create({});
+     *
+     * const result = ADatabase.executeTransactionPool(connectionPool, async (transaction) => {
+     *      return await transaction.query("some sql");
+     * })}
+     *
+     * connectionPool.destroy();
+     * </pre>
+     *
+     * @param {Pool} connectionPool
+     * @param {Executor<T extends ATransaction, R>} callback
+     * @returns {Promise<R>}
+     */
+    static executeTransactionPool<Opt, T extends ATransaction, DB extends ADatabase<Opt, T>, Pool extends AConnectionPool<Opt, T, DB>, R>(connectionPool: Pool, callback: Executor<T, R>): Promise<R>;
     abstract connect(options: Options): Promise<void>;
     abstract disconnect(): Promise<void>;
     abstract createTransaction(): Promise<T>;
