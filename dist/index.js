@@ -5,8 +5,10 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./ADatabase"));
 __export(require("./ATransaction"));
+__export(require("./AConnectionPool"));
 __export(require("./fb/FirebirdDatabase"));
 __export(require("./fb/FirebirdTransaction"));
+__export(require("./fb/FirebirdConnectionPool"));
 __export(require("./fb/FirebirdDBStructure"));
 __export(require("./DBStructure"));
 //# sourceMappingURL=index.js.map

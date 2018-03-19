@@ -6,7 +6,12 @@ export {DBOptions as FirebirdOptions};
 
 export class FirebirdDatabase extends ADatabase<DBOptions, FirebirdTransaction> {
 
-    private _database = new FBDatabase();
+    private readonly _database: FBDatabase;
+
+    constructor(database: FBDatabase = new FBDatabase()) {
+        super();
+        this._database = database;
+    }
 
     async connect(options: DBOptions): Promise<void> {
         return await this._database.attach(options);

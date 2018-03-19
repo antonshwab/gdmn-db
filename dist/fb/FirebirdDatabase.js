@@ -7,9 +7,9 @@ const ADatabase_1 = require("../ADatabase");
 const FBDatabase_1 = __importDefault(require("./FBDatabase"));
 const FirebirdTransaction_1 = require("./FirebirdTransaction");
 class FirebirdDatabase extends ADatabase_1.ADatabase {
-    constructor() {
-        super(...arguments);
-        this._database = new FBDatabase_1.default();
+    constructor(database = new FBDatabase_1.default()) {
+        super();
+        this._database = database;
     }
     async connect(options) {
         return await this._database.attach(options);
