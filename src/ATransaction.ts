@@ -1,8 +1,7 @@
 import {Executor} from "./ADatabase";
+import {AResultSet} from "./AResultSet";
 
-export type QuerySeqCallback = (row: any, index: number, next: () => void) => void
-
-export abstract class ATransaction {
+export abstract class ATransaction<RS extends AResultSet> {
 
     /**
      * Example:
@@ -16,7 +15,7 @@ export abstract class ATransaction {
      * @param {Executor<T extends ATransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransaction<T extends ATransaction, R>(
+    static async executeTransaction<RS extends AResultSet, T extends ATransaction<RS>, R>(
         transaction: T,
         callback: Executor<T, R>
     ): Promise<R> {
@@ -43,7 +42,5 @@ export abstract class ATransaction {
 
     abstract async isActive(): Promise<boolean>;
 
-    abstract async query(query: string, params?: any[]): Promise<any[]>;
-
-    abstract async querySequentially(query: string, callback: QuerySeqCallback, params?: any[]): Promise<void>;
+    abstract async executeSQL(sql: string, params?: any[]): Promise<RS>;
 }

@@ -1,6 +1,6 @@
 import { Executor } from "./ADatabase";
-export declare type QuerySeqCallback = (row: any, index: number, next: () => void) => void;
-export declare abstract class ATransaction {
+import { AResultSet } from "./AResultSet";
+export declare abstract class ATransaction<RS extends AResultSet> {
     /**
      * Example:
      * <pre><code>
@@ -13,11 +13,10 @@ export declare abstract class ATransaction {
      * @param {Executor<T extends ATransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static executeTransaction<T extends ATransaction, R>(transaction: T, callback: Executor<T, R>): Promise<R>;
+    static executeTransaction<RS extends AResultSet, T extends ATransaction<RS>, R>(transaction: T, callback: Executor<T, R>): Promise<R>;
     abstract start(): Promise<void>;
     abstract commit(): Promise<void>;
     abstract rollback(): Promise<void>;
     abstract isActive(): Promise<boolean>;
-    abstract query(query: string, params?: any[]): Promise<any[]>;
-    abstract querySequentially(query: string, callback: QuerySeqCallback, params?: any[]): Promise<void>;
+    abstract executeSQL(sql: string, params?: any[]): Promise<RS>;
 }

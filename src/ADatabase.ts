@@ -1,4 +1,5 @@
 import {ATransaction} from "./ATransaction";
+import {AResultSet} from "./AResultSet";
 import {AConnectionPool} from "./AConnectionPool";
 
 export type Executor<Subject, Result> = ((subject: Subject) => Result) | ((subject: Subject) => Promise<Result>);
@@ -34,7 +35,7 @@ export type Executor<Subject, Result> = ((subject: Subject) => Result) | ((subje
  * })()
  * </code></pre>
  */
-export abstract class ADatabase<Options, T extends ATransaction> {
+export abstract class ADatabase<Options, RS extends AResultSet, T extends ATransaction<RS>> {
 
     /**
      * Example:
@@ -51,8 +52,9 @@ export abstract class ADatabase<Options, T extends ATransaction> {
      * @returns {Promise<R>}
      */
     static async executeConnection<Opt,
-        T extends ATransaction,
-        DB extends ADatabase<Opt, T>,
+        RS extends AResultSet,
+        T extends ATransaction<RS>,
+        DB extends ADatabase<Opt, RS, T>,
         R>
     (
         database: DB,
@@ -85,8 +87,9 @@ export abstract class ADatabase<Options, T extends ATransaction> {
      * @returns {Promise<R>}
      */
     static async executeTransaction<Opt,
-        T extends ATransaction,
-        DB extends ADatabase<Opt, T>,
+        RS extends AResultSet,
+        T extends ATransaction<RS>,
+        DB extends ADatabase<Opt, RS, T>,
         R>
     (
         database: DB,
@@ -117,9 +120,10 @@ export abstract class ADatabase<Options, T extends ATransaction> {
      * @returns {Promise<R>}
      */
     static async executeConnectionPool<Opt,
-        T extends ATransaction,
-        DB extends ADatabase<Opt, T>,
-        Pool extends AConnectionPool<Opt, T, DB>,
+        RS extends AResultSet,
+        T extends ATransaction<RS>,
+        DB extends ADatabase<Opt, RS, T>,
+        Pool extends AConnectionPool<Opt, RS, T, DB>,
         R>
     (
         connectionPool: Pool,
@@ -156,9 +160,10 @@ export abstract class ADatabase<Options, T extends ATransaction> {
      * @returns {Promise<R>}
      */
     static async executeTransactionPool<Opt,
-        T extends ATransaction,
-        DB extends ADatabase<Opt, T>,
-        Pool extends AConnectionPool<Opt, T, DB>,
+        RS extends AResultSet,
+        T extends ATransaction<RS>,
+        DB extends ADatabase<Opt, RS, T>,
+        Pool extends AConnectionPool<Opt, RS, T, DB>,
         R>
     (
         connectionPool: Pool,

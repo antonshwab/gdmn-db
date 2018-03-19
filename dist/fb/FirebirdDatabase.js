@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 const ADatabase_1 = require("../ADatabase");
-const FBDatabase_1 = __importDefault(require("./FBDatabase"));
 const FirebirdTransaction_1 = require("./FirebirdTransaction");
+const FBDatabase_1 = __importDefault(require("./driver/FBDatabase"));
 class FirebirdDatabase extends ADatabase_1.ADatabase {
     constructor(database = new FBDatabase_1.default()) {
         super();

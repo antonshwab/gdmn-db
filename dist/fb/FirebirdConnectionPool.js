@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const AConnectionPool_1 = require("../AConnectionPool");
 const FirebirdDatabase_1 = require("./FirebirdDatabase");
-const FBDatabase_1 = require("./FBDatabase");
+const FBDatabase_1 = require("./driver/FBDatabase");
 class FirebirdConnectionPool extends AConnectionPool_1.AConnectionPool {
     constructor() {
         super(...arguments);

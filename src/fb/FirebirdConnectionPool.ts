@@ -1,11 +1,13 @@
 import {AConnectionPool} from "../AConnectionPool";
 import {FirebirdTransaction} from "./FirebirdTransaction";
+import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdDatabase, FirebirdOptions} from "./FirebirdDatabase";
-import {FBConnectionPool} from "./FBDatabase";
+import {FBConnectionPool} from "./driver/FBDatabase";
 
-export class FirebirdConnectionPool extends AConnectionPool<FirebirdOptions, FirebirdTransaction, FirebirdDatabase> {
+export class FirebirdConnectionPool extends AConnectionPool<FirebirdOptions, FirebirdResultSet, FirebirdTransaction,
+    FirebirdDatabase> {
 
-    private _connectionPool: FBConnectionPool = new FBConnectionPool();
+    private readonly _connectionPool: FBConnectionPool = new FBConnectionPool();
 
     async isCreated(): Promise<boolean> {
         return this._connectionPool.isConnectionPoolCreated();

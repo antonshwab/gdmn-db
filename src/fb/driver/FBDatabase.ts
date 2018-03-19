@@ -1,8 +1,8 @@
-import firebird from "node-firebird";
+import fb from "node-firebird";
 
 export type BlobField = (callback: (err: Error, name: string, event: IBlobEventEmitter) => void) => void;
 
-export type DBOptions = firebird.Options;
+export type DBOptions = fb.Options;
 
 export interface IBlobEventEmitter extends NodeJS.EventEmitter {
     pipe(destination: NodeJS.WritableStream): void;
@@ -18,7 +18,7 @@ export enum IsolationTypes {
     ISOLATION_READ_UNCOMMITTED
 }
 
-export abstract class FBase<Source extends (firebird.Database | firebird.Transaction)> {
+export abstract class FBase<Source extends (fb.Database | fb.Transaction)> {
 
     protected _source: Source;
 
@@ -68,7 +68,7 @@ export abstract class FBase<Source extends (firebird.Database | firebird.Transac
         });
     }
 
-    public async sequentially(query: string, params: any[], rowCallback: firebird.SequentialCallback): Promise<void> {
+    public async sequentially(query: string, params: any[], rowCallback: fb.SequentialCallback): Promise<void> {
         if (!this._source) throw new Error("Database need created");
         return new Promise<void>((resolve, reject) => {
             this._source.sequentially(query, params, rowCallback, (err) => {
@@ -78,7 +78,7 @@ export abstract class FBase<Source extends (firebird.Database | firebird.Transac
     }
 }
 
-export class FBTransaction extends FBase<firebird.Transaction> {
+export class FBTransaction extends FBase<fb.Transaction> {
 
     public isInTransaction(): boolean {
         return Boolean(this._source);
@@ -106,11 +106,11 @@ export class FBTransaction extends FBase<firebird.Transaction> {
     }
 }
 
-export default class FBDatabase extends FBase<firebird.Database> {
+export default class FBDatabase extends FBase<fb.Database> {
 
     constructor();
-    constructor(source: firebird.Database);
-    constructor(source?: firebird.Database) {
+    constructor(source: fb.Database);
+    constructor(source?: fb.Database) {
         super(source);
     }
 
@@ -146,7 +146,7 @@ export default class FBDatabase extends FBase<firebird.Database> {
     }
 
     public static escape(value: any): string {
-        return firebird.escape(value);
+        return fb.escape(value);
     }
 
     public isAttached(): boolean {
@@ -156,7 +156,7 @@ export default class FBDatabase extends FBase<firebird.Database> {
     public async attachOrCreate(options: DBOptions): Promise<void> {
         if (this._source) throw new Error("Database already created");
         return new Promise<void>((resolve, reject) => {
-            firebird.attachOrCreate(options, (err, db) => {
+            fb.attachOrCreate(options, (err, db) => {
                 if (err) return reject(err);
                 this._source = db;
                 resolve();
@@ -167,7 +167,7 @@ export default class FBDatabase extends FBase<firebird.Database> {
     public async attach(options: DBOptions): Promise<void> {
         if (this._source) throw new Error("Database already created");
         return new Promise<void>((resolve, reject) => {
-            firebird.attach(options, (err, db) => {
+            fb.attach(options, (err, db) => {
                 if (err) return reject(err);
                 this._source = db;
                 resolve();
@@ -189,7 +189,7 @@ export default class FBDatabase extends FBase<firebird.Database> {
     public async transaction(isolation?: IsolationTypes): Promise<FBTransaction> {
         if (!this._source) throw new Error("Database need created");
         return new Promise<FBTransaction>((resolve, reject) => {
-            this._source.transaction(firebird[IsolationTypes[isolation]], (err, transaction) => {
+            this._source.transaction(fb[IsolationTypes[isolation]], (err, transaction) => {
                 err ? reject(err) : resolve(new FBTransaction(transaction));
             });
         });
@@ -219,7 +219,7 @@ export class FBConnectionPool {
 
     public static DEFAULT_MAX_POOL = 10;
 
-    protected _connectionPool: firebird.ConnectionPool;
+    protected _connectionPool: fb.ConnectionPool;
 
     public isConnectionPoolCreated(): boolean {
         return Boolean(this._connectionPool);
@@ -227,7 +227,7 @@ export class FBConnectionPool {
 
     public createConnectionPool(options: DBOptions, max: number = FBConnectionPool.DEFAULT_MAX_POOL): void {
         if (this._connectionPool) throw new Error("Connection pool already created");
-        this._connectionPool = firebird.pool(max, options, null);
+        this._connectionPool = fb.pool(max, options, null);
     }
 
     public destroyConnectionPool(): void {

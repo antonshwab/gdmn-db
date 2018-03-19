@@ -1,7 +1,8 @@
+import {ATransaction} from "../ATransaction";
+import {AResultSet} from "../AResultSet";
 import {FirebirdDatabase, FirebirdOptions} from "./FirebirdDatabase";
 import {FirebirdTransaction} from "./FirebirdTransaction";
 import {DBStructure} from "../DBStructure";
-import {ATransaction} from "../ATransaction";
 
 export class FirebirdDBStructure {
 
@@ -17,15 +18,15 @@ export class FirebirdDBStructure {
         });
     }
 
-    private static async read(transaction: ATransaction): Promise<DBStructure> {
-        const fields = await transaction.query(`
+    private static async read(transaction: ATransaction<AResultSet>): Promise<DBStructure> {
+        const fieldsSet = await transaction.executeSQL(`
                         SELECT 
                             TRIM(f.RDB$FIELD_NAME)                              AS RDB$FIELD_NAME,
                             f.RDB$FIELD_TYPE,
                             f.RDB$NULL_FLAG 
                         FROM RDB$FIELDS f
                     `);
-        const relationFields = await transaction.query(`
+        const relationFieldsSet = await transaction.executeSQL(`
                         SELECT
                             TRIM(rf.RDB$RELATION_NAME)                          AS RDB$RELATION_NAME,
                             TRIM(rf.RDB$FIELD_NAME)                             AS RDB$FIELD_NAME,
@@ -34,7 +35,7 @@ export class FirebirdDBStructure {
                         FROM RDB$RELATION_FIELDS rf
                         ORDER BY RDB$RELATION_NAME
                     `);
-        const constraints = await transaction.query(`
+        const constraintsSet = await transaction.executeSQL(`
                         SELECT
                             TRIM(rc.RDB$RELATION_NAME)                          AS RDB$RELATION_NAME,
                             TRIM(rc.RDB$CONSTRAINT_NAME)                        AS RDB$CONSTRAINT_NAME,
@@ -52,7 +53,12 @@ export class FirebirdDBStructure {
                     `);
 
         const dbStructure = new DBStructure();
-        dbStructure.load(fields, relationFields, constraints);
+        dbStructure.load(
+            <any>fieldsSet.getObjects(),
+            <any>relationFieldsSet.getObjects(),
+            <any>constraintsSet.getObjects()
+        );
+
         return dbStructure;
     }
 }
