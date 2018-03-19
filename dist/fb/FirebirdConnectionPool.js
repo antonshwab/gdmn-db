@@ -8,6 +8,9 @@ class FirebirdConnectionPool extends AConnectionPool_1.AConnectionPool {
         super(...arguments);
         this._connectionPool = new FBDatabase_1.FBConnectionPool();
     }
+    async isCreated() {
+        return this._connectionPool.isConnectionPoolCreated();
+    }
     async attach() {
         const db = await this._connectionPool.attach();
         return new FirebirdDatabase_1.FirebirdDatabase(db);

@@ -7,6 +7,10 @@ export class FirebirdConnectionPool extends AConnectionPool<FirebirdOptions, Fir
 
     private _connectionPool: FBConnectionPool = new FBConnectionPool();
 
+    async isCreated(): Promise<boolean> {
+        return this._connectionPool.isConnectionPoolCreated();
+    }
+
     async attach(): Promise<FirebirdDatabase> {
         const db = await this._connectionPool.attach();
         return new FirebirdDatabase(db);
