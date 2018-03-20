@@ -9,8 +9,10 @@ export declare class FirebirdResultSet extends AResultSet {
     to(i: number): Promise<boolean>;
     first(): Promise<boolean>;
     last(): Promise<boolean>;
-    getBlob(i: number): Promise<NodeJS.ReadableStream>;
-    getBlob(name: string): Promise<NodeJS.ReadableStream>;
+    getBlobBuffer(i: number): Promise<Buffer>;
+    getBlobBuffer(name: string): Promise<Buffer>;
+    getBlobStream(i: number): Promise<NodeJS.ReadableStream>;
+    getBlobStream(name: string): Promise<NodeJS.ReadableStream>;
     getBoolean(i: number): boolean;
     getBoolean(name: string): boolean;
     getDate(i: number): Date;

@@ -8,9 +8,12 @@ export declare abstract class AResultSet {
     abstract to(i: number): Promise<boolean>;
     abstract first(): Promise<boolean>;
     abstract last(): Promise<boolean>;
-    abstract getBlob(i: number): Promise<NodeJS.ReadableStream>;
-    abstract getBlob(name: string): Promise<NodeJS.ReadableStream>;
-    abstract getBlob(field: number | string): Promise<NodeJS.ReadableStream>;
+    abstract getBlobBuffer(i: number): Promise<Buffer>;
+    abstract getBlobBuffer(name: string): Promise<Buffer>;
+    abstract getBlobBuffer(field: number | string): Promise<Buffer>;
+    abstract getBlobStream(i: number): Promise<NodeJS.ReadableStream>;
+    abstract getBlobStream(name: string): Promise<NodeJS.ReadableStream>;
+    abstract getBlobStream(field: number | string): Promise<NodeJS.ReadableStream>;
     abstract getString(i: number): string;
     abstract getString(name: string): string;
     abstract getString(field: number | string): string;
