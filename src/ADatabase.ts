@@ -1,8 +1,10 @@
-import {ATransaction} from "./ATransaction";
+import {ATransaction, TTransaction} from "./ATransaction";
 import {AResultSet} from "./AResultSet";
-import {AConnectionPool} from "./AConnectionPool";
+import {TConnectionPool} from "./AConnectionPool";
 
-export type Executor<Subject, Result> = ((subject: Subject) => Result) | ((subject: Subject) => Promise<Result>);
+export type TExecutor<Subject, Result> = ((subject: Subject) => Result) | ((subject: Subject) => Promise<Result>);
+
+export type TDatabase<Opt> = ADatabase<Opt, AResultSet, TTransaction>;
 
 /**
  * Example:
@@ -46,21 +48,14 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
      * })}
      * </pre>
      *
-     * @param {DB} database
+     * @param {TDatabase<Opt>} database
      * @param {Opt} options
-     * @param {Executor<DB extends ADatabase<Opt, T>, R>} callback
+     * @param {TExecutor<TDatabase<Opt>, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeConnection<Opt,
-        RS extends AResultSet,
-        T extends ATransaction<RS>,
-        DB extends ADatabase<Opt, RS, T>,
-        R>
-    (
-        database: DB,
-        options: Opt,
-        callback: Executor<DB, R>
-    ): Promise<R> {
+    static async executeConnection<Opt, R>(database: TDatabase<Opt>,
+                                           options: Opt,
+                                           callback: TExecutor<TDatabase<Opt>, R>): Promise<R> {
         try {
             await database.connect(options);
             return await callback(database);
@@ -81,21 +76,14 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
      * })}
      * </pre>
      *
-     * @param {DB} database
+     * @param {TDatabase<Opt>} database
      * @param {Opt} options
-     * @param {Executor<T extends ATransaction, R>} callback
+     * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransaction<Opt,
-        RS extends AResultSet,
-        T extends ATransaction<RS>,
-        DB extends ADatabase<Opt, RS, T>,
-        R>
-    (
-        database: DB,
-        options: Opt,
-        callback: Executor<T, R>
-    ): Promise<R> {
+    static async executeTransaction<Opt, R>(database: TDatabase<Opt>,
+                                            options: Opt,
+                                            callback: TExecutor<TTransaction, R>): Promise<R> {
         return await ADatabase.executeConnection(database, options, async (database) => {
             return await ATransaction.executeTransaction(await database.createTransaction(), callback);
         });
@@ -115,21 +103,13 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {Pool} connectionPool
-     * @param {Executor<DB extends ADatabase<Opt, T>, R>} callback
+     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TExecutor<TDatabase<Opt>, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeConnectionPool<Opt,
-        RS extends AResultSet,
-        T extends ATransaction<RS>,
-        DB extends ADatabase<Opt, RS, T>,
-        Pool extends AConnectionPool<Opt, RS, T, DB>,
-        R>
-    (
-        connectionPool: Pool,
-        callback: Executor<DB, R>
-    ): Promise<R> {
-        let database: DB;
+    static async executeConnectionPool<Opt, R>(connectionPool: TConnectionPool<Opt>,
+                                               callback: TExecutor<TDatabase<Opt>, R>): Promise<R> {
+        let database: ADatabase<Opt, AResultSet, ATransaction<AResultSet>>;
         try {
             database = await connectionPool.attach();
             return await callback(database);
@@ -155,20 +135,12 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {Pool} connectionPool
-     * @param {Executor<T extends ATransaction, R>} callback
+     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransactionPool<Opt,
-        RS extends AResultSet,
-        T extends ATransaction<RS>,
-        DB extends ADatabase<Opt, RS, T>,
-        Pool extends AConnectionPool<Opt, RS, T, DB>,
-        R>
-    (
-        connectionPool: Pool,
-        callback: Executor<T, R>
-    ): Promise<R> {
+    static async executeTransactionPool<Opt, R>(connectionPool: TConnectionPool<Opt>,
+                                                callback: TExecutor<TTransaction, R>): Promise<R> {
         return await ADatabase.executeConnectionPool(connectionPool, async (database) => {
             return await ATransaction.executeTransaction(await database.createTransaction(), callback);
         });

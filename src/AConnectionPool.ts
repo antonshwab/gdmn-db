@@ -1,6 +1,8 @@
-import {ADatabase} from "./ADatabase";
+import {ADatabase, TDatabase} from "./ADatabase";
 import {ATransaction} from "./ATransaction";
 import {AResultSet} from "./AResultSet";
+
+export type TConnectionPool<Opt> = AConnectionPool<Opt, AResultSet, ATransaction<AResultSet>, TDatabase<Opt>>;
 
 export abstract class AConnectionPool<Options,
     RS extends AResultSet,

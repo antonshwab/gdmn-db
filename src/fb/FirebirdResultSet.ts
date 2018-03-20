@@ -1,13 +1,13 @@
 import {Readable} from "stream";
-import {AResultSet, Row} from "../AResultSet";
+import {AResultSet, TRow} from "../AResultSet";
 import FBDatabase from "./driver/FBDatabase";
 
 export class FirebirdResultSet extends AResultSet {
 
-    private readonly _data: Row[] = [];
+    private readonly _data: TRow[] = [];
     private _currentIndex: number = -1;
 
-    constructor(data: Row[]) {
+    constructor(data: TRow[]) {
         super();
         this._data = data;
     }
@@ -104,11 +104,11 @@ export class FirebirdResultSet extends AResultSet {
         return String(this._getValue(field));
     }
 
-    getObject(): Row {
+    getObject(): TRow {
         return this._data[this._currentIndex];
     }
 
-    getObjects(): Row[] {
+    getObjects(): TRow[] {
         return this._data;
     }
 

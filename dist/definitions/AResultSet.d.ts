@@ -1,5 +1,5 @@
 /// <reference types="node" />
-export declare type Row = {
+export declare type TRow = {
     [fieldName: string]: any;
 };
 export declare abstract class AResultSet {
@@ -26,6 +26,6 @@ export declare abstract class AResultSet {
     abstract getDate(i: number): Date;
     abstract getDate(name: string): Date;
     abstract getDate(field: number | string): Date;
-    abstract getObject(): Row;
-    abstract getObjects(): Row[];
+    abstract getObject(): TRow;
+    abstract getObjects(): TRow[];
 }

@@ -9,8 +9,8 @@ class ATransaction {
      * })}
      * </code></pre>
      *
-     * @param {T} transaction
-     * @param {Executor<T extends ATransaction, R>} callback
+     * @param {TTransaction} transaction
+     * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
     static async executeTransaction(transaction, callback) {

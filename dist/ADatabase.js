@@ -42,9 +42,9 @@ class ADatabase {
      * })}
      * </pre>
      *
-     * @param {DB} database
+     * @param {TDatabase<Opt>} database
      * @param {Opt} options
-     * @param {Executor<DB extends ADatabase<Opt, T>, R>} callback
+     * @param {TExecutor<TDatabase<Opt>, R>} callback
      * @returns {Promise<R>}
      */
     static async executeConnection(database, options, callback) {
@@ -69,9 +69,9 @@ class ADatabase {
      * })}
      * </pre>
      *
-     * @param {DB} database
+     * @param {TDatabase<Opt>} database
      * @param {Opt} options
-     * @param {Executor<T extends ATransaction, R>} callback
+     * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
     static async executeTransaction(database, options, callback) {
@@ -93,8 +93,8 @@ class ADatabase {
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {Pool} connectionPool
-     * @param {Executor<DB extends ADatabase<Opt, T>, R>} callback
+     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TExecutor<TDatabase<Opt>, R>} callback
      * @returns {Promise<R>}
      */
     static async executeConnectionPool(connectionPool, callback) {
@@ -125,8 +125,8 @@ class ADatabase {
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {Pool} connectionPool
-     * @param {Executor<T extends ATransaction, R>} callback
+     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
     static async executeTransactionPool(connectionPool, callback) {

@@ -1,5 +1,7 @@
-import {Executor} from "./ADatabase";
+import {TExecutor} from "./ADatabase";
 import {AResultSet} from "./AResultSet";
+
+export type TTransaction = ATransaction<AResultSet>;
 
 export abstract class ATransaction<RS extends AResultSet> {
 
@@ -11,13 +13,13 @@ export abstract class ATransaction<RS extends AResultSet> {
      * })}
      * </code></pre>
      *
-     * @param {T} transaction
-     * @param {Executor<T extends ATransaction, R>} callback
+     * @param {TTransaction} transaction
+     * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransaction<RS extends AResultSet, T extends ATransaction<RS>, R>(
-        transaction: T,
-        callback: Executor<T, R>
+    static async executeTransaction<R>(
+        transaction: TTransaction,
+        callback: TExecutor<TTransaction, R>
     ): Promise<R> {
         try {
             await transaction.start();

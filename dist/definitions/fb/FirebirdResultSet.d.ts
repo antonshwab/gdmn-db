@@ -1,9 +1,9 @@
 /// <reference types="node" />
-import { AResultSet, Row } from "../AResultSet";
+import { AResultSet, TRow } from "../AResultSet";
 export declare class FirebirdResultSet extends AResultSet {
     private readonly _data;
     private _currentIndex;
-    constructor(data: Row[]);
+    constructor(data: TRow[]);
     next(): Promise<boolean>;
     previous(): Promise<boolean>;
     to(i: number): Promise<boolean>;
@@ -21,7 +21,7 @@ export declare class FirebirdResultSet extends AResultSet {
     getNumber(name: string): number;
     getString(i: number): string;
     getString(name: string): string;
-    getObject(): Row;
-    getObjects(): Row[];
+    getObject(): TRow;
+    getObjects(): TRow[];
     private _getValue(field);
 }

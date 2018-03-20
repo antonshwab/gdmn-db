@@ -1,4 +1,4 @@
-export type Row = { [fieldName: string]: any };
+export type TRow = { [fieldName: string]: any };
 
 export abstract class AResultSet {
 
@@ -36,7 +36,7 @@ export abstract class AResultSet {
     abstract getDate(name: string): Date;
     abstract getDate(field: number | string): Date;
 
-    abstract getObject(): Row;
+    abstract getObject(): TRow;
 
-    abstract getObjects(): Row[];
+    abstract getObjects(): TRow[];
 }
