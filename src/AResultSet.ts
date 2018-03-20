@@ -12,9 +12,13 @@ export abstract class AResultSet {
 
     abstract async last(): Promise<boolean>;
 
-    abstract async getBlob(i: number): Promise<NodeJS.ReadableStream>;
-    abstract async getBlob(name: string): Promise<NodeJS.ReadableStream>;
-    abstract async getBlob(field: number | string): Promise<NodeJS.ReadableStream>;
+    abstract async getBlobBuffer(i: number): Promise<Buffer>;
+    abstract async getBlobBuffer(name: string): Promise<Buffer>;
+    abstract async getBlobBuffer(field: number | string): Promise<Buffer>;
+
+    abstract async getBlobStream(i: number): Promise<NodeJS.ReadableStream>;
+    abstract async getBlobStream(name: string): Promise<NodeJS.ReadableStream>;
+    abstract async getBlobStream(field: number | string): Promise<NodeJS.ReadableStream>;
 
     abstract getString(i: number): string;
     abstract getString(name: string): string;

@@ -52,9 +52,19 @@ export class FirebirdResultSet extends AResultSet {
         return false;
     }
 
-    async getBlob(i: number): Promise<NodeJS.ReadableStream>;
-    async getBlob(name: string): Promise<NodeJS.ReadableStream>;
-    async getBlob(field: number | string): Promise<NodeJS.ReadableStream> {
+    async getBlobBuffer(i: number): Promise<Buffer>;
+    async getBlobBuffer(name: string): Promise<Buffer>;
+    async getBlobBuffer(field: number | string): Promise<Buffer> {
+        const value = this._getValue(field);
+        if (typeof value === "function") {
+            return await FBDatabase.blobToBuffer(value);
+        }
+        return;
+    }
+
+    async getBlobStream(i: number): Promise<NodeJS.ReadableStream>;
+    async getBlobStream(name: string): Promise<NodeJS.ReadableStream>;
+    async getBlobStream(field: number | string): Promise<NodeJS.ReadableStream> {
         const value = this._getValue(field);
         if (typeof value === "function") {
             const event = await FBDatabase.blobToStream(value);
