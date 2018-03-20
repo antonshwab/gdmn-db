@@ -20,11 +20,13 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
     async commit(): Promise<void> {
         if (!this._transaction) throw new Error("Need to open transaction");
         await this._transaction.commit();
+        this._transaction = null;
     }
 
     async rollback(): Promise<void> {
         if (!this._transaction) throw new Error("Need to open transaction");
         await this._transaction.rollback();
+        this._transaction = null;
     }
 
     async isActive(): Promise<boolean> {

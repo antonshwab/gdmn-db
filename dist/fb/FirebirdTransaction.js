@@ -16,11 +16,13 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         if (!this._transaction)
             throw new Error("Need to open transaction");
         await this._transaction.commit();
+        this._transaction = null;
     }
     async rollback() {
         if (!this._transaction)
             throw new Error("Need to open transaction");
         await this._transaction.rollback();
+        this._transaction = null;
     }
     async isActive() {
         if (!this._transaction)
