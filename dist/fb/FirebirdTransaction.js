@@ -35,6 +35,8 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         return new FirebirdResultSet_1.FirebirdResultSet(result);
     }
     async readDBStructure() {
+        if (!this._transaction)
+            throw new Error("Need to open transaction");
         return await FirebirdDBStructure_1.FirebirdDBStructure.readStructure(this);
     }
 }

@@ -42,6 +42,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
     }
 
     async readDBStructure(): Promise<DBStructure> {
+        if (!this._transaction) throw new Error("Need to open transaction");
         return await FirebirdDBStructure.readStructure(this);
     }
 }
