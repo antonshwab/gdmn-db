@@ -32,8 +32,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
     }
 
     async isActive(): Promise<boolean> {
-        if (!this._transaction) throw new Error("Need to open transaction");
-        return this._transaction.isInTransaction();
+        return this._transaction && this._transaction.isInTransaction();
     }
 
     async executeSQL(sql: string, params?: any[]): Promise<FirebirdResultSet> {

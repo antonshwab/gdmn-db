@@ -26,9 +26,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         this._transaction = null;
     }
     async isActive() {
-        if (!this._transaction)
-            throw new Error("Need to open transaction");
-        return this._transaction.isInTransaction();
+        return this._transaction && this._transaction.isInTransaction();
     }
     async executeSQL(sql, params) {
         if (!this._transaction)
