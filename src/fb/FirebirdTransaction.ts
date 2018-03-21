@@ -1,5 +1,7 @@
 import {ATransaction} from "../ATransaction";
 import {FirebirdResultSet} from "./FirebirdResultSet";
+import {DBStructure} from "../DBStructure";
+import {FirebirdDBStructure} from "./FirebirdDBStructure";
 import FBDatabase, {FBTransaction} from "./driver/FBDatabase";
 
 export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
@@ -38,5 +40,9 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
         if (!this._transaction) throw new Error("Need to open transaction");
         const result = await this._transaction.query(sql, params);  //TODO sequentially
         return new FirebirdResultSet(result);
+    }
+
+    async readDBStructure(): Promise<DBStructure> {
+        return await FirebirdDBStructure.readStructure(this);
     }
 }

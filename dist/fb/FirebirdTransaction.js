@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ATransaction_1 = require("../ATransaction");
 const FirebirdResultSet_1 = require("./FirebirdResultSet");
+const FirebirdDBStructure_1 = require("./FirebirdDBStructure");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
     constructor(database) {
         super();
@@ -34,6 +35,9 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
             throw new Error("Need to open transaction");
         const result = await this._transaction.query(sql, params); //TODO sequentially
         return new FirebirdResultSet_1.FirebirdResultSet(result);
+    }
+    async readDBStructure() {
+        return await FirebirdDBStructure_1.FirebirdDBStructure.readStructure(this);
     }
 }
 exports.FirebirdTransaction = FirebirdTransaction;

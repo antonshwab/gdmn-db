@@ -1,5 +1,6 @@
 import { TExecutor } from "./ADatabase";
 import { AResultSet } from "./AResultSet";
+import { DBStructure } from "./DBStructure";
 export declare type TTransaction = ATransaction<AResultSet>;
 export declare abstract class ATransaction<RS extends AResultSet> {
     /**
@@ -20,4 +21,5 @@ export declare abstract class ATransaction<RS extends AResultSet> {
     abstract rollback(): Promise<void>;
     abstract isActive(): Promise<boolean>;
     abstract executeSQL(sql: string, params?: any[]): Promise<RS>;
+    abstract readDBStructure(): Promise<DBStructure>;
 }
