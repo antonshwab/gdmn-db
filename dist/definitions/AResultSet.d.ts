@@ -3,6 +3,7 @@ export declare type TRow = {
     [fieldName: string]: any;
 };
 export declare abstract class AResultSet {
+    readonly abstract position: number;
     abstract next(): Promise<boolean>;
     abstract previous(): Promise<boolean>;
     abstract to(i: number): Promise<boolean>;
@@ -27,5 +28,7 @@ export declare abstract class AResultSet {
     abstract getDate(name: string): Date;
     abstract getDate(field: number | string): Date;
     abstract getObject(): TRow;
-    abstract getObjects(): TRow[];
+    abstract getArray(): any[];
+    abstract getObjects(): Promise<TRow[]>;
+    abstract getArrays(): Promise<any[][]>;
 }

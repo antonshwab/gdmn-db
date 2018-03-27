@@ -1,3 +1,4 @@
+import {EventEmitter} from "events";
 import {ATransaction} from "../ATransaction";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {DBStructure} from "../DBStructure";
@@ -5,6 +6,9 @@ import {FirebirdDBStructure} from "./FirebirdDBStructure";
 import FBDatabase, {FBTransaction} from "./driver/FBDatabase";
 
 export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
+
+    public static EVENT_DATA = "data";
+    public static EVENT_END = "end";
 
     private readonly _database: FBDatabase;
     private _transaction: FBTransaction;
@@ -37,8 +41,13 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
 
     async executeSQL(sql: string, params?: any[]): Promise<FirebirdResultSet> {
         if (!this._transaction) throw new Error("Need to open transaction");
-        const result = await this._transaction.query(sql, params);  //TODO sequentially
-        return new FirebirdResultSet(result);
+        const event = new EventEmitter();
+        this._transaction.sequentially(sql, params, (row, index, next) => {
+            event.emit(FirebirdTransaction.EVENT_DATA, row, index, next);
+        })
+            .then(() => event.emit(FirebirdTransaction.EVENT_END, null))
+            .catch(error => event.emit(FirebirdTransaction.EVENT_END, error));
+        return new FirebirdResultSet(event);
     }
 
     async readDBStructure(): Promise<DBStructure> {

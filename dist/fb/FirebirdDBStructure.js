@@ -46,7 +46,7 @@ class FirebirdDBStructure {
                         ORDER BY rc.RDB$RELATION_NAME, rc.RDB$CONSTRAINT_NAME, s.RDB$FIELD_POSITION
                     `);
         const dbStructure = new DBStructure_1.DBStructure();
-        dbStructure.load(fieldsSet.getObjects(), relationFieldsSet.getObjects(), constraintsSet.getObjects());
+        dbStructure.load(await fieldsSet.getObjects(), await relationFieldsSet.getObjects(), await constraintsSet.getObjects());
         return dbStructure;
     }
 }

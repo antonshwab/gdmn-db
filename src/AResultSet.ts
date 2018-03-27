@@ -2,6 +2,8 @@ export type TRow = { [fieldName: string]: any };
 
 export abstract class AResultSet {
 
+    abstract get position(): number;
+
     abstract async next(): Promise<boolean>;
 
     abstract async previous(): Promise<boolean>;
@@ -38,5 +40,9 @@ export abstract class AResultSet {
 
     abstract getObject(): TRow;
 
-    abstract getObjects(): TRow[];
+    abstract getArray(): any[];
+
+    abstract async getObjects(): Promise<TRow[]>;
+
+    abstract async getArrays(): Promise<any[][]>;
 }

@@ -1,9 +1,14 @@
 /// <reference types="node" />
+import { EventEmitter } from "events";
 import { AResultSet, TRow } from "../AResultSet";
 export declare class FirebirdResultSet extends AResultSet {
     private readonly _data;
     private _currentIndex;
-    constructor(data: TRow[]);
+    private _event;
+    private _nextFn;
+    private _done;
+    constructor(event: EventEmitter);
+    readonly position: number;
     next(): Promise<boolean>;
     previous(): Promise<boolean>;
     to(i: number): Promise<boolean>;
@@ -22,6 +27,9 @@ export declare class FirebirdResultSet extends AResultSet {
     getString(i: number): string;
     getString(name: string): string;
     getObject(): TRow;
-    getObjects(): TRow[];
+    getArray(): any[];
+    getObjects(): Promise<TRow[]>;
+    getArrays(): Promise<any[][]>;
+    private getWaitNext();
     private _getValue(field);
 }

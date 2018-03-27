@@ -3,6 +3,8 @@ import { FirebirdResultSet } from "./FirebirdResultSet";
 import { DBStructure } from "../DBStructure";
 import FBDatabase from "./driver/FBDatabase";
 export declare class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
+    static EVENT_DATA: string;
+    static EVENT_END: string;
     private readonly _database;
     private _transaction;
     constructor(database: FBDatabase);

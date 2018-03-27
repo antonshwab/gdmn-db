@@ -5,18 +5,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const stream_1 = require("stream");
 const AResultSet_1 = require("../AResultSet");
+const FirebirdTransaction_1 = require("./FirebirdTransaction");
 const FBDatabase_1 = __importDefault(require("./driver/FBDatabase"));
 class FirebirdResultSet extends AResultSet_1.AResultSet {
-    constructor(data) {
+    constructor(event) {
         super();
         this._data = [];
         this._currentIndex = -1;
-        this._data = data;
+        this._event = event;
+        this._event.on(FirebirdTransaction_1.FirebirdTransaction.EVENT_DATA, (row, index, next) => {
+            this._data.push(row);
+            this._nextFn = next;
+        });
+        this._event.once(FirebirdTransaction_1.FirebirdTransaction.EVENT_END, (error) => {
+            this._nextFn = null;
+            this._done = error ? error : true;
+        });
+    }
+    get position() {
+        return this._currentIndex;
     }
     async next() {
         if (this._currentIndex < this._data.length - 1) {
             this._currentIndex++;
             return true;
+        }
+        //throw error if exist
+        if (this._done instanceof Error) {
+            throw this._done;
+        }
+        //loading next row
+        if (!this._done) {
+            const waitNext = this.getWaitNext(); // must be created before call next()
+            if (this._nextFn) {
+                const next = this._nextFn;
+                this._nextFn = null;
+                next();
+            }
+            await waitNext;
+            return await this.next();
         }
         return false;
     }
@@ -32,6 +59,13 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             this._currentIndex = i;
             return true;
         }
+        //loading all rows
+        if (!this._done) {
+            while (await this.next()) {
+                if (this._currentIndex === i)
+                    return true;
+            }
+        }
         return false;
     }
     async first() {
@@ -42,6 +76,11 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return false;
     }
     async last() {
+        //loading all rows
+        if (!this._done) {
+            while (await this.next()) {
+            }
+        }
         if (this._data.length) {
             this._currentIndex = this._data.length - 1;
             return true;
@@ -85,8 +124,31 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
     getObject() {
         return this._data[this._currentIndex];
     }
-    getObjects() {
+    getArray() {
+        return Object.values(this.getObject());
+    }
+    async getObjects() {
+        //loading all rows
+        if (!this._done) {
+            while (await this.next()) {
+            }
+        }
         return this._data;
+    }
+    async getArrays() {
+        const objects = await this.getObjects();
+        return objects.map(object => Object.values(object));
+    }
+    async getWaitNext() {
+        return new Promise(resolve => {
+            const callback = () => {
+                resolve();
+                this._event.removeListener(FirebirdTransaction_1.FirebirdTransaction.EVENT_DATA, callback);
+                this._event.removeListener(FirebirdTransaction_1.FirebirdTransaction.EVENT_END, callback);
+            };
+            this._event.once(FirebirdTransaction_1.FirebirdTransaction.EVENT_DATA, callback);
+            this._event.once(FirebirdTransaction_1.FirebirdTransaction.EVENT_END, callback);
+        });
     }
     _getValue(field) {
         const row = this._data[this._currentIndex];

@@ -54,9 +54,9 @@ export class FirebirdDBStructure {
 
         const dbStructure = new DBStructure();
         dbStructure.load(
-            <any>fieldsSet.getObjects(),
-            <any>relationFieldsSet.getObjects(),
-            <any>constraintsSet.getObjects()
+            await <any>fieldsSet.getObjects(),
+            await <any>relationFieldsSet.getObjects(),
+            await <any>constraintsSet.getObjects()
         );
 
         return dbStructure;
