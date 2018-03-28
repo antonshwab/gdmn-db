@@ -26,6 +26,8 @@ export class FirebirdDBStructure {
                             f.RDB$NULL_FLAG 
                         FROM RDB$FIELDS f
                     `);
+        const fields = await fieldsSet.getObjects();
+
         const relationFieldsSet = await transaction.executeSQL(`
                         SELECT
                             TRIM(rf.RDB$RELATION_NAME)                          AS RDB$RELATION_NAME,
@@ -35,6 +37,8 @@ export class FirebirdDBStructure {
                         FROM RDB$RELATION_FIELDS rf
                         ORDER BY RDB$RELATION_NAME
                     `);
+        const relationFields = await relationFieldsSet.getObjects();
+
         const constraintsSet = await transaction.executeSQL(`
                         SELECT
                             TRIM(rc.RDB$RELATION_NAME)                          AS RDB$RELATION_NAME,
@@ -51,13 +55,10 @@ export class FirebirdDBStructure {
                             LEFT JOIN RDB$REF_CONSTRAINTS rfc ON rfc.RDB$CONSTRAINT_NAME = rc.RDB$CONSTRAINT_NAME
                         ORDER BY rc.RDB$RELATION_NAME, rc.RDB$CONSTRAINT_NAME, s.RDB$FIELD_POSITION
                     `);
+        const constraints = await constraintsSet.getObjects();
 
         const dbStructure = new DBStructure();
-        dbStructure.load(
-            await <any>fieldsSet.getObjects(),
-            await <any>relationFieldsSet.getObjects(),
-            await <any>constraintsSet.getObjects()
-        );
+        dbStructure.load(<any>fields, <any>relationFields, <any>constraints);
 
         return dbStructure;
     }
