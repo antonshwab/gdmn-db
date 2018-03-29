@@ -13,7 +13,7 @@ export class FirebirdConnectionPool extends AConnectionPool<FirebirdOptions, Fir
         return this._connectionPool.isConnectionPoolCreated();
     }
 
-    async attach(): Promise<FirebirdDatabase> {
+    async get(): Promise<FirebirdDatabase> {
         const db = await this._connectionPool.attach();
         return new FirebirdDatabase(db);
     }

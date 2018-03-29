@@ -100,7 +100,7 @@ class ADatabase {
     static async executeConnectionPool(connectionPool, callback) {
         let database;
         try {
-            database = await connectionPool.attach();
+            database = await connectionPool.get();
             return await callback(database);
         }
         finally {

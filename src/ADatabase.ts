@@ -111,7 +111,7 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
                                                callback: TExecutor<TDatabase<Opt>, R>): Promise<R> {
         let database: ADatabase<Opt, AResultSet, ATransaction<AResultSet>>;
         try {
-            database = await connectionPool.attach();
+            database = await connectionPool.get();
             return await callback(database);
         } finally {
             try {

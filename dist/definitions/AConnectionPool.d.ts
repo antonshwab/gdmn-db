@@ -6,5 +6,5 @@ export declare abstract class AConnectionPool<Options, RS extends AResultSet, T 
     abstract isCreated(): Promise<boolean>;
     abstract create(options: Options, maxConnections?: number): Promise<void>;
     abstract destroy(): Promise<void>;
-    abstract attach(): Promise<D>;
+    abstract get(): Promise<D>;
 }

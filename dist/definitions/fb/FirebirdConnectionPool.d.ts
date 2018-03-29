@@ -5,7 +5,7 @@ import { FirebirdDatabase, FirebirdOptions } from "./FirebirdDatabase";
 export declare class FirebirdConnectionPool extends AConnectionPool<FirebirdOptions, FirebirdResultSet, FirebirdTransaction, FirebirdDatabase> {
     private readonly _connectionPool;
     isCreated(): Promise<boolean>;
-    attach(): Promise<FirebirdDatabase>;
+    get(): Promise<FirebirdDatabase>;
     create(options: FirebirdOptions, maxConnections?: number): Promise<void>;
     destroy(): Promise<void>;
 }

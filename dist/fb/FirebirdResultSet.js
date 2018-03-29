@@ -87,6 +87,9 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
         return false;
     }
+    async close() {
+        this._done = true;
+    }
     async getBlobBuffer(field) {
         const value = this._getValue(field);
         if (typeof value === "function") {

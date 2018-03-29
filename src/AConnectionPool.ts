@@ -15,5 +15,5 @@ export abstract class AConnectionPool<Options,
 
     abstract destroy(): Promise<void>;
 
-    abstract attach(): Promise<D>;
+    abstract get(): Promise<D>;
 }

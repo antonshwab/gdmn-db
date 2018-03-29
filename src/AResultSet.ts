@@ -14,29 +14,31 @@ export abstract class AResultSet {
 
     abstract async last(): Promise<boolean>;
 
-    abstract async getBlobBuffer(i: number): Promise<Buffer>;
-    abstract async getBlobBuffer(name: string): Promise<Buffer>;
-    abstract async getBlobBuffer(field: number | string): Promise<Buffer>;
+    abstract async close(): Promise<void>;
 
-    abstract async getBlobStream(i: number): Promise<NodeJS.ReadableStream>;
-    abstract async getBlobStream(name: string): Promise<NodeJS.ReadableStream>;
-    abstract async getBlobStream(field: number | string): Promise<NodeJS.ReadableStream>;
+    abstract async getBlobBuffer(i: number): Promise<null | Buffer>;
+    abstract async getBlobBuffer(name: string): Promise<null | Buffer>;
+    abstract async getBlobBuffer(field: number | string): Promise<null | Buffer>;
 
-    abstract getString(i: number): string;
-    abstract getString(name: string): string;
-    abstract getString(field: number | string): string;
+    abstract async getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
+    abstract async getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
+    abstract async getBlobStream(field: number | string): Promise<null | NodeJS.ReadableStream>;
 
-    abstract getNumber(i: number): number;
-    abstract getNumber(name: string): number;
-    abstract getNumber(field: number | string): number;
+    abstract getString(i: number): null | string;
+    abstract getString(name: string): null | string;
+    abstract getString(field: number | string): null | string;
 
-    abstract getBoolean(i: number): boolean;
-    abstract getBoolean(name: string): boolean;
-    abstract getBoolean(field: number | string): boolean;
+    abstract getNumber(i: number): null | number;
+    abstract getNumber(name: string): null | number;
+    abstract getNumber(field: number | string): null | number;
 
-    abstract getDate(i: number): Date;
-    abstract getDate(name: string): Date;
-    abstract getDate(field: number | string): Date;
+    abstract getBoolean(i: number): null | boolean;
+    abstract getBoolean(name: string): null | boolean;
+    abstract getBoolean(field: number | string): null | boolean;
+
+    abstract getDate(i: number): null | Date;
+    abstract getDate(name: string): null | Date;
+    abstract getDate(field: number | string): null | Date;
 
     abstract getObject(): TRow;
 

@@ -1,13 +1,14 @@
 /// <reference types="node" />
-import { EventEmitter } from "events";
+import { Attachment, ResultSet, Transaction } from "node-firebird-driver-native";
 import { AResultSet, TRow } from "../AResultSet";
-export declare class FirebirdResultSet extends AResultSet {
-    private readonly _data;
+export declare class FirebirdResultSet2 extends AResultSet {
+    private _connect;
+    private _transaction;
+    private _resultSet;
+    private _data;
     private _currentIndex;
-    private _event;
-    private _nextFn;
     private _done;
-    constructor(event: EventEmitter);
+    constructor(connect: Attachment, transaction: Transaction, resultSet: ResultSet);
     readonly position: number;
     next(): Promise<boolean>;
     previous(): Promise<boolean>;
@@ -31,6 +32,5 @@ export declare class FirebirdResultSet extends AResultSet {
     getArray(): any[];
     getObjects(): Promise<TRow[]>;
     getArrays(): Promise<any[][]>;
-    private getWaitNext();
     private _getValue(field);
 }
