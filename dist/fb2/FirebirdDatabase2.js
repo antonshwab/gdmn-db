@@ -6,6 +6,8 @@ const FirebirdTransaction2_1 = require("./FirebirdTransaction2");
 class FirebirdDatabase2 extends ADatabase_1.ADatabase {
     constructor() {
         super();
+        this._client = null;
+        this._connect = null;
     }
     static _optionsToUri(options) {
         let url = "";
@@ -28,7 +30,7 @@ class FirebirdDatabase2 extends ADatabase_1.ADatabase {
         });
     }
     async dropDatabase() {
-        if (!this._connect)
+        if (!this._connect || !this._client)
             throw new Error("Need database connection");
         await this._connect.dropDatabase();
         await this._client.dispose();
@@ -49,7 +51,7 @@ class FirebirdDatabase2 extends ADatabase_1.ADatabase {
         return new FirebirdTransaction2_1.FirebirdTransaction2(this._connect);
     }
     async disconnect() {
-        if (!this._connect)
+        if (!this._connect || !this._client)
             throw new Error("Need database connection");
         await this._connect.disconnect();
         await this._client.dispose();

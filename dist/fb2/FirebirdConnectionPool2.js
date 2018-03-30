@@ -7,8 +7,6 @@ class FirebirdConnectionPool2 extends AConnectionPool_1.AConnectionPool {
     constructor() {
         super(...arguments);
         this._event = new events_1.EventEmitter();
-        this._options = null;
-        this._max = -1;
         this._connectionPool = null;
     }
     async isCreated() {
@@ -20,7 +18,7 @@ class FirebirdConnectionPool2 extends AConnectionPool_1.AConnectionPool {
         const connection = this.useReleasedConnection();
         if (connection)
             return connection.proxyDb;
-        if (this._connectionPool.length < this._max) {
+        if (this._connectionPool.connections.length < this._connectionPool.max) {
             const connection = await this.createAndUseConnection();
             return connection.proxyDb;
         }
@@ -36,42 +34,53 @@ class FirebirdConnectionPool2 extends AConnectionPool_1.AConnectionPool {
         });
         return await waitDatabase;
     }
-    async create(options, maxConnections) {
+    async create(options, maxConnections = 10) {
         if (this._connectionPool)
             throw new Error("Connection pool already created");
-        this._options = options;
-        this._max = maxConnections;
-        this._connectionPool = [];
+        this._connectionPool = {
+            options: options,
+            max: maxConnections,
+            connections: []
+        };
     }
     async destroy() {
         if (!this._connectionPool)
             throw new Error("Connection pool need created");
-        const promises = this._connectionPool.map(async (connection) => {
+        const promises = this._connectionPool.connections.map(async (connection) => {
             if (connection.proxyDb) {
                 await connection.proxyDb.disconnect();
             }
             await connection.db.disconnect();
         });
         await Promise.all(promises);
-        this._max = -1;
         this._connectionPool = null;
     }
     async createAndUseConnection() {
-        let connection = { db: new FirebirdDatabase2_1.FirebirdDatabase2() };
-        this._connectionPool.push(connection);
-        connection = this.useReleasedConnection();
-        await connection.db.connect(this._options);
-        return connection;
+        if (this._connectionPool) {
+            this._connectionPool.connections.push({
+                db: new FirebirdDatabase2_1.FirebirdDatabase2(),
+                proxyDb: null
+            });
+            const connection = this.useReleasedConnection();
+            if (connection) {
+                await connection.db.connect(this._connectionPool.options);
+                return connection;
+            }
+        }
+        throw new Error("This error should never been happen");
     }
     useReleasedConnection() {
-        const connection = this._connectionPool.find(connection => !connection.proxyDb);
+        if (!this._connectionPool)
+            return null;
+        const connection = this._connectionPool.connections.find(connection => !connection.proxyDb);
         if (connection) {
             connection.proxyDb = new FirebirdDatabaseProxy2(connection.db, () => {
                 connection.proxyDb = null;
                 this._event.emit(FirebirdConnectionPool2.EVENT_RELEASE, connection);
             });
+            return connection;
         }
-        return connection;
+        return null;
     }
 }
 FirebirdConnectionPool2.EVENT_RELEASE = "release";

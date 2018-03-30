@@ -6,6 +6,7 @@ const FirebirdDBStructure2_1 = require("./FirebirdDBStructure2");
 class FirebirdTransaction2 extends ATransaction_1.ATransaction {
     constructor(connect) {
         super();
+        this._transaction = null;
         this._connect = connect;
     }
     async start() {

@@ -13,8 +13,8 @@ export type FirebirdOptions2 = {
 
 export class FirebirdDatabase2 extends ADatabase<FirebirdOptions2, FirebirdResultSet2, FirebirdTransaction2> {
 
-    private _client: Client;
-    private _connect: Attachment;
+    private _client: null | Client = null;
+    private _connect: null | Attachment = null;
 
     constructor() {
         super();
@@ -40,7 +40,7 @@ export class FirebirdDatabase2 extends ADatabase<FirebirdOptions2, FirebirdResul
     }
 
     async dropDatabase(): Promise<void> {
-        if (!this._connect) throw new Error("Need database connection");
+        if (!this._connect || !this._client) throw new Error("Need database connection");
 
         await this._connect.dropDatabase();
         await this._client.dispose();
@@ -64,7 +64,7 @@ export class FirebirdDatabase2 extends ADatabase<FirebirdOptions2, FirebirdResul
     }
 
     async disconnect(): Promise<void> {
-        if (!this._connect) throw new Error("Need database connection");
+        if (!this._connect || !this._client) throw new Error("Need database connection");
 
         await this._connect.disconnect();
         await this._client.dispose();

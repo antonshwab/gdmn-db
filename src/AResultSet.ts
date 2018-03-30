@@ -40,6 +40,10 @@ export abstract class AResultSet {
     abstract getDate(name: string): null | Date;
     abstract getDate(field: number | string): null | Date;
 
+    abstract getAny(i: number): any;
+    abstract getAny(name: string): any;
+    abstract getAny(field: number | string): any;
+
     abstract getObject(): TRow;
 
     abstract getArray(): any[];

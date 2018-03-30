@@ -9,8 +9,8 @@ export class FirebirdResultSet extends AResultSet {
     private readonly _data: TRow[] = [];
     private _currentIndex: number = -1;
     private _event: EventEmitter;
-    private _nextFn: () => void;
-    private _done: boolean | Error;
+    private _nextFn: null | (() => void) = null;
+    private _done: boolean | Error = false;
 
     constructor(event: EventEmitter) {
         super();
@@ -109,7 +109,7 @@ export class FirebirdResultSet extends AResultSet {
         if (typeof value === "function") {
             return await FBDatabase.blobToBuffer(value);
         }
-        return;
+        return null;
     }
 
     async getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
@@ -127,31 +127,45 @@ export class FirebirdResultSet extends AResultSet {
             });
             return stream;
         }
-        return;
+        return null;
     }
 
     getBoolean(i: number): null | boolean;
     getBoolean(name: string): null | boolean;
     getBoolean(field: number | string): null | boolean {
-        return Boolean(this._getValue(field));
+        const value = this._getValue(field);
+        if (value === null || value === undefined) return null;
+        return Boolean(value);
     }
 
     getDate(i: number): null | Date;
     getDate(name: string): null | Date;
     getDate(field: number | string): null | Date {
-        return new Date(this._getValue(field));
+        const value = this._getValue(field);
+        if (value === null || value === undefined) return null;
+        return new Date(value);
     }
 
     getNumber(i: number): null | number;
     getNumber(name: string): null | number;
     getNumber(field: number | string): null | number {
-        return Number.parseFloat(this._getValue(field));
+        const value = this._getValue(field);
+        if (value === null || value === undefined) return null;
+        return Number.parseFloat(value);
     }
 
     getString(i: number): null | string;
     getString(name: string): null | string;
     getString(field: number | string): null | string {
-        return String(this._getValue(field));
+        const value = this._getValue(field);
+        if (value === null || value === undefined) return null;
+        return String(value);
+    }
+
+    getAny(i: number): any;
+    getAny(name: string): any;
+    getAny(field: number | string): any {
+        return this._getValue(field);
     }
 
     getObject(): TRow {
@@ -193,7 +207,7 @@ export class FirebirdResultSet extends AResultSet {
         switch (typeof field) {
             case "number":
                 const i = Object.keys(row);
-                if (i.length) return row[i[field]];
+                if (i.length) return row[(<any>i)[field]];
                 return;
             case "string":
                 return row[field];

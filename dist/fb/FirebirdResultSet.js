@@ -12,6 +12,8 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         super();
         this._data = [];
         this._currentIndex = -1;
+        this._nextFn = null;
+        this._done = false;
         this._event = event;
         this._event.on(FirebirdTransaction_1.FirebirdTransaction.EVENT_DATA, (row, index, next) => {
             this._data.push(row);
@@ -95,7 +97,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         if (typeof value === "function") {
             return await FBDatabase_1.default.blobToBuffer(value);
         }
-        return;
+        return null;
     }
     async getBlobStream(field) {
         const value = this._getValue(field);
@@ -110,19 +112,34 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             });
             return stream;
         }
-        return;
+        return null;
     }
     getBoolean(field) {
-        return Boolean(this._getValue(field));
+        const value = this._getValue(field);
+        if (value === null || value === undefined)
+            return null;
+        return Boolean(value);
     }
     getDate(field) {
-        return new Date(this._getValue(field));
+        const value = this._getValue(field);
+        if (value === null || value === undefined)
+            return null;
+        return new Date(value);
     }
     getNumber(field) {
-        return Number.parseFloat(this._getValue(field));
+        const value = this._getValue(field);
+        if (value === null || value === undefined)
+            return null;
+        return Number.parseFloat(value);
     }
     getString(field) {
-        return String(this._getValue(field));
+        const value = this._getValue(field);
+        if (value === null || value === undefined)
+            return null;
+        return String(value);
+    }
+    getAny(field) {
+        return this._getValue(field);
     }
     getObject() {
         return this._data[this._currentIndex];

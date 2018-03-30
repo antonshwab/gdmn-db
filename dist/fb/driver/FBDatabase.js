@@ -39,27 +39,27 @@ class FBase {
         });
     }
     async query(query, params) {
-        if (!this._source)
-            throw new Error("Database need created");
         return new Promise((resolve, reject) => {
-            this._source.query(query, params, (err, result) => {
+            if (!this._source)
+                throw new Error("Database need created");
+            this._source.query(query, params || [], (err, result) => {
                 err ? reject(err) : resolve(result);
             });
         });
     }
     async execute(query, params) {
-        if (!this._source)
-            throw new Error("Database need created");
         return new Promise((resolve, reject) => {
-            this._source.execute(query, params, (err, result) => {
+            if (!this._source)
+                throw new Error("Database need created");
+            this._source.execute(query, params || [], (err, result) => {
                 err ? reject(err) : resolve(result);
             });
         });
     }
-    async sequentially(query, params, rowCallback) {
-        if (!this._source)
-            throw new Error("Database need created");
+    async sequentially(query, params = [], rowCallback) {
         return new Promise((resolve, reject) => {
+            if (!this._source)
+                throw new Error("Database need created");
             this._source.sequentially(query, params, rowCallback, (err) => {
                 err ? reject(err) : resolve();
             });
@@ -72,9 +72,9 @@ class FBTransaction extends FBase {
         return Boolean(this._source);
     }
     async commit() {
-        if (!this._source)
-            throw new Error("Transaction need created");
         return new Promise((resolve, reject) => {
+            if (!this._source)
+                throw new Error("Transaction need created");
             this._source.commit((err) => {
                 if (err)
                     return reject(err);
@@ -84,9 +84,9 @@ class FBTransaction extends FBase {
         });
     }
     async rollback() {
-        if (!this._source)
-            throw new Error("Transaction need created");
         return new Promise((resolve, reject) => {
+            if (!this._source)
+                throw new Error("Transaction need created");
             this._source.rollback((err) => {
                 if (err)
                     return reject(err);
@@ -97,7 +97,7 @@ class FBTransaction extends FBase {
 }
 exports.FBTransaction = FBTransaction;
 class FBDatabase extends FBase {
-    constructor(source) {
+    constructor(source = null) {
         super(source);
     }
     static async executeDatabase(source, callback) {
@@ -171,9 +171,9 @@ class FBDatabase extends FBase {
         });
     }
     async detach() {
-        if (!this._source)
-            throw new Error("Database need created");
         return new Promise((resolve, reject) => {
+            if (!this._source)
+                throw new Error("Database need created");
             this._source.detach((err) => {
                 if (err)
                     return reject(err);
@@ -183,10 +183,10 @@ class FBDatabase extends FBase {
         });
     }
     async transaction(isolation) {
-        if (!this._source)
-            throw new Error("Database need created");
         return new Promise((resolve, reject) => {
-            this._source.transaction(node_firebird_1.default[IsolationTypes[isolation]], (err, transaction) => {
+            if (!this._source)
+                throw new Error("Database need created");
+            this._source.transaction(node_firebird_1.default[IsolationTypes[isolation || -1]], (err, transaction) => {
                 err ? reject(err) : resolve(new FBTransaction(transaction));
             });
         });
@@ -214,13 +214,16 @@ class FBDatabase extends FBase {
 }
 exports.default = FBDatabase;
 class FBConnectionPool {
+    constructor() {
+        this._connectionPool = null;
+    }
     isConnectionPoolCreated() {
         return Boolean(this._connectionPool);
     }
     createConnectionPool(options, max = FBConnectionPool.DEFAULT_MAX_POOL) {
         if (this._connectionPool)
             throw new Error("Connection pool already created");
-        this._connectionPool = node_firebird_1.default.pool(max, options, null);
+        this._connectionPool = node_firebird_1.default.pool(max, options, () => 0);
     }
     destroyConnectionPool() {
         if (!this._connectionPool)
@@ -229,9 +232,9 @@ class FBConnectionPool {
         this._connectionPool = null;
     }
     async attach() {
-        if (!this._connectionPool)
-            throw new Error("Connection pool need created");
         return new Promise((resolve, reject) => {
+            if (!this._connectionPool)
+                throw new Error("Connection pool need created");
             this._connectionPool.get((err, db) => {
                 if (err)
                     return reject(err);

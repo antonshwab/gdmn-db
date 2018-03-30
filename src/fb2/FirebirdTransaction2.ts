@@ -6,8 +6,8 @@ import {FirebirdDBStructure2} from "./FirebirdDBStructure2";
 
 export class FirebirdTransaction2 extends ATransaction<FirebirdResultSet2> {
 
-    private _connect: Attachment;
-    private _transaction: Transaction;
+    private readonly _connect: Attachment;
+    private _transaction: null | Transaction = null;
 
     constructor(connect: Attachment) {
         super();

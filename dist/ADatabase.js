@@ -105,7 +105,9 @@ class ADatabase {
         }
         finally {
             try {
-                await database.disconnect();
+                if (database) {
+                    await database.disconnect();
+                }
             }
             catch (error) {
                 console.warn(error);

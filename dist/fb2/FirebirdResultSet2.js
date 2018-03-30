@@ -8,6 +8,7 @@ class FirebirdResultSet2 extends AResultSet_1.AResultSet {
         super();
         this._data = [];
         this._currentIndex = -1;
+        this._done = false;
         this._connect = connect;
         this._transaction = transaction;
         this._resultSet = resultSet;
@@ -144,6 +145,9 @@ class FirebirdResultSet2 extends AResultSet_1.AResultSet {
             return null;
         return String(value);
     }
+    getAny(field) {
+        return this._getValue(field);
+    }
     getObject() {
         return this.getArray().reduce((object, item, index) => {
             object[index] = item;
@@ -170,11 +174,11 @@ class FirebirdResultSet2 extends AResultSet_1.AResultSet {
     }
     _getValue(field) {
         const row = this._data[this._currentIndex];
-        switch (typeof field) {
-            case "number":
-                return row[field];
-            case "string":
-                throw new Error("Not supported yet");
+        if (typeof field === "number") {
+            return row[field];
+        }
+        else {
+            throw new Error("Not supported yet");
         }
     }
 }

@@ -109,13 +109,15 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
      */
     static async executeConnectionPool<Opt, R>(connectionPool: TConnectionPool<Opt>,
                                                callback: TExecutor<TDatabase<Opt>, R>): Promise<R> {
-        let database: ADatabase<Opt, AResultSet, ATransaction<AResultSet>>;
+        let database: undefined | ADatabase<Opt, AResultSet, ATransaction<AResultSet>>;
         try {
             database = await connectionPool.get();
             return await callback(database);
         } finally {
             try {
-                await database.disconnect();
+                if (database) {
+                    await database.disconnect();
+                }
             } catch (error) {
                 console.warn(error);
             }

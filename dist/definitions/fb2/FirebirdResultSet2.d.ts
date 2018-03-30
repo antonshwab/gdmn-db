@@ -28,6 +28,8 @@ export declare class FirebirdResultSet2 extends AResultSet {
     getNumber(name: string): null | number;
     getString(i: number): null | string;
     getString(name: string): null | string;
+    getAny(i: number): any;
+    getAny(name: string): any;
     getObject(): TRow;
     getArray(): any[];
     getObjects(): Promise<TRow[]>;

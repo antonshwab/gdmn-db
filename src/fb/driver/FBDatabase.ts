@@ -20,9 +20,9 @@ export enum IsolationTypes {
 
 export abstract class FBase<Source extends (fb.Database | fb.Transaction)> {
 
-    protected _source: Source;
+    protected _source: null | Source;
 
-    protected constructor(source: Source) {
+    protected constructor(source: null | Source) {
         this._source = source;
     }
 
@@ -39,7 +39,7 @@ export abstract class FBase<Source extends (fb.Database | fb.Transaction)> {
         const blobStream = await FBase.blobToStream(blob);
 
         return new Promise<Buffer>((resolve, reject) => {
-            let chunks = [], length = 0;
+            let chunks: Buffer[] = [], length = 0;
             blobStream.on("data", (chunk: Buffer) => {
                 chunks.push(chunk);
                 length += chunk.length;
@@ -51,26 +51,26 @@ export abstract class FBase<Source extends (fb.Database | fb.Transaction)> {
     }
 
     public async query(query: string, params?: any[]): Promise<any[]> {
-        if (!this._source) throw new Error("Database need created");
         return new Promise<any[]>((resolve, reject) => {
-            this._source.query(query, params, (err, result) => {
+            if (!this._source) throw new Error("Database need created");
+            this._source.query(query, params || [], (err, result) => {
                 err ? reject(err) : resolve(result);
             });
         });
     }
 
     public async execute(query: string, params?: any[]): Promise<any[]> {
-        if (!this._source) throw new Error("Database need created");
         return new Promise<any[]>((resolve, reject) => {
-            this._source.execute(query, params, (err, result) => {
+            if (!this._source) throw new Error("Database need created");
+            this._source.execute(query, params || [], (err, result) => {
                 err ? reject(err) : resolve(result);
             });
         });
     }
 
-    public async sequentially(query: string, params: any[], rowCallback: fb.SequentialCallback): Promise<void> {
-        if (!this._source) throw new Error("Database need created");
+    public async sequentially(query: string, params: any[] = [], rowCallback: fb.SequentialCallback): Promise<void> {
         return new Promise<void>((resolve, reject) => {
+            if (!this._source) throw new Error("Database need created");
             this._source.sequentially(query, params, rowCallback, (err) => {
                 err ? reject(err) : resolve();
             });
@@ -85,8 +85,8 @@ export class FBTransaction extends FBase<fb.Transaction> {
     }
 
     public async commit(): Promise<void> {
-        if (!this._source) throw new Error("Transaction need created");
         return new Promise<void>((resolve, reject) => {
+            if (!this._source) throw new Error("Transaction need created");
             this._source.commit((err) => {
                 if (err) return reject(err);
                 this._source = null;
@@ -96,8 +96,8 @@ export class FBTransaction extends FBase<fb.Transaction> {
     }
 
     public async rollback(): Promise<void> {
-        if (!this._source) throw new Error("Transaction need created");
         return new Promise<void>((resolve, reject) => {
+            if (!this._source) throw new Error("Transaction need created");
             this._source.rollback((err) => {
                 if (err) return reject(err);
                 resolve();
@@ -108,16 +108,14 @@ export class FBTransaction extends FBase<fb.Transaction> {
 
 export default class FBDatabase extends FBase<fb.Database> {
 
-    constructor();
-    constructor(source: fb.Database);
-    constructor(source?: fb.Database) {
+    constructor(source: null | fb.Database = null) {
         super(source);
     }
 
     public static async executeDatabase<T>(options: DBOptions, callback: Executor<FBDatabase, T>): Promise<T>;
     public static async executeDatabase<T>(pool: FBConnectionPool, callback: Executor<FBDatabase, T>): Promise<T>;
     public static async executeDatabase<T>(source: any, callback: Executor<FBDatabase, T>): Promise<T> {
-        let database: FBDatabase;
+        let database: undefined | FBDatabase;
         try {
             if (source instanceof FBConnectionPool) {
                 database = await source.attach();
@@ -187,8 +185,8 @@ export default class FBDatabase extends FBase<fb.Database> {
     }
 
     public async detach(): Promise<void> {
-        if (!this._source) throw new Error("Database need created");
         return new Promise<void>((resolve, reject) => {
+            if (!this._source) throw new Error("Database need created");
             this._source.detach((err) => {
                 if (err) return reject(err);
                 this._source = null;
@@ -198,16 +196,16 @@ export default class FBDatabase extends FBase<fb.Database> {
     }
 
     public async transaction(isolation?: IsolationTypes): Promise<FBTransaction> {
-        if (!this._source) throw new Error("Database need created");
         return new Promise<FBTransaction>((resolve, reject) => {
-            this._source.transaction(fb[IsolationTypes[isolation]], (err, transaction) => {
+            if (!this._source) throw new Error("Database need created");
+            this._source.transaction((<any>fb)[IsolationTypes[isolation || -1]], (err, transaction) => {
                 err ? reject(err) : resolve(new FBTransaction(transaction));
             });
         });
     }
 
     public async executeTransaction<T>(callback: Executor<FBTransaction, T>, isolation?: IsolationTypes): Promise<T> {
-        let transaction: FBTransaction;
+        let transaction: undefined | FBTransaction;
         try {
             transaction = await this.transaction(isolation);
             const result = await callback(transaction);
@@ -230,7 +228,7 @@ export class FBConnectionPool {
 
     public static DEFAULT_MAX_POOL = 10;
 
-    protected _connectionPool: fb.ConnectionPool;
+    protected _connectionPool: null | fb.ConnectionPool = null;
 
     public isConnectionPoolCreated(): boolean {
         return Boolean(this._connectionPool);
@@ -238,7 +236,7 @@ export class FBConnectionPool {
 
     public createConnectionPool(options: DBOptions, max: number = FBConnectionPool.DEFAULT_MAX_POOL): void {
         if (this._connectionPool) throw new Error("Connection pool already created");
-        this._connectionPool = fb.pool(max, options, null);
+        this._connectionPool = fb.pool(max, options, () => 0);
     }
 
     public destroyConnectionPool(): void {
@@ -248,8 +246,8 @@ export class FBConnectionPool {
     }
 
     public async attach(): Promise<FBDatabase> {
-        if (!this._connectionPool) throw new Error("Connection pool need created");
         return new Promise<FBDatabase>((resolve, reject) => {
+            if (!this._connectionPool) throw new Error("Connection pool need created");
             this._connectionPool.get((err, db) => {
                 if (err) return reject(err);
                 resolve(new FBDatabase(db));

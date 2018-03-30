@@ -11,7 +11,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
     public static EVENT_END = "end";
 
     private readonly _database: FBDatabase;
-    private _transaction: FBTransaction;
+    private _transaction: null | FBTransaction = null;
 
     constructor(database: FBDatabase) {
         super();
@@ -39,10 +39,10 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
     }
 
     async isActive(): Promise<boolean> {
-        return this._transaction && this._transaction.isInTransaction();
+        return !!this._transaction && this._transaction.isInTransaction();
     }
 
-    async executeSQL(sql: string, params?: any[]): Promise<FirebirdResultSet> {
+    async executeSQL(sql: string, params: any[] = []): Promise<FirebirdResultSet> {
         if (!this._transaction) throw new Error("Need to open transaction");
 
         const event = new EventEmitter();

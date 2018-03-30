@@ -112,7 +112,7 @@ export class DBStructure {
 
     private loadFields(fields: IRDB$FIELD[]) {
         this._fields = fields.reduce((fields, item) => {
-            fields[item.RDB$FIELD_NAME] = new Field(item.RDB$FIELD_TYPE, !!item.RDB$NULL_FLAG);
+            (<any>fields)[item.RDB$FIELD_NAME] = new Field(item.RDB$FIELD_TYPE, !!item.RDB$NULL_FLAG);
             return fields;
         }, {});
     }
@@ -121,9 +121,9 @@ export class DBStructure {
         this._relations = relationFields.reduce((prev, item) => {
             if (prev.name !== item.RDB$RELATION_NAME) {
                 prev.name = item.RDB$RELATION_NAME;
-                prev.relations[prev.name] = new Relation();
+                (<any>prev.relations)[prev.name] = new Relation();
             }
-            prev.relations[prev.name].loadField(item);
+            (<any>prev.relations)[prev.name].loadField(item);
             return prev;
         }, {relations: {}, name: ""}).relations;
     }

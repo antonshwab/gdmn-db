@@ -9,7 +9,7 @@ export class FirebirdResultSet2 extends AResultSet {
     private _resultSet: ResultSet;
     private _data: any[][] = [];
     private _currentIndex: number = -1;
-    private _done: boolean;
+    private _done: boolean = false;
 
     constructor(connect: Attachment, transaction: Transaction, resultSet: ResultSet) {
         super();
@@ -172,6 +172,12 @@ export class FirebirdResultSet2 extends AResultSet {
         return String(value);
     }
 
+    getAny(i: number): any;
+    getAny(name: string): any;
+    getAny(field: number | string): any {
+        return this._getValue(field);
+    }
+
     getObject(): TRow {
         return this.getArray().reduce((object, item, index) => {
             object[index] = item;
@@ -202,11 +208,10 @@ export class FirebirdResultSet2 extends AResultSet {
 
     private _getValue(field: number | string): any {
         const row = this._data[this._currentIndex];
-        switch (typeof field) {
-            case "number":
-                return row[field];
-            case "string":
-                throw new Error("Not supported yet");
+        if (typeof field === "number") {
+            return row[field];
+        } else {
+            throw new Error("Not supported yet");
         }
     }
 }

@@ -24,9 +24,9 @@ class FirebirdDBStructure2 {
         const fields = [];
         while (await fieldsSet.next()) {
             fields.push({
-                RDB$FIELD_NAME: fieldsSet.getString(0),
-                RDB$FIELD_TYPE: fieldsSet.getNumber(1),
-                RDB$NULL_FLAG: fieldsSet.getNumber(2)
+                RDB$FIELD_NAME: fieldsSet.getAny(0),
+                RDB$FIELD_TYPE: fieldsSet.getAny(1),
+                RDB$NULL_FLAG: fieldsSet.getAny(2)
             });
         }
         await fieldsSet.close();
@@ -42,10 +42,10 @@ class FirebirdDBStructure2 {
         const relationFields = [];
         while (await relationFieldsSet.next()) {
             relationFields.push({
-                RDB$RELATION_NAME: relationFieldsSet.getString(0),
-                RDB$FIELD_NAME: relationFieldsSet.getString(1),
-                RDB$FIELD_SOURCE: relationFieldsSet.getString(2),
-                RDB$NULL_FLAG: relationFieldsSet.getNumber(3)
+                RDB$RELATION_NAME: relationFieldsSet.getAny(0),
+                RDB$FIELD_NAME: relationFieldsSet.getAny(1),
+                RDB$FIELD_SOURCE: relationFieldsSet.getAny(2),
+                RDB$NULL_FLAG: relationFieldsSet.getAny(3)
             });
         }
         await relationFieldsSet.close();
@@ -67,14 +67,14 @@ class FirebirdDBStructure2 {
         const constraints = [];
         while (await constraintsSet.next()) {
             constraints.push({
-                RDB$RELATION_NAME: constraintsSet.getString(0),
-                RDB$CONSTRAINT_NAME: constraintsSet.getString(1),
-                RDB$CONSTRAINT_TYPE: constraintsSet.getString(2),
-                RDB$INDEX_NAME: constraintsSet.getString(3),
-                RDB$FIELD_NAME: constraintsSet.getString(4),
-                RDB$CONST_NAME_UQ: constraintsSet.getString(5),
-                RDB$UPDATE_RULE: constraintsSet.getString(6),
-                RDB$DELETE_RULE: constraintsSet.getString(7)
+                RDB$RELATION_NAME: constraintsSet.getAny(0),
+                RDB$CONSTRAINT_NAME: constraintsSet.getAny(1),
+                RDB$CONSTRAINT_TYPE: constraintsSet.getAny(2),
+                RDB$INDEX_NAME: constraintsSet.getAny(3),
+                RDB$FIELD_NAME: constraintsSet.getAny(4),
+                RDB$CONST_NAME_UQ: constraintsSet.getAny(5),
+                RDB$UPDATE_RULE: constraintsSet.getAny(6),
+                RDB$DELETE_RULE: constraintsSet.getAny(7)
             });
         }
         await constraintsSet.close();

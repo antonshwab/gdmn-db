@@ -3,7 +3,7 @@ import { ATransaction } from "../ATransaction";
 import { DBStructure } from "../DBStructure";
 import { FirebirdResultSet2 } from "./FirebirdResultSet2";
 export declare class FirebirdTransaction2 extends ATransaction<FirebirdResultSet2> {
-    private _connect;
+    private readonly _connect;
     private _transaction;
     constructor(connect: Attachment);
     start(): Promise<void>;

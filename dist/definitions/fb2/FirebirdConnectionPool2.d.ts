@@ -5,8 +5,6 @@ import { FirebirdDatabase2, FirebirdOptions2 } from "./FirebirdDatabase2";
 export declare class FirebirdConnectionPool2 extends AConnectionPool<FirebirdOptions2, FirebirdResultSet2, FirebirdTransaction2, FirebirdDatabase2> {
     private static EVENT_RELEASE;
     private _event;
-    private _options;
-    private _max;
     private _connectionPool;
     isCreated(): Promise<boolean>;
     get(): Promise<FirebirdDatabase2>;

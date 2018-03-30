@@ -7,6 +7,7 @@ const FirebirdDBStructure_1 = require("./FirebirdDBStructure");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
     constructor(database) {
         super();
+        this._transaction = null;
         this._database = database;
     }
     async start() {
@@ -27,9 +28,9 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         this._transaction = null;
     }
     async isActive() {
-        return this._transaction && this._transaction.isInTransaction();
+        return !!this._transaction && this._transaction.isInTransaction();
     }
-    async executeSQL(sql, params) {
+    async executeSQL(sql, params = []) {
         if (!this._transaction)
             throw new Error("Need to open transaction");
         const event = new events_1.EventEmitter();
