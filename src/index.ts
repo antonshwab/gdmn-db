@@ -2,6 +2,7 @@ export * from "./ADatabase";
 export * from "./ATransaction";
 export * from "./AResultSet";
 export * from "./AConnectionPool";
+export * from "./Factory";
 
 export * from "./fb/FirebirdDatabase";
 export * from "./fb/FirebirdTransaction";

@@ -11,6 +11,12 @@ class FirebirdDatabase extends ADatabase_1.ADatabase {
         super();
         this._database = database;
     }
+    async createDatabase(options) {
+        return await this._database.create(options);
+    }
+    async dropDatabase() {
+        throw new Error("Unsupported yet");
+    }
     async connect(options) {
         return await this._database.attach(options);
     }

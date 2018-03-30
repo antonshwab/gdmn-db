@@ -1,14 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const FirebirdDatabase_1 = require("./FirebirdDatabase");
 const FirebirdTransaction_1 = require("./FirebirdTransaction");
 const DBStructure_1 = require("../DBStructure");
+const ADatabase_1 = require("../ADatabase");
+const Factory_1 = require("../Factory");
 class FirebirdDBStructure {
     static async readStructure(source) {
         if (source instanceof FirebirdTransaction_1.FirebirdTransaction) {
             return await FirebirdDBStructure.read(source);
         }
-        return await FirebirdDatabase_1.FirebirdDatabase.executeTransaction(new FirebirdDatabase_1.FirebirdDatabase(), source, async (transaction) => {
+        return await ADatabase_1.ADatabase.executeTransaction(Factory_1.Factory.FBModule.newDatabase(), source, async (transaction) => {
             return await FirebirdDBStructure.read(transaction);
         });
     }

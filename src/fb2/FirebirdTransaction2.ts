@@ -16,17 +16,20 @@ export class FirebirdTransaction2 extends ATransaction<FirebirdResultSet2> {
 
     async start(): Promise<void> {
         if (this._transaction) throw new Error("Transaction already opened");
+
         this._transaction = await this._connect.startTransaction();
     }
 
     async commit(): Promise<void> {
         if (!this._transaction) throw new Error("Need to open transaction");
+
         await this._transaction.commit();
         this._transaction = null;
     }
 
     async rollback(): Promise<void> {
         if (!this._transaction) throw new Error("Need to open transaction");
+
         await this._transaction.rollback();
         this._transaction = null;
     }
@@ -37,12 +40,14 @@ export class FirebirdTransaction2 extends ATransaction<FirebirdResultSet2> {
 
     async executeSQL(sql: string, params?: any[]): Promise<FirebirdResultSet2> {
         if (!this._transaction) throw new Error("Need to open transaction");
+
         const resultSet = await this._connect.executeQuery(this._transaction, sql, params);
         return new FirebirdResultSet2(this._connect, this._transaction, resultSet);
     }
 
     async readDBStructure(): Promise<DBStructure> {
         if (!this._transaction) throw new Error("Need to open transaction");
+
         return await FirebirdDBStructure2.readStructure(this);
     }
 }

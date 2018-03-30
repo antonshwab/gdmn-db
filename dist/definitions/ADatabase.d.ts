@@ -101,6 +101,8 @@ export declare abstract class ADatabase<Options, RS extends AResultSet, T extend
      * @returns {Promise<R>}
      */
     static executeTransactionPool<Opt, R>(connectionPool: TConnectionPool<Opt>, callback: TExecutor<TTransaction, R>): Promise<R>;
+    abstract createDatabase(options: Options): Promise<void>;
+    abstract dropDatabase(): Promise<void>;
     abstract connect(options: Options): Promise<void>;
     abstract disconnect(): Promise<void>;
     abstract createTransaction(): Promise<T>;

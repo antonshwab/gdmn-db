@@ -134,6 +134,18 @@ class FBDatabase extends FBase {
     isAttached() {
         return Boolean(this._source);
     }
+    async create(options) {
+        if (this._source)
+            throw new Error("Database already created");
+        return new Promise(((resolve, reject) => {
+            node_firebird_1.default.create(options, (err, db) => {
+                if (err)
+                    return reject(err);
+                this._source = db;
+                resolve();
+            });
+        }));
+    }
     async attachOrCreate(options) {
         if (this._source)
             throw new Error("Database already created");

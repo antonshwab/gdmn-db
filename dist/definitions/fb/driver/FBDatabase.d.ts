@@ -36,6 +36,7 @@ export default class FBDatabase extends FBase<fb.Database> {
     static executeTransaction<T>(pool: FBConnectionPool, callback: Executor<FBTransaction, T>, isolation?: IsolationTypes): Promise<T>;
     static escape(value: any): string;
     isAttached(): boolean;
+    create(options: DBOptions): Promise<void>;
     attachOrCreate(options: DBOptions): Promise<void>;
     attach(options: DBOptions): Promise<void>;
     detach(): Promise<void>;

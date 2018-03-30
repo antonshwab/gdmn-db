@@ -7,9 +7,7 @@ class FirebirdDatabase2 extends ADatabase_1.ADatabase {
     constructor() {
         super();
     }
-    async connect(options) {
-        if (this._connect)
-            throw new Error("Database already connected");
+    static _optionsToUri(options) {
         let url = "";
         if (options.host)
             url += options.host;
@@ -18,7 +16,29 @@ class FirebirdDatabase2 extends ADatabase_1.ADatabase {
         if (url)
             url += ":";
         url += options.dbPath;
-        this._connect = await node_firebird_driver_native_1.createNativeClient(node_firebird_driver_native_1.getDefaultLibraryFilename()).connect(url, {
+        return url;
+    }
+    async createDatabase(options) {
+        if (this._connect)
+            throw new Error("Database already connected");
+        this._client = node_firebird_driver_native_1.createNativeClient(node_firebird_driver_native_1.getDefaultLibraryFilename());
+        this._connect = await this._client.createDatabase(FirebirdDatabase2._optionsToUri(options), {
+            username: options.username,
+            password: options.password
+        });
+    }
+    async dropDatabase() {
+        if (!this._connect)
+            throw new Error("Need database connection");
+        await this._connect.dropDatabase();
+        await this._client.dispose();
+        this._clearVariables();
+    }
+    async connect(options) {
+        if (this._connect)
+            throw new Error("Database already connected");
+        this._client = node_firebird_driver_native_1.createNativeClient(node_firebird_driver_native_1.getDefaultLibraryFilename());
+        this._connect = await this._client.connect(FirebirdDatabase2._optionsToUri(options), {
             username: options.username,
             password: options.password
         });
@@ -32,10 +52,15 @@ class FirebirdDatabase2 extends ADatabase_1.ADatabase {
         if (!this._connect)
             throw new Error("Need database connection");
         await this._connect.disconnect();
-        this._connect = null;
+        await this._client.dispose();
+        this._clearVariables();
     }
     async isConnected() {
         return Boolean(this._connect);
+    }
+    _clearVariables() {
+        this._connect = null;
+        this._client = null;
     }
 }
 exports.FirebirdDatabase2 = FirebirdDatabase2;

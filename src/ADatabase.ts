@@ -146,7 +146,11 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
         });
     }
 
-    abstract async connect(options: Options): Promise<void>;
+    abstract async createDatabase(options: Options): Promise<void>;//TODO hide method for pool connection ???
+
+    abstract async dropDatabase(): Promise<void>;//TODO hide method for pool connection ???
+
+    abstract async connect(options: Options): Promise<void>;//TODO hide method for pool connection ???
 
     abstract async disconnect(): Promise<void>;
 

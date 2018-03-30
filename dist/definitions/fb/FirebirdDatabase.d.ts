@@ -6,6 +6,8 @@ export { DBOptions as FirebirdOptions };
 export declare class FirebirdDatabase extends ADatabase<DBOptions, FirebirdResultSet, FirebirdTransaction> {
     private readonly _database;
     constructor(database?: FBDatabase);
+    createDatabase(options: DBOptions): Promise<void>;
+    dropDatabase(): Promise<void>;
     connect(options: DBOptions): Promise<void>;
     createTransaction(): Promise<FirebirdTransaction>;
     disconnect(): Promise<void>;

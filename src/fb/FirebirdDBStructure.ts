@@ -1,8 +1,9 @@
-import {ATransaction} from "../ATransaction";
-import {AResultSet} from "../AResultSet";
-import {FirebirdDatabase, FirebirdOptions} from "./FirebirdDatabase";
+import {TTransaction} from "../ATransaction";
+import {FirebirdOptions} from "./FirebirdDatabase";
 import {FirebirdTransaction} from "./FirebirdTransaction";
 import {DBStructure} from "../DBStructure";
+import {ADatabase} from "../ADatabase";
+import {Factory} from "../Factory";
 
 export class FirebirdDBStructure {
 
@@ -13,12 +14,13 @@ export class FirebirdDBStructure {
             return await FirebirdDBStructure.read(source);
         }
 
-        return await FirebirdDatabase.executeTransaction(new FirebirdDatabase(), source, async transaction => {
-            return await FirebirdDBStructure.read(transaction);
-        });
+        return await ADatabase.executeTransaction(Factory.FBModule.newDatabase(), source,
+            async transaction => {
+                return await FirebirdDBStructure.read(transaction);
+            });
     }
 
-    private static async read(transaction: ATransaction<AResultSet>): Promise<DBStructure> {
+    private static async read(transaction: TTransaction): Promise<DBStructure> {
         const fieldsSet = await transaction.executeSQL(`
                         SELECT 
                             TRIM(f.RDB$FIELD_NAME)                              AS RDB$FIELD_NAME,

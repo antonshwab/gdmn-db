@@ -7,6 +7,7 @@ __export(require("./ADatabase"));
 __export(require("./ATransaction"));
 __export(require("./AResultSet"));
 __export(require("./AConnectionPool"));
+__export(require("./Factory"));
 __export(require("./fb/FirebirdDatabase"));
 __export(require("./fb/FirebirdTransaction"));
 __export(require("./fb/FirebirdResultSet"));

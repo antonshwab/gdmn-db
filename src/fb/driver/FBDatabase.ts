@@ -153,6 +153,17 @@ export default class FBDatabase extends FBase<fb.Database> {
         return Boolean(this._source);
     }
 
+    public async create(options: DBOptions): Promise<void> {
+        if (this._source) throw new Error("Database already created");
+        return new Promise<void>(((resolve, reject) => {
+            fb.create(options, (err, db) => {
+                if (err) return reject(err);
+                this._source = db;
+                resolve();
+            });
+        }));
+    }
+
     public async attachOrCreate(options: DBOptions): Promise<void> {
         if (this._source) throw new Error("Database already created");
         return new Promise<void>((resolve, reject) => {

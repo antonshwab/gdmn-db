@@ -82,10 +82,14 @@ class FirebirdDatabaseProxy2 extends FirebirdDatabase2_1.FirebirdDatabase2 {
         this._database = database;
         this._releaseFunc = releaseFunc;
     }
+    async createDatabase(options) {
+        throw new Error("Invalid operation for connection from the pool");
+    }
+    async dropDatabase() {
+        throw new Error("Invalid operation for connection from the pool");
+    }
     async connect(options) {
-        if (!this._database)
-            throw new Error("Need database connection");
-        await this._database.connect(options);
+        throw new Error("Invalid operation for connection from the pool");
     }
     async createTransaction() {
         if (!this._database)

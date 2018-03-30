@@ -14,6 +14,14 @@ export class FirebirdDatabase extends ADatabase<DBOptions, FirebirdResultSet, Fi
         this._database = database;
     }
 
+    async createDatabase(options: DBOptions): Promise<void> {
+        return await this._database.create(options);
+    }
+
+    async dropDatabase(): Promise<void> {
+        throw new Error("Unsupported yet");
+    }
+
     async connect(options: DBOptions): Promise<void> {
         return await this._database.attach(options);
     }
