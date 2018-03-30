@@ -68,7 +68,7 @@ class DBStructure {
         this._relations = relationFields.reduce((prev, item) => {
             if (prev.name !== item.RDB$RELATION_NAME) {
                 prev.name = item.RDB$RELATION_NAME;
-                prev.relations[prev.name] = new Relation();
+                prev.relations[prev.name] = new Relation(prev.name);
             }
             prev.relations[prev.name].loadField(item);
             return prev;
@@ -87,7 +87,8 @@ class Field {
 }
 exports.Field = Field;
 class Relation {
-    constructor() {
+    constructor(name) {
+        this.name = name;
         this.relationFields = {};
         this.primaryKeyName = "";
         this.foreignKey = {};

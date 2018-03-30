@@ -121,7 +121,7 @@ export class DBStructure {
         this._relations = relationFields.reduce((prev, item) => {
             if (prev.name !== item.RDB$RELATION_NAME) {
                 prev.name = item.RDB$RELATION_NAME;
-                (<any>prev.relations)[prev.name] = new Relation();
+                (<any>prev.relations)[prev.name] = new Relation(prev.name);
             }
             (<any>prev.relations)[prev.name].loadField(item);
             return prev;
@@ -151,6 +151,8 @@ export class Relation {
     private primaryKey?: PKConstraint;
     private foreignKey: IRefConstraints = {};
     private unique: IUqConstraints = {};
+
+    constructor(public readonly name: string) {}
 
     public loadField(field: IRDB$RELATIONFIELD) {
         this.relationFields[field.RDB$FIELD_NAME] = new RelationField(field.RDB$FIELD_SOURCE, !!field.RDB$NULL_FLAG);

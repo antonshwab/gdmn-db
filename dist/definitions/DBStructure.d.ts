@@ -86,11 +86,13 @@ export declare class Field {
     constructor(fieldType: FieldType, notNull: boolean);
 }
 export declare class Relation {
+    readonly name: string;
     private relationFields;
     private primaryKeyName;
     private primaryKey?;
     private foreignKey;
     private unique;
+    constructor(name: string);
     loadField(field: IRDB$RELATIONFIELD): void;
     loadConstraintField(constraint: IRDB$RELATIONCONSTRAINT): void;
 }
