@@ -82,7 +82,7 @@ interface IRelationFields {
     [name: string]: RelationField;
 }
 
-interface IRefConstraints {
+export interface IRefConstraints {
     [name: string]: FKConstraint;
 }
 
@@ -147,31 +147,38 @@ export class Field {
 export class Relation {
 
     private relationFields: IRelationFields = {};
-    private primaryKeyName: string = "";
-    private primaryKey?: PKConstraint;
-    private foreignKey: IRefConstraints = {};
+    private _primaryKey?: PKConstraint;
+    private _foreignKeys: IRefConstraints = {};
     private unique: IUqConstraints = {};
 
     constructor(public readonly name: string) {}
 
+    get primaryKey() {
+      return this._primaryKey;
+    }
+
+    get foreignKeys() {
+      return this._foreignKeys;
+    }
+
     public loadField(field: IRDB$RELATIONFIELD) {
-        this.relationFields[field.RDB$FIELD_NAME] = new RelationField(field.RDB$FIELD_SOURCE, !!field.RDB$NULL_FLAG);
+        this.relationFields[field.RDB$FIELD_NAME] = new RelationField(field.RDB$FIELD_NAME, field.RDB$FIELD_SOURCE, !!field.RDB$NULL_FLAG);
     }
 
     public loadConstraintField(constraint: IRDB$RELATIONCONSTRAINT) {
         switch (constraint.RDB$CONSTRAINT_TYPE) {
             case "PRIMARY KEY":
-                if (!this.primaryKey) {
-                    this.primaryKeyName = constraint.RDB$CONSTRAINT_NAME;
-                    this.primaryKey = new PKConstraint(constraint.RDB$INDEX_NAME, [constraint.RDB$FIELD_NAME]);
+                if (!this._primaryKey) {
+                    this._primaryKey = new PKConstraint(constraint.RDB$CONSTRAINT_NAME, constraint.RDB$INDEX_NAME, [constraint.RDB$FIELD_NAME]);
                 } else {
-                    this.primaryKey.loadField(constraint);
+                    this._primaryKey.loadField(constraint);
                 }
                 break;
 
             case "FOREIGN KEY":
-                if (!this.foreignKey[constraint.RDB$CONSTRAINT_NAME]) {
-                    this.foreignKey[constraint.RDB$CONSTRAINT_NAME] = new FKConstraint(
+                if (!this._foreignKeys[constraint.RDB$CONSTRAINT_NAME]) {
+                    this._foreignKeys[constraint.RDB$CONSTRAINT_NAME] = new FKConstraint(
+                        constraint.RDB$CONSTRAINT_NAME,
                         constraint.RDB$INDEX_NAME,
                         [constraint.RDB$FIELD_NAME],
                         constraint.RDB$CONST_NAME_UQ,
@@ -179,13 +186,14 @@ export class Relation {
                         constraint.RDB$DELETE_RULE
                     );
                 } else {
-                    this.foreignKey[constraint.RDB$CONSTRAINT_NAME].loadField(constraint);
+                    this._foreignKeys[constraint.RDB$CONSTRAINT_NAME].loadField(constraint);
                 }
                 break;
 
             case "UNIQUE":
                 if (!this.unique[constraint.RDB$CONSTRAINT_NAME]) {
                     this.unique[constraint.RDB$CONSTRAINT_NAME] = new UqConstraint(
+                        constraint.RDB$CONSTRAINT_NAME,
                         constraint.RDB$INDEX_NAME,
                         [constraint.RDB$FIELD_NAME]
                     );
@@ -198,10 +206,12 @@ export class Relation {
 
 export class RelationField {
 
+    readonly name: string;
     readonly fieldSource: string;
     readonly notNull: boolean;
 
-    constructor(fieldSource: string, notNull: boolean) {
+    constructor(name: string, fieldSource: string, notNull: boolean) {
+        this.name = name;
         this.fieldSource = fieldSource;
         this.notNull = notNull;
     }
@@ -209,10 +219,12 @@ export class RelationField {
 
 export class RelationConstraint {
 
+    readonly name: string;
     readonly indexName: string;
-    protected fields: string[];
+    readonly fields: string[];
 
-    constructor(indexName: string, fields: string[]) {
+    constructor(name: string, indexName: string, fields: string[]) {
+        this.name = name;
         this.indexName = indexName;
         this.fields = fields;
     }
@@ -232,13 +244,14 @@ export class FKConstraint extends RelationConstraint {
     readonly deleteRule: DeleteRule;
 
     constructor(
+        name: string,
         indexName: string,
         fields: string[],
         constNameUq: string,
         updateRule: UpdateRule,
         deleteRule: DeleteRule
     ) {
-        super(indexName, fields);
+        super(name, indexName, fields);
         this.constNameUq = constNameUq;
         this.updateRule = updateRule;
         this.deleteRule = deleteRule;
