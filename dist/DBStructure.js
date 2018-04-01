@@ -90,35 +90,39 @@ class Relation {
     constructor(name) {
         this.name = name;
         this.relationFields = {};
-        this.primaryKeyName = "";
-        this.foreignKey = {};
+        this._foreignKeys = {};
         this.unique = {};
     }
+    get primaryKey() {
+        return this._primaryKey;
+    }
+    get foreignKeys() {
+        return this._foreignKeys;
+    }
     loadField(field) {
-        this.relationFields[field.RDB$FIELD_NAME] = new RelationField(field.RDB$FIELD_SOURCE, !!field.RDB$NULL_FLAG);
+        this.relationFields[field.RDB$FIELD_NAME] = new RelationField(field.RDB$FIELD_NAME, field.RDB$FIELD_SOURCE, !!field.RDB$NULL_FLAG);
     }
     loadConstraintField(constraint) {
         switch (constraint.RDB$CONSTRAINT_TYPE) {
             case "PRIMARY KEY":
-                if (!this.primaryKey) {
-                    this.primaryKeyName = constraint.RDB$CONSTRAINT_NAME;
-                    this.primaryKey = new PKConstraint(constraint.RDB$INDEX_NAME, [constraint.RDB$FIELD_NAME]);
+                if (!this._primaryKey) {
+                    this._primaryKey = new PKConstraint(constraint.RDB$CONSTRAINT_NAME, constraint.RDB$INDEX_NAME, [constraint.RDB$FIELD_NAME]);
                 }
                 else {
-                    this.primaryKey.loadField(constraint);
+                    this._primaryKey.loadField(constraint);
                 }
                 break;
             case "FOREIGN KEY":
-                if (!this.foreignKey[constraint.RDB$CONSTRAINT_NAME]) {
-                    this.foreignKey[constraint.RDB$CONSTRAINT_NAME] = new FKConstraint(constraint.RDB$INDEX_NAME, [constraint.RDB$FIELD_NAME], constraint.RDB$CONST_NAME_UQ, constraint.RDB$UPDATE_RULE, constraint.RDB$DELETE_RULE);
+                if (!this._foreignKeys[constraint.RDB$CONSTRAINT_NAME]) {
+                    this._foreignKeys[constraint.RDB$CONSTRAINT_NAME] = new FKConstraint(constraint.RDB$CONSTRAINT_NAME, constraint.RDB$INDEX_NAME, [constraint.RDB$FIELD_NAME], constraint.RDB$CONST_NAME_UQ, constraint.RDB$UPDATE_RULE, constraint.RDB$DELETE_RULE);
                 }
                 else {
-                    this.foreignKey[constraint.RDB$CONSTRAINT_NAME].loadField(constraint);
+                    this._foreignKeys[constraint.RDB$CONSTRAINT_NAME].loadField(constraint);
                 }
                 break;
             case "UNIQUE":
                 if (!this.unique[constraint.RDB$CONSTRAINT_NAME]) {
-                    this.unique[constraint.RDB$CONSTRAINT_NAME] = new UqConstraint(constraint.RDB$INDEX_NAME, [constraint.RDB$FIELD_NAME]);
+                    this.unique[constraint.RDB$CONSTRAINT_NAME] = new UqConstraint(constraint.RDB$CONSTRAINT_NAME, constraint.RDB$INDEX_NAME, [constraint.RDB$FIELD_NAME]);
                 }
                 else {
                     this.unique[constraint.RDB$CONSTRAINT_NAME].loadField(constraint);
@@ -128,14 +132,16 @@ class Relation {
 }
 exports.Relation = Relation;
 class RelationField {
-    constructor(fieldSource, notNull) {
+    constructor(name, fieldSource, notNull) {
+        this.name = name;
         this.fieldSource = fieldSource;
         this.notNull = notNull;
     }
 }
 exports.RelationField = RelationField;
 class RelationConstraint {
-    constructor(indexName, fields) {
+    constructor(name, indexName, fields) {
+        this.name = name;
         this.indexName = indexName;
         this.fields = fields;
     }
@@ -148,8 +154,8 @@ class PKConstraint extends RelationConstraint {
 }
 exports.PKConstraint = PKConstraint;
 class FKConstraint extends RelationConstraint {
-    constructor(indexName, fields, constNameUq, updateRule, deleteRule) {
-        super(indexName, fields);
+    constructor(name, indexName, fields, constNameUq, updateRule, deleteRule) {
+        super(name, indexName, fields);
         this.constNameUq = constNameUq;
         this.updateRule = updateRule;
         this.deleteRule = deleteRule;

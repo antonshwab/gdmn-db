@@ -70,6 +70,9 @@ export interface IFields {
 export interface IRelations {
     [name: string]: Relation;
 }
+export interface IRefConstraints {
+    [name: string]: FKConstraint;
+}
 export declare class DBStructure {
     private _fields;
     readonly fields: IFields;
@@ -88,23 +91,26 @@ export declare class Field {
 export declare class Relation {
     readonly name: string;
     private relationFields;
-    private primaryKeyName;
-    private primaryKey?;
-    private foreignKey;
+    private _primaryKey?;
+    private _foreignKeys;
     private unique;
     constructor(name: string);
+    readonly primaryKey: PKConstraint | undefined;
+    readonly foreignKeys: IRefConstraints;
     loadField(field: IRDB$RELATIONFIELD): void;
     loadConstraintField(constraint: IRDB$RELATIONCONSTRAINT): void;
 }
 export declare class RelationField {
+    readonly name: string;
     readonly fieldSource: string;
     readonly notNull: boolean;
-    constructor(fieldSource: string, notNull: boolean);
+    constructor(name: string, fieldSource: string, notNull: boolean);
 }
 export declare class RelationConstraint {
+    readonly name: string;
     readonly indexName: string;
-    protected fields: string[];
-    constructor(indexName: string, fields: string[]);
+    readonly fields: string[];
+    constructor(name: string, indexName: string, fields: string[]);
     loadField(data: IRDB$RELATIONCONSTRAINT): void;
 }
 export declare class PKConstraint extends RelationConstraint {
@@ -113,7 +119,7 @@ export declare class FKConstraint extends RelationConstraint {
     readonly constNameUq: string;
     readonly updateRule: UpdateRule;
     readonly deleteRule: DeleteRule;
-    constructor(indexName: string, fields: string[], constNameUq: string, updateRule: UpdateRule, deleteRule: DeleteRule);
+    constructor(name: string, indexName: string, fields: string[], constNameUq: string, updateRule: UpdateRule, deleteRule: DeleteRule);
 }
 export declare class UqConstraint extends RelationConstraint {
 }
