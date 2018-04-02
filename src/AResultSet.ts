@@ -1,8 +1,25 @@
+import {TExecutor} from "./AConnectionPool";
+
 export type TRow = { [fieldName: string]: any };
+
+export type TResultSet = AResultSet;
 
 export abstract class AResultSet {
 
     abstract get position(): number;
+
+    static async executeFromParent<R>(sourceCallback: TExecutor<null, TResultSet>,
+                                      resultCallback: TExecutor<TResultSet, R>): Promise<R> {
+        let resultSet: undefined | TResultSet;
+        try {
+            resultSet = await sourceCallback(null);
+            return await resultCallback(resultSet);
+        } finally {
+            if (resultSet) {
+                await resultSet.close();
+            }
+        }
+    }
 
     abstract async next(): Promise<boolean>;
 

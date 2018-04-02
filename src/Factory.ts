@@ -5,5 +5,4 @@ export abstract class Factory {
     static get FBModule(): FirebirdModule {
         return new FirebirdModule();
     }
-
 }

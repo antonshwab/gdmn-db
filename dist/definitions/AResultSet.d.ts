@@ -1,9 +1,12 @@
 /// <reference types="node" />
+import { TExecutor } from "./AConnectionPool";
 export declare type TRow = {
     [fieldName: string]: any;
 };
+export declare type TResultSet = AResultSet;
 export declare abstract class AResultSet {
     readonly abstract position: number;
+    static executeFromParent<R>(sourceCallback: TExecutor<null, TResultSet>, resultCallback: TExecutor<TResultSet, R>): Promise<R>;
     abstract next(): Promise<boolean>;
     abstract previous(): Promise<boolean>;
     abstract to(i: number): Promise<boolean>;

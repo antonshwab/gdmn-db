@@ -4,9 +4,9 @@ import {AResultSet, TRow} from "../AResultSet";
 
 export class FirebirdResultSet extends AResultSet {
 
-    private _connect: Attachment;
-    private _transaction: Transaction;
-    private _resultSet: ResultSet;
+    private readonly _connect: Attachment;
+    private readonly _transaction: Transaction;
+    private readonly _resultSet: ResultSet;
     private _data: any[][] = [];
     private _currentIndex: number = -1;
     private _done: boolean = false;

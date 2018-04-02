@@ -1,5 +1,6 @@
 import { ADatabase } from "../ADatabase";
 import { FirebirdTransaction } from "./FirebirdTransaction";
+import { FirebirdStatement } from "./FirebirdStatement";
 import { FirebirdResultSet } from "./FirebirdResultSet";
 export declare type FirebirdOptions = {
     host?: string;
@@ -8,7 +9,7 @@ export declare type FirebirdOptions = {
     password?: string;
     dbPath: string;
 };
-export declare class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdTransaction> {
+export declare class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdStatement, FirebirdTransaction> {
     private _client;
     private _connect;
     constructor();

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const ATransaction_1 = require("../ATransaction");
+const FirebirdStatement_1 = require("./FirebirdStatement");
 const FirebirdResultSet_1 = require("./FirebirdResultSet");
 const FirebirdDBStructure_1 = require("./FirebirdDBStructure");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
@@ -28,6 +29,12 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
     }
     async isActive() {
         return Boolean(this._transaction);
+    }
+    async prepareSQL(sql) {
+        if (!this._transaction)
+            throw new Error("Need to open transaction");
+        const statement = await this._connect.prepare(this._transaction, sql);
+        return new FirebirdStatement_1.FirebirdStatement(this._connect, this._transaction, statement);
     }
     async executeSQL(sql, params) {
         if (!this._transaction)

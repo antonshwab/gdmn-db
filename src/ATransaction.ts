@@ -1,40 +1,72 @@
-import {TExecutor} from "./ADatabase";
-import {AResultSet} from "./AResultSet";
+import {TExecutor} from "./AConnectionPool";
+import {AStatement, TStatement} from "./AStatement";
+import {AResultSet, TResultSet} from "./AResultSet";
 import {DBStructure} from "./DBStructure";
 
-export type TTransaction = ATransaction<AResultSet>;
+export type TTransaction = ATransaction<TResultSet, TStatement>;
 
-export abstract class ATransaction<RS extends AResultSet> {
+export abstract class ATransaction<RS extends AResultSet, S extends AStatement<RS>> {
 
-    /**
-     * Example:
-     * <pre><code>
-     * const result2 = ATransaction.executeTransaction(transaction, {}, async (transaction) => {
-     *      return await transaction.query("some sql");
-     * })}
-     * </code></pre>
-     *
-     * @param {TTransaction} transaction
-     * @param {TExecutor<TTransaction, R>} callback
-     * @returns {Promise<R>}
-     */
-    static async executeTransaction<R>(
-        transaction: TTransaction,
-        callback: TExecutor<TTransaction, R>
-    ): Promise<R> {
+    static async executeFromParent<R>(sourceCallback: TExecutor<null, TTransaction>,
+                                      resultCallback: TExecutor<TTransaction, R>): Promise<R> {
+        let transaction: undefined | TTransaction;
         try {
-            await transaction.start();
-            const result = await callback(transaction);
+            transaction = await sourceCallback(null);
+            const result = await resultCallback(transaction);
             await transaction.commit();
             return result;
         } catch (error) {
-            try {
+            if (transaction) {
                 await transaction.rollback();
-            } catch (error) {
-                console.warn(error);
             }
             throw error;
         }
+    }
+
+    /**
+     * Example:
+     * <pre>
+     * const result = await ATransaction.executeStatement(transaction, "some sql with params", async (statement) => {
+     *      await statement.execute([param1, param2]);
+     *      await statement.execute([param3, param4]);
+     *      return "some value";
+     * })}
+     * </pre>
+     *
+     * @param {TTransaction} transaction
+     * @param {string} sql
+     * @param {TExecutor<TStatement, R>} callback
+     * @returns {Promise<R>}
+     */
+    static async executeStatement<R>(
+        transaction: TTransaction,
+        sql: string,
+        callback: TExecutor<TStatement, R>
+    ): Promise<R> {
+        return await AStatement.executeFromParent(() => transaction.prepareSQL(sql), callback);
+    }
+
+    /**
+     * Example:
+     * <pre>
+     * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2], async (resultSet) => {
+     *      return await resultSet.getArrays();
+     * })}
+     * </pre>
+     *
+     * @param {TTransaction} transaction
+     * @param {string} sql
+     * @param {any[]} params
+     * @param {TExecutor<TResultSet, R>} callback
+     * @returns {Promise<R>}
+     */
+    static async executeResultSet<R>(
+        transaction: TTransaction,
+        sql: string,
+        params: any[] = [],
+        callback: TExecutor<TResultSet, R>
+    ): Promise<R> {
+        return await AResultSet.executeFromParent(() => transaction.executeSQL(sql, params), callback);
     }
 
     abstract async start(): Promise<void>;
@@ -44,6 +76,8 @@ export abstract class ATransaction<RS extends AResultSet> {
     abstract async rollback(): Promise<void>;
 
     abstract async isActive(): Promise<boolean>;
+
+    abstract async prepareSQL(sql: string): Promise<S>;
 
     abstract async executeSQL(sql: string, params?: any[]): Promise<RS>;
 

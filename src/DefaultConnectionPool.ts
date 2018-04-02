@@ -1,15 +1,16 @@
 import {createPool, Options, Pool} from "generic-pool";
 import {AConnectionPool} from "./AConnectionPool";
 import {ADatabase, TDatabase} from "./ADatabase";
-import {AResultSet} from "./AResultSet";
 import {TTransaction} from "./ATransaction";
+import {TStatement} from "./AStatement";
+import {AResultSet} from "./AResultSet";
 
 export type DefaultConnectionPoolOptions = Options;
 
 export type DBCreator<DB> = () => DB;
 
 export class DefaultConnectionPool<DBOptions> extends AConnectionPool<DefaultConnectionPoolOptions, DBOptions,
-    AResultSet, TTransaction, TDatabase<DBOptions>> {
+    AResultSet, TStatement, TTransaction, TDatabase<DBOptions>> {
 
     private readonly _databaseCreator: DBCreator<TDatabase<DBOptions>>;
     private _connectionPool: null | Pool<TDatabase<DBOptions>> = null;
@@ -57,7 +58,7 @@ export class DefaultConnectionPool<DBOptions> extends AConnectionPool<DefaultCon
     }
 }
 
-class DatabaseProxy<DBOptions> extends ADatabase<DBOptions, AResultSet, TTransaction> {
+class DatabaseProxy<DBOptions> extends ADatabase<DBOptions, AResultSet, TStatement, TTransaction> {
 
     private readonly _pool: Pool<TDatabase<DBOptions>>;
     private readonly _databaseCreator: () => TDatabase<DBOptions>;

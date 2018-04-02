@@ -1,22 +1,25 @@
+import {TExecutor} from "./AConnectionPool";
 import {ATransaction, TTransaction} from "./ATransaction";
-import {AResultSet} from "./AResultSet";
-import {TConnectionPool} from "./AConnectionPool";
+import {AStatement, TStatement} from "./AStatement";
+import {AResultSet, TResultSet} from "./AResultSet";
 
-export type TExecutor<Subject, Result> = ((subject: Subject) => Result) | ((subject: Subject) => Promise<Result>);
-
-export type TDatabase<Opt> = ADatabase<Opt, AResultSet, TTransaction>;
+export type TDatabase<Opt> = ADatabase<Opt, TResultSet, TStatement, TTransaction>;
 
 /**
  * Example:
- * <pre><code>
+ * <pre>
  * (async () => {
- *      const database = new XXDatabase();
+ *      const database = Factory.XXModule.newDatabase();
  *      try {
+ *          await database.connect({...});
+ *
  *          const transaction = await database.createTransaction();
  *          try {
  *              await transaction.start();
  *
- *              await transaction.query("some sql");
+ *              const resultSet = await transaction.executeSQL("some sql");
+ *              await resultSet.getArrays();
+ *              await resultSet.close();
  *
  *              await transaction.commit();
  *          } catch (error) {
@@ -35,16 +38,33 @@ export type TDatabase<Opt> = ADatabase<Opt, AResultSet, TTransaction>;
  *          }
  *      }
  * })()
- * </code></pre>
+ * </pre>
  */
-export abstract class ADatabase<Options, RS extends AResultSet, T extends ATransaction<RS>> {
+export abstract class ADatabase<Options,
+    RS extends AResultSet,
+    S extends AStatement<RS>,
+    T extends ATransaction<RS, S>> {
+
+    static async executeFromParent<Opt, R>(sourceCallback: TExecutor<null, TDatabase<Opt>>,
+                                           resultCallback: TExecutor<TDatabase<Opt>, R>): Promise<R> {
+        let database: undefined | TDatabase<Opt>;
+        try {
+            database = await sourceCallback(null);
+            return await resultCallback(database);
+        } finally {
+            if (database) {
+                await database.disconnect();
+            }
+        }
+    }
 
     /**
      * Example:
      * <pre>
-     * const result = ADatabase.executeConnection(new XXDatabase(), {}, async (source) => {
-     *      const transaction = await source.createTransaction();
-     *      return await transaction.query("some sql");
+     * const result = await ADatabase.executeConnection(Factory.XXModule.newDatabase()), {}, async (source) => {
+     *      return await ADatabase.executeTransaction(transaction, {}, async (transaction) => {
+     *          return ...
+     *      });
      * })}
      * </pre>
      *
@@ -53,99 +73,40 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
      * @param {TExecutor<TDatabase<Opt>, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeConnection<Opt, R>(database: TDatabase<Opt>,
-                                           options: Opt,
-                                           callback: TExecutor<TDatabase<Opt>, R>): Promise<R> {
-        try {
+    static async executeConnection<Opt, R>(
+        database: TDatabase<Opt>,
+        options: Opt,
+        callback: TExecutor<TDatabase<Opt>, R>
+    ): Promise<R> {
+        return await ADatabase.executeFromParent(async () => {
             await database.connect(options);
-            return await callback(database);
-        } finally {
-            try {
-                await database.disconnect();
-            } catch (error) {
-                console.warn(error);
-            }
-        }
+            return database;
+        }, callback);
     }
 
     /**
      * Example:
      * <pre>
-     * const result = ADatabase.executeTransaction(new XXDatabase(), {}, async (transaction) => {
-     *      return await transaction.query("some sql");
+     * const result = await ADatabase.executeTransaction(database, {}, async transaction => {
+     *      return await transaction.executeStatement("some sql", async statement => {
+     *          return ...
+     *      });
      * })}
      * </pre>
      *
      * @param {TDatabase<Opt>} database
-     * @param {Opt} options
      * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransaction<Opt, R>(database: TDatabase<Opt>,
-                                            options: Opt,
-                                            callback: TExecutor<TTransaction, R>): Promise<R> {
-        return await ADatabase.executeConnection(database, options, async (database) => {
-            return await ATransaction.executeTransaction(await database.createTransaction(), callback);
-        });
-    }
-
-    /**
-     * Example:
-     * <pre>
-     * const connectionPool = new XXConnectionPool();
-     * connectionPool.create({});
-     *
-     * const result = ADatabase.executeConnectionPool(connectionPool, async (source) => {
-     *      const transaction = await source.createTransaction();
-     *      return await transaction.query("some sql");
-     * })}
-     *
-     * connectionPool.destroy();
-     * </pre>
-     *
-     * @param {TConnectionPool<Opt, DBOptions>} connectionPool
-     * @param {TExecutor<TDatabase<DBOptions>, R>} callback
-     * @returns {Promise<R>}
-     */
-    static async executeConnectionPool<Opt, DBOptions, R>(connectionPool: TConnectionPool<Opt, DBOptions>,
-                                                          callback: TExecutor<TDatabase<DBOptions>, R>): Promise<R> {
-        let database: undefined | ADatabase<DBOptions, AResultSet, ATransaction<AResultSet>>;
-        try {
-            database = await connectionPool.get();
-            return await callback(database);
-        } finally {
-            try {
-                if (database) {
-                    await database.disconnect();
-                }
-            } catch (error) {
-                console.warn(error);
-            }
-        }
-    }
-
-    /**
-     * Example:
-     * <pre>
-     * const connectionPool = new XXConnectionPool();
-     * connectionPool.create({});
-     *
-     * const result = ADatabase.executeTransactionPool(connectionPool, async (transaction) => {
-     *      return await transaction.query("some sql");
-     * })}
-     *
-     * connectionPool.destroy();
-     * </pre>
-     *
-     * @param {TConnectionPool<Opt, DBOptions>} connectionPool
-     * @param {TExecutor<TTransaction, R>} callback
-     * @returns {Promise<R>}
-     */
-    static async executeTransactionPool<Opt, DBOptions, R>(connectionPool: TConnectionPool<Opt, DBOptions>,
-                                                callback: TExecutor<TTransaction, R>): Promise<R> {
-        return await ADatabase.executeConnectionPool(connectionPool, async (database) => {
-            return await ATransaction.executeTransaction(await database.createTransaction(), callback);
-        });
+    static async executeTransaction<Opt, R>(
+        database: TDatabase<Opt>,
+        callback: TExecutor<TTransaction, R>
+    ): Promise<R> {
+        return await ATransaction.executeFromParent(async () => {
+            const transaction = await database.createTransaction();
+            await transaction.start();
+            return transaction;
+        }, callback);
     }
 
     abstract async createDatabase(options: Options): Promise<void>;

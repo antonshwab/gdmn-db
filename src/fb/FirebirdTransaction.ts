@@ -1,10 +1,11 @@
 import {Attachment, Transaction} from "node-firebird-driver-native";
 import {ATransaction} from "../ATransaction";
 import {DBStructure} from "../DBStructure";
+import {FirebirdStatement} from "./FirebirdStatement";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdDBStructure} from "./FirebirdDBStructure";
 
-export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
+export class FirebirdTransaction extends ATransaction<FirebirdResultSet, FirebirdStatement> {
 
     private readonly _connect: Attachment;
     private _transaction: null | Transaction = null;
@@ -36,6 +37,13 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
 
     async isActive(): Promise<boolean> {
         return Boolean(this._transaction);
+    }
+
+    async prepareSQL(sql: string): Promise<FirebirdStatement> {
+        if (!this._transaction) throw new Error("Need to open transaction");
+
+        const statement = await this._connect.prepare(this._transaction, sql);
+        return new FirebirdStatement(this._connect, this._transaction, statement);
     }
 
     async executeSQL(sql: string, params?: any[]): Promise<FirebirdResultSet> {

@@ -1,6 +1,7 @@
 import {Attachment, Client, createNativeClient, getDefaultLibraryFilename} from "node-firebird-driver-native";
 import {ADatabase} from "../ADatabase";
 import {FirebirdTransaction} from "./FirebirdTransaction";
+import {FirebirdStatement} from "./FirebirdStatement";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 
 export type FirebirdOptions = {
@@ -11,7 +12,8 @@ export type FirebirdOptions = {
     dbPath: string;
 }
 
-export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdTransaction> {
+export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdStatement,
+    FirebirdTransaction> {
 
     private _client: null | Client = null;
     private _connect: null | Attachment = null;
