@@ -86,6 +86,24 @@ export class FirebirdResultSet extends AResultSet {
         return false;
     }
 
+    async isFirst(): Promise<boolean> {
+        return this._currentIndex === 0;
+    }
+
+    async isLast(): Promise<boolean> {
+        //loading and check next
+        if (!this._done) {
+            if (await this.next()) {
+                await this.previous();
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        return this._currentIndex === this._data.length - 1;
+    }
+
     async close(): Promise<void> {
         await this._resultSet.close();
         this._done = true;

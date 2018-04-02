@@ -9,6 +9,8 @@ export declare abstract class AResultSet {
     abstract to(i: number): Promise<boolean>;
     abstract first(): Promise<boolean>;
     abstract last(): Promise<boolean>;
+    abstract isFirst(): Promise<boolean>;
+    abstract isLast(): Promise<boolean>;
     abstract close(): Promise<void>;
     abstract getBlobBuffer(i: number): Promise<null | Buffer>;
     abstract getBlobBuffer(name: string): Promise<null | Buffer>;

@@ -14,6 +14,10 @@ export abstract class AResultSet {
 
     abstract async last(): Promise<boolean>;
 
+    abstract async isFirst(): Promise<boolean>;
+
+    abstract async isLast(): Promise<boolean>;
+
     abstract async close(): Promise<void>;
 
     abstract async getBlobBuffer(i: number): Promise<null | Buffer>;

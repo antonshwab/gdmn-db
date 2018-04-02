@@ -15,6 +15,8 @@ export declare class FirebirdResultSet extends AResultSet {
     to(i: number): Promise<boolean>;
     first(): Promise<boolean>;
     last(): Promise<boolean>;
+    isFirst(): Promise<boolean>;
+    isLast(): Promise<boolean>;
     close(): Promise<void>;
     getBlobBuffer(i: number): Promise<null | Buffer>;
     getBlobBuffer(name: string): Promise<null | Buffer>;

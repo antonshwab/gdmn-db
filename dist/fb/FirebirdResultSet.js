@@ -74,6 +74,22 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
         return false;
     }
+    async isFirst() {
+        return this._currentIndex === 0;
+    }
+    async isLast() {
+        //loading and check next
+        if (!this._done) {
+            if (await this.next()) {
+                await this.previous();
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        return this._currentIndex === this._data.length - 1;
+    }
     async close() {
         await this._resultSet.close();
         this._done = true;
