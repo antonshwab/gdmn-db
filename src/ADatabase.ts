@@ -103,13 +103,13 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {TConnectionPool<Opt>} connectionPool
-     * @param {TExecutor<TDatabase<Opt>, R>} callback
+     * @param {TConnectionPool<Opt, DBOptions>} connectionPool
+     * @param {TExecutor<TDatabase<DBOptions>, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeConnectionPool<Opt, R>(connectionPool: TConnectionPool<Opt>,
-                                               callback: TExecutor<TDatabase<Opt>, R>): Promise<R> {
-        let database: undefined | ADatabase<Opt, AResultSet, ATransaction<AResultSet>>;
+    static async executeConnectionPool<Opt, DBOptions, R>(connectionPool: TConnectionPool<Opt, DBOptions>,
+                                                          callback: TExecutor<TDatabase<DBOptions>, R>): Promise<R> {
+        let database: undefined | ADatabase<DBOptions, AResultSet, ATransaction<AResultSet>>;
         try {
             database = await connectionPool.get();
             return await callback(database);
@@ -137,22 +137,22 @@ export abstract class ADatabase<Options, RS extends AResultSet, T extends ATrans
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TConnectionPool<Opt, DBOptions>} connectionPool
      * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransactionPool<Opt, R>(connectionPool: TConnectionPool<Opt>,
+    static async executeTransactionPool<Opt, DBOptions, R>(connectionPool: TConnectionPool<Opt, DBOptions>,
                                                 callback: TExecutor<TTransaction, R>): Promise<R> {
         return await ADatabase.executeConnectionPool(connectionPool, async (database) => {
             return await ATransaction.executeTransaction(await database.createTransaction(), callback);
         });
     }
 
-    abstract async createDatabase(options: Options): Promise<void>;//TODO hide method for pool connection ???
+    abstract async createDatabase(options: Options): Promise<void>;
 
-    abstract async dropDatabase(): Promise<void>;//TODO hide method for pool connection ???
+    abstract async dropDatabase(): Promise<void>;
 
-    abstract async connect(options: Options): Promise<void>;//TODO hide method for pool connection ???
+    abstract async connect(options: Options): Promise<void>;
 
     abstract async disconnect(): Promise<void>;
 

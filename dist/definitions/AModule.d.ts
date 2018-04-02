@@ -1,6 +1,8 @@
 import { TConnectionPool } from "./AConnectionPool";
 import { TDatabase } from "./ADatabase";
-export declare abstract class AModule<Options> {
-    abstract newDatabase(): TDatabase<Options>;
-    abstract newConnectionPool(): TConnectionPool<Options>;
+import { DefaultConnectionPoolOptions } from "./DefaultConnectionPool";
+export declare abstract class AModule<PoolOptions, DBOptions> {
+    abstract newDatabase(): TDatabase<DBOptions>;
+    abstract newConnectionPool(): TConnectionPool<PoolOptions, DBOptions>;
+    abstract newDefaultConnectionPool(): TConnectionPool<DefaultConnectionPoolOptions, DBOptions>;
 }

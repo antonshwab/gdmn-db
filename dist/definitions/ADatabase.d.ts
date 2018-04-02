@@ -78,11 +78,11 @@ export declare abstract class ADatabase<Options, RS extends AResultSet, T extend
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {TConnectionPool<Opt>} connectionPool
-     * @param {TExecutor<TDatabase<Opt>, R>} callback
+     * @param {TConnectionPool<Opt, DBOptions>} connectionPool
+     * @param {TExecutor<TDatabase<DBOptions>, R>} callback
      * @returns {Promise<R>}
      */
-    static executeConnectionPool<Opt, R>(connectionPool: TConnectionPool<Opt>, callback: TExecutor<TDatabase<Opt>, R>): Promise<R>;
+    static executeConnectionPool<Opt, DBOptions, R>(connectionPool: TConnectionPool<Opt, DBOptions>, callback: TExecutor<TDatabase<DBOptions>, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -96,11 +96,11 @@ export declare abstract class ADatabase<Options, RS extends AResultSet, T extend
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TConnectionPool<Opt, DBOptions>} connectionPool
      * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static executeTransactionPool<Opt, R>(connectionPool: TConnectionPool<Opt>, callback: TExecutor<TTransaction, R>): Promise<R>;
+    static executeTransactionPool<Opt, DBOptions, R>(connectionPool: TConnectionPool<Opt, DBOptions>, callback: TExecutor<TTransaction, R>): Promise<R>;
     abstract createDatabase(options: Options): Promise<void>;
     abstract dropDatabase(): Promise<void>;
     abstract connect(options: Options): Promise<void>;

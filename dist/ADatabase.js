@@ -93,8 +93,8 @@ class ADatabase {
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {TConnectionPool<Opt>} connectionPool
-     * @param {TExecutor<TDatabase<Opt>, R>} callback
+     * @param {TConnectionPool<Opt, DBOptions>} connectionPool
+     * @param {TExecutor<TDatabase<DBOptions>, R>} callback
      * @returns {Promise<R>}
      */
     static async executeConnectionPool(connectionPool, callback) {
@@ -127,7 +127,7 @@ class ADatabase {
      * connectionPool.destroy();
      * </pre>
      *
-     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TConnectionPool<Opt, DBOptions>} connectionPool
      * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */

@@ -15,8 +15,8 @@ class FirebirdConnectionPool extends AConnectionPool_1.AConnectionPool {
         const db = await this._connectionPool.attach();
         return new FirebirdDatabase_1.FirebirdDatabase(db);
     }
-    async create(options, maxConnections) {
-        return this._connectionPool.createConnectionPool(options, maxConnections);
+    async create(dbOptions, options) {
+        return this._connectionPool.createConnectionPool(dbOptions, options.max);
     }
     async destroy() {
         return this._connectionPool.destroyConnectionPool();

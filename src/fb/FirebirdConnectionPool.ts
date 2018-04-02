@@ -4,8 +4,12 @@ import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdDatabase, FirebirdOptions} from "./FirebirdDatabase";
 import {FBConnectionPool} from "./driver/FBDatabase";
 
-export class FirebirdConnectionPool extends AConnectionPool<FirebirdOptions, FirebirdResultSet, FirebirdTransaction,
-    FirebirdDatabase> {
+export type FirebirdPoolOptions = {
+    max: number;
+}
+
+export class FirebirdConnectionPool extends AConnectionPool<FirebirdPoolOptions, FirebirdOptions, FirebirdResultSet,
+    FirebirdTransaction, FirebirdDatabase> {
 
     private readonly _connectionPool: FBConnectionPool = new FBConnectionPool();
 
@@ -18,8 +22,8 @@ export class FirebirdConnectionPool extends AConnectionPool<FirebirdOptions, Fir
         return new FirebirdDatabase(db);
     }
 
-    async create(options: FirebirdOptions, maxConnections?: number): Promise<void> {
-        return this._connectionPool.createConnectionPool(options, maxConnections);
+    async create(dbOptions: FirebirdOptions, options: FirebirdPoolOptions): Promise<void> {
+        return this._connectionPool.createConnectionPool(dbOptions, options.max);
     }
 
     async destroy(): Promise<void> {

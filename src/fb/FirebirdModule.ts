@@ -2,11 +2,16 @@ import {AModule} from "../AModule";
 import {TConnectionPool} from "../AConnectionPool";
 import {TDatabase} from "../ADatabase";
 import {FirebirdDatabase, FirebirdOptions} from "./FirebirdDatabase";
-import {FirebirdConnectionPool} from "./FirebirdConnectionPool";
+import {FirebirdConnectionPool, FirebirdPoolOptions} from "./FirebirdConnectionPool";
+import {DefaultConnectionPool, DefaultConnectionPoolOptions} from "../DefaultConnectionPool";
 
-export class FirebirdModule extends AModule<FirebirdOptions> {
+export class FirebirdModule extends AModule<FirebirdPoolOptions, FirebirdOptions> {
 
-    newConnectionPool(): TConnectionPool<FirebirdOptions> {
+    newDefaultConnectionPool(): TConnectionPool<DefaultConnectionPoolOptions, FirebirdOptions> {
+        return new DefaultConnectionPool(() => new FirebirdDatabase());
+    }
+
+    newConnectionPool(): TConnectionPool<FirebirdPoolOptions, FirebirdOptions> {
         return new FirebirdConnectionPool();
     }
 

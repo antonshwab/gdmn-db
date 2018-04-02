@@ -13,10 +13,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "generic-pool": "^3.4.2",
     "node-firebird": "git://github.com/gsbelarus/node-firebird.git",
     "node-firebird-driver-native": "0.0.1-beta.1"
   },
   "devDependencies": {
+    "@types/generic-pool": "^3.1.2",
     "@types/node": "^9.6.1",
     "typescript": "^2.8.1"
   }
