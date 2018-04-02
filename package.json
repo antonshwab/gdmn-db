@@ -14,7 +14,6 @@
   "license": "ISC",
   "dependencies": {
     "generic-pool": "^3.4.2",
-    "node-firebird": "git://github.com/gsbelarus/node-firebird.git",
     "node-firebird-driver-native": "0.0.1-beta.1"
   },
   "devDependencies": {

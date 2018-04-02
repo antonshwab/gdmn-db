@@ -1,27 +1,23 @@
-import {EventEmitter} from "events";
+import {Attachment, Transaction} from "node-firebird-driver-native";
 import {ATransaction} from "../ATransaction";
-import {FirebirdResultSet} from "./FirebirdResultSet";
 import {DBStructure} from "../DBStructure";
+import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdDBStructure} from "./FirebirdDBStructure";
-import FBDatabase, {FBTransaction} from "./driver/FBDatabase";
 
 export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
 
-    public static EVENT_DATA = "data";
-    public static EVENT_END = "end";
+    private readonly _connect: Attachment;
+    private _transaction: null | Transaction = null;
 
-    private readonly _database: FBDatabase;
-    private _transaction: null | FBTransaction = null;
-
-    constructor(database: FBDatabase) {
+    constructor(connect: Attachment) {
         super();
-        this._database = database;
+        this._connect = connect;
     }
 
     async start(): Promise<void> {
         if (this._transaction) throw new Error("Transaction already opened");
 
-        this._transaction = await this._database.transaction();
+        this._transaction = await this._connect.startTransaction();
     }
 
     async commit(): Promise<void> {
@@ -39,19 +35,14 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
     }
 
     async isActive(): Promise<boolean> {
-        return !!this._transaction && this._transaction.isInTransaction();
+        return Boolean(this._transaction);
     }
 
-    async executeSQL(sql: string, params: any[] = []): Promise<FirebirdResultSet> {
+    async executeSQL(sql: string, params?: any[]): Promise<FirebirdResultSet> {
         if (!this._transaction) throw new Error("Need to open transaction");
 
-        const event = new EventEmitter();
-        this._transaction.sequentially(sql, params, (row, index, next) => {
-            event.emit(FirebirdTransaction.EVENT_DATA, row, index, next);
-        })
-            .then(() => event.emit(FirebirdTransaction.EVENT_END, null))
-            .catch(error => event.emit(FirebirdTransaction.EVENT_END, error));
-        return new FirebirdResultSet(event);
+        const resultSet = await this._connect.executeQuery(this._transaction, sql, params);
+        return new FirebirdResultSet(this._connect, this._transaction, resultSet);
     }
 
     async readDBStructure(): Promise<DBStructure> {

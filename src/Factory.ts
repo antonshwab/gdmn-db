@@ -1,5 +1,4 @@
 import {FirebirdModule} from "./fb/FirebirdModule";
-import {FirebirdModule2} from "./fb2/FirebirdModule2";
 
 export abstract class Factory {
 
@@ -7,7 +6,4 @@ export abstract class Factory {
         return new FirebirdModule();
     }
 
-    static get FBModule2(): FirebirdModule2 {
-        return new FirebirdModule2();
-    }
 }

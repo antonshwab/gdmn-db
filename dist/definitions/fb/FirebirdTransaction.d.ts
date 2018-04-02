@@ -1,13 +1,11 @@
+import { Attachment } from "node-firebird-driver-native";
 import { ATransaction } from "../ATransaction";
-import { FirebirdResultSet } from "./FirebirdResultSet";
 import { DBStructure } from "../DBStructure";
-import FBDatabase from "./driver/FBDatabase";
+import { FirebirdResultSet } from "./FirebirdResultSet";
 export declare class FirebirdTransaction extends ATransaction<FirebirdResultSet> {
-    static EVENT_DATA: string;
-    static EVENT_END: string;
-    private readonly _database;
+    private readonly _connect;
     private _transaction;
-    constructor(database: FBDatabase);
+    constructor(connect: Attachment);
     start(): Promise<void>;
     commit(): Promise<void>;
     rollback(): Promise<void>;
