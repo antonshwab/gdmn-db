@@ -1,9 +1,10 @@
 import {Attachment, Transaction} from "node-firebird-driver-native";
-import {ATransaction} from "../ATransaction";
+import {ATransaction, TNamedParams} from "../ATransaction";
 import {DBStructure} from "../DBStructure";
 import {FirebirdStatement} from "./FirebirdStatement";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdDBStructure} from "./FirebirdDBStructure";
+import {ParamsAnalyzer} from "./ParamsAnalyzer";
 
 export class FirebirdTransaction extends ATransaction<FirebirdResultSet, FirebirdStatement> {
 
@@ -42,14 +43,17 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
     async prepareSQL(sql: string): Promise<FirebirdStatement> {
         if (!this._transaction) throw new Error("Need to open transaction");
 
-        const statement = await this._connect.prepare(this._transaction, sql);
-        return new FirebirdStatement(this._connect, this._transaction, statement);
+        const paramsAnalyzer = new ParamsAnalyzer(sql);
+        const statement = await this._connect.prepare(this._transaction, paramsAnalyzer.sql);
+        return new FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
     }
 
-    async executeSQL(sql: string, params?: any[]): Promise<FirebirdResultSet> {
+    async executeSQL(sql: string, params?: any[] | TNamedParams): Promise<FirebirdResultSet> {
         if (!this._transaction) throw new Error("Need to open transaction");
 
-        const resultSet = await this._connect.executeQuery(this._transaction, sql, params);
+        const paramsAnalyzer = new ParamsAnalyzer(sql);
+        const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql,
+            paramsAnalyzer.prepareParams(params));
         return new FirebirdResultSet(this._connect, this._transaction, resultSet);
     }
 

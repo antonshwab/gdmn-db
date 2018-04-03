@@ -1,5 +1,6 @@
-import {TExecutor} from "./AConnectionPool";
+import {TExecutor} from "./types";
 import {AResultSet, TResultSet} from "./AResultSet";
+import {TNamedParams} from "./ATransaction";
 
 export type TStatement = AStatement<TResultSet>;
 
@@ -33,15 +34,15 @@ export abstract class AStatement<RS extends AResultSet> {
      */
     static async executeResultSet<R>(
         statement: TStatement,
-        params: any[] = [],
+        params: null | any[] | TNamedParams,
         callback: TExecutor<TResultSet, R>
     ): Promise<R> {
         return await AResultSet.executeFromParent(() => statement.executeQuery(params), callback);
     }
 
-    abstract async executeQuery(params?: any[]): Promise<RS>;
+    abstract async executeQuery(params?: null | any[] | TNamedParams): Promise<RS>;
 
-    abstract async execute(params?: any[]): Promise<void>;
+    abstract async execute(params?: null | any[] | TNamedParams): Promise<void>;
 
     abstract async dispose(): Promise<void>;
 }

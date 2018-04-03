@@ -1,5 +1,5 @@
 import { Attachment } from "node-firebird-driver-native";
-import { ATransaction } from "../ATransaction";
+import { ATransaction, TNamedParams } from "../ATransaction";
 import { DBStructure } from "../DBStructure";
 import { FirebirdStatement } from "./FirebirdStatement";
 import { FirebirdResultSet } from "./FirebirdResultSet";
@@ -12,6 +12,6 @@ export declare class FirebirdTransaction extends ATransaction<FirebirdResultSet,
     rollback(): Promise<void>;
     isActive(): Promise<boolean>;
     prepareSQL(sql: string): Promise<FirebirdStatement>;
-    executeSQL(sql: string, params?: any[]): Promise<FirebirdResultSet>;
+    executeSQL(sql: string, params?: any[] | TNamedParams): Promise<FirebirdResultSet>;
     readDBStructure(): Promise<DBStructure>;
 }

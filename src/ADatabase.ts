@@ -1,4 +1,4 @@
-import {TExecutor} from "./AConnectionPool";
+import {TExecutor} from "./types";
 import {ATransaction, TTransaction} from "./ATransaction";
 import {AStatement, TStatement} from "./AStatement";
 import {AResultSet, TResultSet} from "./AResultSet";

@@ -1,4 +1,4 @@
-import {TExecutor} from "./AConnectionPool";
+import {TExecutor} from "./types";
 
 export type TRow = { [fieldName: string]: any };
 

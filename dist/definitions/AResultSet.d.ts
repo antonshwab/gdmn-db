@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { TExecutor } from "./AConnectionPool";
+import { TExecutor } from "./types";
 export declare type TRow = {
     [fieldName: string]: any;
 };
