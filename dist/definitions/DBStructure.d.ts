@@ -82,13 +82,9 @@ export declare class DBStructure {
     private _relations;
     readonly relations: IRelations;
     load(fields: IRDB$FIELD[], relations: IRDB$RELATIONFIELD[], constraints: IRDB$RELATIONCONSTRAINT[]): void;
-<<<<<<< HEAD
     forEachRelation(f: (r: Relation) => void): void;
     findRelation(f: (r: Relation) => boolean): Relation | undefined;
     relationByUqConstraint(constraintName: string): Relation;
-=======
-    relationByUqConstraint(constraintName: string): Relation | undefined;
->>>>>>> 5765dba83853af5b7eb07fadeb81a0b079f74d87
     private loadFields(fields);
     private loadRelations(relationFields);
     private loadRelationConstraints(constraints);
