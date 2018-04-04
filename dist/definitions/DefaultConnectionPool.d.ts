@@ -6,6 +6,7 @@ import { AResultSet } from "./AResultSet";
 export declare type DefaultConnectionPoolOptions = {
     /**
      * Maximum number of resources to create at any given time.
+     *
      * @default 1
      */
     max?: number;

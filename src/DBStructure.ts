@@ -123,6 +123,10 @@ export class DBStructure {
     }
 
     public relationByUqConstraint(constraintName: string) {
+        // Object.entries(this._relations).find(([key, value]) => {
+        //     const pk = value.primaryKey;
+        //     return (pk && pk.name === constraintName) || !!value.unique[constraintName];
+        // });
         const found = this.findRelation( r => {
             const pk = r.primaryKey;
             return (pk && pk.name === constraintName) || !!r.unique[constraintName];

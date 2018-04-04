@@ -29,8 +29,8 @@ export class ParamsAnalyzer {
             return "?".padEnd(placeholder.length); //for correct position sql errors
         });
 
-        this._sql = Object.keys(this._tmpPlaceholders)
-            .reduce((sql, key) => sql.replace(key, this._tmpPlaceholders[key]), shortSql);
+        this._sql = Object.entries(this._tmpPlaceholders)
+            .reduce((sql, [key, value]) => sql.replace(key, value), shortSql);
     }
 
     get originalSql(): string {

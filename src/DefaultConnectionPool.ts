@@ -8,6 +8,7 @@ import {AResultSet} from "./AResultSet";
 export type DefaultConnectionPoolOptions = {    //from require(generic-pool).Options
     /**
      * Maximum number of resources to create at any given time.
+     *
      * @default 1
      */
     max?: number;
