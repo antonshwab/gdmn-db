@@ -1,11 +1,24 @@
-import {createPool, Options, Pool} from "generic-pool";
+import {createPool, Pool} from "generic-pool";
 import {AConnectionPool} from "./AConnectionPool";
 import {ADatabase, TDatabase, TDBOptions} from "./ADatabase";
 import {TTransaction} from "./ATransaction";
 import {TStatement} from "./AStatement";
 import {AResultSet} from "./AResultSet";
 
-export type DefaultConnectionPoolOptions = Options;
+export type DefaultConnectionPoolOptions = {    //from require(generic-pool).Options
+    max?: number;
+    min?: number;
+    maxWaitingClients?: number;
+    testOnBorrow?: boolean;
+    acquireTimeoutMillis?: number;
+    fifo?: boolean;
+    priorityRange?: number;
+    autostart?: boolean;
+    evictionRunIntervalMillis?: number;
+    numTestsPerRun?: number;
+    softIdleTimeoutMillis?: number;
+    idleTimeoutMillis?: number;
+};
 
 export type DBCreator<DB> = () => DB;
 
