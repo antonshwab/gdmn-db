@@ -77,11 +77,35 @@ export abstract class AConnectionPool<Options,
         return await ADatabase.executeFromParent(() => connectionPool.get(), callback);
     }
 
+    /**
+     * Is the connection pool prepared?
+     *
+     * @returns {Promise<boolean>}
+     */
     abstract isCreated(): Promise<boolean>;
 
+    /**
+     * Prepare the connection pool for use with some database.
+     * After work you need to call {@link AConnectionPool.destroy()} method.
+     *
+     * @param {DBOptions} dbOptions
+     * @param {Options} options
+     * @returns {Promise<void>}
+     */
     abstract create(dbOptions: DBOptions, options: Options): Promise<void>;
 
+    /**
+     * Release resources occupied by the connection pool.
+     *
+     * @returns {Promise<void>}
+     */
     abstract destroy(): Promise<void>;
 
+    /**
+     * Get free database connection. With this connection you
+     * need to work as usual. i.e close it is also necessary
+     *
+     * @returns {Promise<D extends ADatabase<DBOptions, RS, S, T>>}
+     */
     abstract get(): Promise<D>;
 }
