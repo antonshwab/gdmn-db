@@ -123,10 +123,15 @@ export class DBStructure {
     }
 
     public relationByUqConstraint(constraintName: string) {
-        return this.findRelation( r => {
+        const found = this.findRelation( r => {
             const pk = r.primaryKey;
             return (pk && pk.name === constraintName) || !!r.unique[constraintName];
         });
+        if (found) {
+            return found;
+        } else {
+            throw new Error(`Invalid constraint name ${constraintName}`);
+        }
     }
 
     private loadFields(fields: IRDB$FIELD[]) {

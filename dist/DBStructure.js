@@ -70,10 +70,16 @@ class DBStructure {
         }
     }
     relationByUqConstraint(constraintName) {
-        return this.findRelation(r => {
+        const found = this.findRelation(r => {
             const pk = r.primaryKey;
             return (pk && pk.name === constraintName) || !!r.unique[constraintName];
         });
+        if (found) {
+            return found;
+        }
+        else {
+            throw new Error(`Invalid constraint name ${constraintName}`);
+        }
     }
     loadFields(fields) {
         this._fields = fields.reduce((fields, item) => {
