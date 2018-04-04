@@ -58,6 +58,15 @@ class DBStructure {
         this.loadRelations(relations);
         this.loadRelationConstraints(constraints);
     }
+    relationByUqConstraint(constraintName) {
+        for (const name in this._relations) {
+            const r = this._relations[name];
+            const pk = r.primaryKey;
+            if ((pk && pk.name === constraintName) || r.unique[constraintName]) {
+                return r;
+            }
+        }
+    }
     loadFields(fields) {
         this._fields = fields.reduce((fields, item) => {
             fields[item.RDB$FIELD_NAME] = new Field(item.RDB$FIELD_TYPE, !!item.RDB$NULL_FLAG);
@@ -91,13 +100,16 @@ class Relation {
         this.name = name;
         this.relationFields = {};
         this._foreignKeys = {};
-        this.unique = {};
+        this._unique = {};
     }
     get primaryKey() {
         return this._primaryKey;
     }
     get foreignKeys() {
         return this._foreignKeys;
+    }
+    get unique() {
+        return this._unique;
     }
     loadField(field) {
         this.relationFields[field.RDB$FIELD_NAME] = new RelationField(field.RDB$FIELD_NAME, field.RDB$FIELD_SOURCE, !!field.RDB$NULL_FLAG);

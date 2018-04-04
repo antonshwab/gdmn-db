@@ -73,12 +73,16 @@ export interface IRelations {
 export interface IRefConstraints {
     [name: string]: FKConstraint;
 }
+export interface IUqConstraints {
+    [name: string]: UqConstraint;
+}
 export declare class DBStructure {
     private _fields;
     readonly fields: IFields;
     private _relations;
     readonly relations: IRelations;
     load(fields: IRDB$FIELD[], relations: IRDB$RELATIONFIELD[], constraints: IRDB$RELATIONCONSTRAINT[]): void;
+    relationByUqConstraint(constraintName: string): Relation | undefined;
     private loadFields(fields);
     private loadRelations(relationFields);
     private loadRelationConstraints(constraints);
@@ -93,10 +97,11 @@ export declare class Relation {
     private relationFields;
     private _primaryKey?;
     private _foreignKeys;
-    private unique;
+    private _unique;
     constructor(name: string);
     readonly primaryKey: PKConstraint | undefined;
     readonly foreignKeys: IRefConstraints;
+    readonly unique: IUqConstraints;
     loadField(field: IRDB$RELATIONFIELD): void;
     loadConstraintField(constraint: IRDB$RELATIONCONSTRAINT): void;
 }

@@ -86,7 +86,7 @@ export interface IRefConstraints {
     [name: string]: FKConstraint;
 }
 
-interface IUqConstraints {
+export interface IUqConstraints {
     [name: string]: UqConstraint;
 }
 
@@ -108,6 +108,16 @@ export class DBStructure {
         this.loadFields(fields);
         this.loadRelations(relations);
         this.loadRelationConstraints(constraints);
+    }
+
+    public relationByUqConstraint(constraintName: string) {
+        for(const name in this._relations) {
+          const r = this._relations[name];
+          const pk = r.primaryKey;
+          if ((pk && pk.name === constraintName) || r.unique[constraintName]) {
+            return r;
+          }
+        }
     }
 
     private loadFields(fields: IRDB$FIELD[]) {
@@ -149,7 +159,7 @@ export class Relation {
     private relationFields: IRelationFields = {};
     private _primaryKey?: PKConstraint;
     private _foreignKeys: IRefConstraints = {};
-    private unique: IUqConstraints = {};
+    private _unique: IUqConstraints = {};
 
     constructor(public readonly name: string) {}
 
@@ -159,6 +169,10 @@ export class Relation {
 
     get foreignKeys() {
       return this._foreignKeys;
+    }
+
+    get unique() {
+      return this._unique;
     }
 
     public loadField(field: IRDB$RELATIONFIELD) {
