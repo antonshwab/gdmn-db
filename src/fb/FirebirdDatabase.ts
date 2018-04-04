@@ -3,6 +3,7 @@ import {ADatabase, TDBOptions} from "../ADatabase";
 import {FirebirdTransaction} from "./FirebirdTransaction";
 import {FirebirdStatement} from "./FirebirdStatement";
 import {FirebirdResultSet} from "./FirebirdResultSet";
+import {ITransactionOptions} from "../ATransaction";
 
 export type FirebirdOptions = TDBOptions;
 
@@ -53,10 +54,10 @@ export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultS
         });
     }
 
-    async createTransaction(): Promise<FirebirdTransaction> {
+    async createTransaction(options?: ITransactionOptions): Promise<FirebirdTransaction> {
         if (!this._connect) throw new Error("Need database connection");
 
-        return new FirebirdTransaction(this._connect);
+        return new FirebirdTransaction(this._connect, options);
     }
 
     async disconnect(): Promise<void> {

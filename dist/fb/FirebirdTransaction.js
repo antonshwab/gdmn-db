@@ -1,20 +1,51 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const node_firebird_driver_native_1 = require("node-firebird-driver-native");
 const ATransaction_1 = require("../ATransaction");
 const FirebirdStatement_1 = require("./FirebirdStatement");
 const FirebirdResultSet_1 = require("./FirebirdResultSet");
 const FirebirdDBStructure_1 = require("./FirebirdDBStructure");
 const ParamsAnalyzer_1 = require("./ParamsAnalyzer");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
-    constructor(connect) {
-        super();
+    constructor(connect, options) {
+        super(options);
         this._transaction = null;
         this._connect = connect;
     }
     async start() {
         if (this._transaction)
             throw new Error("Transaction already opened");
-        this._transaction = await this._connect.startTransaction();
+        const options = {};
+        switch (this._options.isolation) {
+            case ATransaction_1.Isolation.SERIALIZABLE:
+                options.isolation = node_firebird_driver_native_1.TransactionIsolation.CONSISTENCY;
+                options.waitMode = "NO_WAIT";
+                break;
+            case ATransaction_1.Isolation.REPEATABLE_READ:
+                options.isolation = node_firebird_driver_native_1.TransactionIsolation.SNAPSHOT;
+                options.waitMode = "NO_WAIT";
+                break;
+            case ATransaction_1.Isolation.READ_UNCOMMITED:
+                options.isolation = node_firebird_driver_native_1.TransactionIsolation.READ_COMMITTED;
+                options.readCommittedMode = "NO_RECORD_VERSION";
+                options.waitMode = "NO_WAIT";
+                break;
+            case ATransaction_1.Isolation.READ_COMMITED:
+            default:
+                options.isolation = node_firebird_driver_native_1.TransactionIsolation.READ_COMMITTED;
+                options.readCommittedMode = "RECORD_VERSION";
+                options.waitMode = "NO_WAIT";
+                break;
+        }
+        switch (this._options.accessMode) {
+            case ATransaction_1.AccessMode.READ_ONLY:
+                options.accessMode = "READ_ONLY";
+                break;
+            case ATransaction_1.AccessMode.READ_WRITE:
+            default:
+                options.accessMode = "READ_WRITE";
+        }
+        this._transaction = await this._connect.startTransaction(options);
     }
     async commit() {
         if (!this._transaction)

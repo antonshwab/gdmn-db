@@ -45,10 +45,10 @@ class FirebirdDatabase extends ADatabase_1.ADatabase {
             password: options.password
         });
     }
-    async createTransaction() {
+    async createTransaction(options) {
         if (!this._connect)
             throw new Error("Need database connection");
-        return new FirebirdTransaction_1.FirebirdTransaction(this._connect);
+        return new FirebirdTransaction_1.FirebirdTransaction(this._connect, options);
     }
     async disconnect() {
         if (!this._connect || !this._client)

@@ -1,12 +1,12 @@
 import { Attachment } from "node-firebird-driver-native";
-import { ATransaction, TNamedParams } from "../ATransaction";
+import { ATransaction, ITransactionOptions, TNamedParams } from "../ATransaction";
 import { DBStructure } from "../DBStructure";
 import { FirebirdStatement } from "./FirebirdStatement";
 import { FirebirdResultSet } from "./FirebirdResultSet";
 export declare class FirebirdTransaction extends ATransaction<FirebirdResultSet, FirebirdStatement> {
     private readonly _connect;
     private _transaction;
-    constructor(connect: Attachment);
+    constructor(connect: Attachment, options?: ITransactionOptions);
     start(): Promise<void>;
     commit(): Promise<void>;
     rollback(): Promise<void>;

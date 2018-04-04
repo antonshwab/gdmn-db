@@ -7,7 +7,33 @@ export type TNamedParams = { [paramName: string]: any };
 
 export type TTransaction = ATransaction<TResultSet, TStatement>;
 
+export enum AccessMode {
+    READ_WRITE, READ_ONLY
+}
+
+export enum Isolation {
+    READ_COMMITED,
+    READ_UNCOMMITED,
+    REPEATABLE_READ,
+    SERIALIZABLE
+}
+
+export interface ITransactionOptions {
+    isolation: Isolation;
+    accessMode: AccessMode;
+}
+
 export abstract class ATransaction<RS extends AResultSet, S extends AStatement<RS>> {
+
+    protected static _DEFAULT_OPTIONS: ITransactionOptions = {
+        isolation: Isolation.READ_COMMITED,
+        accessMode: AccessMode.READ_WRITE
+    };
+    protected _options: ITransactionOptions;
+
+    protected constructor(options: ITransactionOptions = ATransaction._DEFAULT_OPTIONS) {
+        this._options = options;
+    }
 
     static async executeFromParent<R>(sourceCallback: TExecutor<null, TTransaction>,
                                       resultCallback: TExecutor<TTransaction, R>): Promise<R> {

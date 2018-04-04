@@ -1,5 +1,5 @@
 import { TExecutor } from "./types";
-import { ATransaction, TTransaction } from "./ATransaction";
+import { ATransaction, ITransactionOptions, TTransaction } from "./ATransaction";
 import { AStatement, TStatement } from "./AStatement";
 import { AResultSet, TResultSet } from "./AResultSet";
 export declare type TDBOptions = {
@@ -82,6 +82,6 @@ export declare abstract class ADatabase<Options extends TDBOptions, RS extends A
     abstract dropDatabase(): Promise<void>;
     abstract connect(options: Options): Promise<void>;
     abstract disconnect(): Promise<void>;
-    abstract createTransaction(): Promise<T>;
+    abstract createTransaction(options?: ITransactionOptions): Promise<T>;
     abstract isConnected(): Promise<boolean>;
 }

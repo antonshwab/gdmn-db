@@ -2,7 +2,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const AStatement_1 = require("./AStatement");
 const AResultSet_1 = require("./AResultSet");
+var AccessMode;
+(function (AccessMode) {
+    AccessMode[AccessMode["READ_WRITE"] = 0] = "READ_WRITE";
+    AccessMode[AccessMode["READ_ONLY"] = 1] = "READ_ONLY";
+})(AccessMode = exports.AccessMode || (exports.AccessMode = {}));
+var Isolation;
+(function (Isolation) {
+    Isolation[Isolation["READ_COMMITED"] = 0] = "READ_COMMITED";
+    Isolation[Isolation["READ_UNCOMMITED"] = 1] = "READ_UNCOMMITED";
+    Isolation[Isolation["REPEATABLE_READ"] = 2] = "REPEATABLE_READ";
+    Isolation[Isolation["SERIALIZABLE"] = 3] = "SERIALIZABLE";
+})(Isolation = exports.Isolation || (exports.Isolation = {}));
 class ATransaction {
+    constructor(options = ATransaction._DEFAULT_OPTIONS) {
+        this._options = options;
+    }
     static async executeFromParent(sourceCallback, resultCallback) {
         let transaction;
         try {
@@ -54,5 +69,9 @@ class ATransaction {
         return await AResultSet_1.AResultSet.executeFromParent(() => transaction.executeSQL(sql, params), callback);
     }
 }
+ATransaction._DEFAULT_OPTIONS = {
+    isolation: Isolation.READ_COMMITED,
+    accessMode: AccessMode.READ_WRITE
+};
 exports.ATransaction = ATransaction;
 //# sourceMappingURL=ATransaction.js.map

@@ -1,5 +1,5 @@
 import {TExecutor} from "./types";
-import {ATransaction, TTransaction} from "./ATransaction";
+import {ATransaction, ITransactionOptions, TTransaction} from "./ATransaction";
 import {AStatement, TStatement} from "./AStatement";
 import {AResultSet, TResultSet} from "./AResultSet";
 
@@ -125,7 +125,7 @@ export abstract class ADatabase<Options extends TDBOptions,
 
     abstract async disconnect(): Promise<void>;
 
-    abstract async createTransaction(): Promise<T>;
+    abstract async createTransaction(options?: ITransactionOptions): Promise<T>;
 
     abstract async isConnected(): Promise<boolean>;
 }

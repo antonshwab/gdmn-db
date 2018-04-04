@@ -6,7 +6,24 @@ export declare type TNamedParams = {
     [paramName: string]: any;
 };
 export declare type TTransaction = ATransaction<TResultSet, TStatement>;
+export declare enum AccessMode {
+    READ_WRITE = 0,
+    READ_ONLY = 1,
+}
+export declare enum Isolation {
+    READ_COMMITED = 0,
+    READ_UNCOMMITED = 1,
+    REPEATABLE_READ = 2,
+    SERIALIZABLE = 3,
+}
+export interface ITransactionOptions {
+    isolation: Isolation;
+    accessMode: AccessMode;
+}
 export declare abstract class ATransaction<RS extends AResultSet, S extends AStatement<RS>> {
+    protected static _DEFAULT_OPTIONS: ITransactionOptions;
+    protected _options: ITransactionOptions;
+    protected constructor(options?: ITransactionOptions);
     static executeFromParent<R>(sourceCallback: TExecutor<null, TTransaction>, resultCallback: TExecutor<TTransaction, R>): Promise<R>;
     /**
      * Example:
