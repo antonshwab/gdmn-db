@@ -1,6 +1,6 @@
 import {createPool, Options, Pool} from "generic-pool";
 import {AConnectionPool} from "./AConnectionPool";
-import {ADatabase, TDatabase} from "./ADatabase";
+import {ADatabase, TDatabase, TDBOptions} from "./ADatabase";
 import {TTransaction} from "./ATransaction";
 import {TStatement} from "./AStatement";
 import {AResultSet} from "./AResultSet";
@@ -9,18 +9,18 @@ export type DefaultConnectionPoolOptions = Options;
 
 export type DBCreator<DB> = () => DB;
 
-export class DefaultConnectionPool<DBOptions> extends AConnectionPool<DefaultConnectionPoolOptions, DBOptions,
-    AResultSet, TStatement, TTransaction, TDatabase<DBOptions>> {
+export class DefaultConnectionPool<DBOptions> extends AConnectionPool<DefaultConnectionPoolOptions, TDBOptions,
+    AResultSet, TStatement, TTransaction, TDatabase> {
 
-    private readonly _databaseCreator: DBCreator<TDatabase<DBOptions>>;
-    private _connectionPool: null | Pool<TDatabase<DBOptions>> = null;
+    private readonly _databaseCreator: DBCreator<TDatabase>;
+    private _connectionPool: null | Pool<TDatabase> = null;
 
-    constructor(databaseCreator: DBCreator<TDatabase<DBOptions>>) {
+    constructor(databaseCreator: DBCreator<TDatabase>) {
         super();
         this._databaseCreator = databaseCreator;
     }
 
-    async create(dbOptions: DBOptions, options: DefaultConnectionPoolOptions): Promise<void> {
+    async create(dbOptions: TDBOptions, options: DefaultConnectionPoolOptions): Promise<void> {
         if (this._connectionPool) throw new Error("Connection pool already created");
 
         this._connectionPool = createPool({
@@ -47,7 +47,7 @@ export class DefaultConnectionPool<DBOptions> extends AConnectionPool<DefaultCon
         this._connectionPool = null;
     }
 
-    async get(): Promise<TDatabase<DBOptions>> {
+    async get(): Promise<TDatabase> {
         if (!this._connectionPool) throw new Error("Connection pool need created");
 
         return await this._connectionPool.acquire();
@@ -58,19 +58,19 @@ export class DefaultConnectionPool<DBOptions> extends AConnectionPool<DefaultCon
     }
 }
 
-class DatabaseProxy<DBOptions> extends ADatabase<DBOptions, AResultSet, TStatement, TTransaction> {
+class DatabaseProxy<DBOptions> extends ADatabase<TDBOptions, AResultSet, TStatement, TTransaction> {
 
-    private readonly _pool: Pool<TDatabase<DBOptions>>;
-    private readonly _databaseCreator: () => TDatabase<DBOptions>;
-    private _database: null | TDatabase<DBOptions> = null;
+    private readonly _pool: Pool<TDatabase>;
+    private readonly _databaseCreator: () => TDatabase;
+    private _database: null | TDatabase = null;
 
-    constructor(pool: Pool<TDatabase<DBOptions>>, databaseCreator: () => TDatabase<DBOptions>) {
+    constructor(pool: Pool<TDatabase>, databaseCreator: () => TDatabase) {
         super();
         this._pool = pool;
         this._databaseCreator = databaseCreator;
     }
 
-    async createDatabase(options: DBOptions): Promise<void> {
+    async createDatabase(options: TDBOptions): Promise<void> {
         throw new Error("Invalid operation for connection from the pool");
     }
 
@@ -78,7 +78,7 @@ class DatabaseProxy<DBOptions> extends ADatabase<DBOptions, AResultSet, TStateme
         throw new Error("Invalid operation for connection from the pool");
     }
 
-    async connect(options: DBOptions): Promise<void> {
+    async connect(options: TDBOptions): Promise<void> {
         if (this._database) throw new Error("Invalid operation for connection from the pool");
 
         this._database = this._databaseCreator();

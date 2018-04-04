@@ -1,20 +1,20 @@
 import {AModule} from "../AModule";
 import {TConnectionPool} from "../AConnectionPool";
 import {TDatabase} from "../ADatabase";
-import {FirebirdDatabase, FirebirdOptions} from "./FirebirdDatabase";
+import {FirebirdDatabase} from "./FirebirdDatabase";
 import {DefaultConnectionPool, DefaultConnectionPoolOptions} from "../DefaultConnectionPool";
 
-export class FirebirdModule extends AModule<void, FirebirdOptions> {
+export class FirebirdModule extends AModule<void> {
 
-    newDefaultConnectionPool(): TConnectionPool<DefaultConnectionPoolOptions, FirebirdOptions> {
+    newDefaultConnectionPool(): TConnectionPool<DefaultConnectionPoolOptions> {
         return new DefaultConnectionPool(() => new FirebirdDatabase());
     }
 
-    newConnectionPool(): TConnectionPool<void, FirebirdOptions> {
+    newConnectionPool(): TConnectionPool<void> {
         throw new Error("Unsupported yet");
     }
 
-    newDatabase(): TDatabase<FirebirdOptions> {
+    newDatabase(): TDatabase {
         return new FirebirdDatabase();
     }
 }

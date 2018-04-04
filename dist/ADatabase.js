@@ -59,9 +59,9 @@ class ADatabase {
      * })}
      * </pre>
      *
-     * @param {TDatabase<Opt>} database
-     * @param {Opt} options
-     * @param {TExecutor<TDatabase<Opt>, R>} callback
+     * @param {TDatabase} database
+     * @param {TDBOptions} options
+     * @param {TExecutor<TDatabase, R>} callback
      * @returns {Promise<R>}
      */
     static async executeConnection(database, options, callback) {
@@ -80,7 +80,7 @@ class ADatabase {
      * })}
      * </pre>
      *
-     * @param {TDatabase<Opt>} database
+     * @param {TDatabase} database
      * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */

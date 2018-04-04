@@ -17,7 +17,7 @@ class FirebirdDatabase extends ADatabase_1.ADatabase {
             url += `/${options.port}`;
         if (url)
             url += ":";
-        url += options.dbPath;
+        url += options.path;
         return url;
     }
     async createDatabase(options) {

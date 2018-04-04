@@ -25,10 +25,10 @@ class AConnectionPool {
      *      })}
      * </pre>
      *
-     * @param {TConnectionPool<Opt, DBOpt>} connectionPool
-     * @param {DBOpt} dbOptions
+     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TDBOptions} dbOptions
      * @param {Opt} options
-     * @param {TExecutor<TConnectionPool<Opt, DBOpt>, R>} callback
+     * @param {TExecutor<TConnectionPool<Opt>, R>} callback
      * @returns {Promise<R>}
      */
     static async executeConnectionPool(connectionPool, dbOptions, options, callback) {
@@ -47,8 +47,8 @@ class AConnectionPool {
      * })}
      * </pre>
      *
-     * @param {TConnectionPool<Opt, DBOpt>} connectionPool
-     * @param {TExecutor<TDatabase<DBOpt>, R>} callback
+     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TExecutor<TDatabase, R>} callback
      * @returns {Promise<R>}
      */
     static async executeDatabase(connectionPool, callback) {

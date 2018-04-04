@@ -1,11 +1,11 @@
 import { TExecutor } from "./types";
-import { ADatabase, TDatabase } from "./ADatabase";
+import { ADatabase, TDatabase, TDBOptions } from "./ADatabase";
 import { ATransaction, TTransaction } from "./ATransaction";
 import { AResultSet, TResultSet } from "./AResultSet";
 import { AStatement, TStatement } from "./AStatement";
-export declare type TConnectionPool<Opt, DBOpt> = AConnectionPool<Opt, DBOpt, TResultSet, TStatement, TTransaction, TDatabase<DBOpt>>;
-export declare abstract class AConnectionPool<Options, DBOptions, RS extends AResultSet, S extends AStatement<RS>, T extends ATransaction<RS, S>, D extends ADatabase<DBOptions, RS, S, T>> {
-    static executeFromParent<Opt, DBOpt, R>(sourceCallback: TExecutor<null, TConnectionPool<Opt, DBOpt>>, resultCallback: TExecutor<TConnectionPool<Opt, DBOpt>, R>): Promise<R>;
+export declare type TConnectionPool<Opt> = AConnectionPool<Opt, TDBOptions, TResultSet, TStatement, TTransaction, TDatabase>;
+export declare abstract class AConnectionPool<Options, DBOptions extends TDBOptions, RS extends AResultSet, S extends AStatement<RS>, T extends ATransaction<RS, S>, D extends ADatabase<DBOptions, RS, S, T>> {
+    static executeFromParent<Opt, DBOpt, R>(sourceCallback: TExecutor<null, TConnectionPool<Opt>>, resultCallback: TExecutor<TConnectionPool<Opt>, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -17,13 +17,13 @@ export declare abstract class AConnectionPool<Options, DBOptions, RS extends ARe
      *      })}
      * </pre>
      *
-     * @param {TConnectionPool<Opt, DBOpt>} connectionPool
-     * @param {DBOpt} dbOptions
+     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TDBOptions} dbOptions
      * @param {Opt} options
-     * @param {TExecutor<TConnectionPool<Opt, DBOpt>, R>} callback
+     * @param {TExecutor<TConnectionPool<Opt>, R>} callback
      * @returns {Promise<R>}
      */
-    static executeConnectionPool<Opt, DBOpt, R>(connectionPool: TConnectionPool<Opt, DBOpt>, dbOptions: DBOpt, options: Opt, callback: TExecutor<TConnectionPool<Opt, DBOpt>, R>): Promise<R>;
+    static executeConnectionPool<Opt, R>(connectionPool: TConnectionPool<Opt>, dbOptions: TDBOptions, options: Opt, callback: TExecutor<TConnectionPool<Opt>, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -34,11 +34,11 @@ export declare abstract class AConnectionPool<Options, DBOptions, RS extends ARe
      * })}
      * </pre>
      *
-     * @param {TConnectionPool<Opt, DBOpt>} connectionPool
-     * @param {TExecutor<TDatabase<DBOpt>, R>} callback
+     * @param {TConnectionPool<Opt>} connectionPool
+     * @param {TExecutor<TDatabase, R>} callback
      * @returns {Promise<R>}
      */
-    static executeDatabase<Opt, DBOpt, R>(connectionPool: TConnectionPool<Opt, DBOpt>, callback: TExecutor<TDatabase<DBOpt>, R>): Promise<R>;
+    static executeDatabase<Opt, R>(connectionPool: TConnectionPool<Opt>, callback: TExecutor<TDatabase, R>): Promise<R>;
     abstract isCreated(): Promise<boolean>;
     abstract create(dbOptions: DBOptions, options: Options): Promise<void>;
     abstract destroy(): Promise<void>;

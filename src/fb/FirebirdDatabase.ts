@@ -1,16 +1,10 @@
 import {Attachment, Client, createNativeClient, getDefaultLibraryFilename} from "node-firebird-driver-native";
-import {ADatabase} from "../ADatabase";
+import {ADatabase, TDBOptions} from "../ADatabase";
 import {FirebirdTransaction} from "./FirebirdTransaction";
 import {FirebirdStatement} from "./FirebirdStatement";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 
-export type FirebirdOptions = {
-    host?: string;
-    port?: number;
-    username?: string;
-    password?: string;
-    dbPath: string;
-}
+export type FirebirdOptions = TDBOptions;
 
 export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdStatement,
     FirebirdTransaction> {
@@ -27,7 +21,7 @@ export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultS
         if (options.host) url += options.host;
         if (options.port) url += `/${options.port}`;
         if (url) url += ":";
-        url += options.dbPath;
+        url += options.path;
         return url;
     }
 
