@@ -58,18 +58,8 @@ class DBStructure {
         this.loadRelations(relations);
         this.loadRelationConstraints(constraints);
     }
-    forEachRelation(f) {
-        for (const rn in this._relations) {
-            f(this._relations[rn]);
-        }
-    }
-    findRelation(f) {
-        for (const rn in this._relations) {
-            if (f(this._relations[rn]))
-                return this._relations[rn];
-        }
-    }
     relationByUqConstraint(constraintName) {
+<<<<<<< HEAD
         const found = this.findRelation(r => {
             const pk = r.primaryKey;
             return (pk && pk.name === constraintName) || !!r.unique[constraintName];
@@ -79,6 +69,14 @@ class DBStructure {
         }
         else {
             throw new Error(`Invalid constraint name ${constraintName}`);
+=======
+        for (const name in this._relations) {
+            const r = this._relations[name];
+            const pk = r.primaryKey;
+            if ((pk && pk.name === constraintName) || r.unique[constraintName]) {
+                return r;
+            }
+>>>>>>> 5765dba83853af5b7eb07fadeb81a0b079f74d87
         }
     }
     loadFields(fields) {

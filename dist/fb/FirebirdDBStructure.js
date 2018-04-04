@@ -23,7 +23,7 @@ class FirebirdDBStructure {
                 f.RDB$FIELD_TYPE,
                 f.RDB$NULL_FLAG 
             FROM RDB$FIELDS f
-        `, [], async (resultSet) => {
+        `, null, async (resultSet) => {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
@@ -42,7 +42,7 @@ class FirebirdDBStructure {
                 rf.RDB$NULL_FLAG
             FROM RDB$RELATION_FIELDS rf
             ORDER BY RDB$RELATION_NAME
-        `, [], async (resultSet) => {
+        `, null, async (resultSet) => {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
@@ -68,7 +68,7 @@ class FirebirdDBStructure {
                 JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = rc.RDB$INDEX_NAME
                 LEFT JOIN RDB$REF_CONSTRAINTS rfc ON rfc.RDB$CONSTRAINT_NAME = rc.RDB$CONSTRAINT_NAME
             ORDER BY rc.RDB$RELATION_NAME, rc.RDB$CONSTRAINT_NAME, s.RDB$FIELD_POSITION
-        `, [], async (resultSet) => {
+        `, null, async (resultSet) => {
             const array = [];
             while (await resultSet.next()) {
                 array.push({

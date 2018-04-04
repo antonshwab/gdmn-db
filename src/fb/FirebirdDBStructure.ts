@@ -7,7 +7,19 @@ import {DBStructure, IRDB$FIELD, IRDB$RELATIONCONSTRAINT, IRDB$RELATIONFIELD} fr
 
 export class FirebirdDBStructure {
 
+    /**
+     * Execute database connection, execute transaction and read the structure of database.
+     *
+     * @param {FirebirdOptions} options
+     * @returns {Promise<DBStructure>}
+     */
     static async readStructure(options: FirebirdOptions): Promise<DBStructure>;
+    /**
+     * Read the structure of database.
+     *
+     * @param {FirebirdTransaction} transaction
+     * @returns {Promise<DBStructure>}
+     */
     static async readStructure(transaction: FirebirdTransaction): Promise<DBStructure>;
     static async readStructure(source: FirebirdOptions | FirebirdTransaction): Promise<DBStructure> {
         if (source instanceof FirebirdTransaction) {
@@ -29,7 +41,7 @@ export class FirebirdDBStructure {
                 f.RDB$FIELD_TYPE,
                 f.RDB$NULL_FLAG 
             FROM RDB$FIELDS f
-        `, [], async resultSet => {
+        `, null, async resultSet => {
             const array: IRDB$FIELD[] = [];
             while (await resultSet.next()) {
                 array.push({
@@ -49,7 +61,7 @@ export class FirebirdDBStructure {
                 rf.RDB$NULL_FLAG
             FROM RDB$RELATION_FIELDS rf
             ORDER BY RDB$RELATION_NAME
-        `, [], async resultSet => {
+        `, null, async resultSet => {
             const array: IRDB$RELATIONFIELD[] = [];
             while (await resultSet.next()) {
                 array.push({
@@ -76,7 +88,7 @@ export class FirebirdDBStructure {
                 JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = rc.RDB$INDEX_NAME
                 LEFT JOIN RDB$REF_CONSTRAINTS rfc ON rfc.RDB$CONSTRAINT_NAME = rc.RDB$CONSTRAINT_NAME
             ORDER BY rc.RDB$RELATION_NAME, rc.RDB$CONSTRAINT_NAME, s.RDB$FIELD_POSITION
-        `, [], async resultSet => {
+        `, null, async resultSet => {
             const array: IRDB$RELATIONCONSTRAINT[] = [];
             while (await resultSet.next()) {
                 array.push({
