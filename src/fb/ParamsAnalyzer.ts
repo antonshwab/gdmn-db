@@ -65,7 +65,7 @@ export class ParamsAnalyzer {
     }
 
     private _generateName(number: number = Object.keys(this._tmpPlaceholders).length): string {
-        const name = ` $${number} `;
+        const name = `$${number}`;
         if (this._originalSql.search(name) !== -1) return this._generateName(number + 1);
         return name;
     }
