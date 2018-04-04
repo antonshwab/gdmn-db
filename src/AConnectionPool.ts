@@ -1,9 +1,8 @@
+import {TExecutor} from "./types";
 import {ADatabase, TDatabase} from "./ADatabase";
 import {ATransaction, TTransaction} from "./ATransaction";
 import {AResultSet, TResultSet} from "./AResultSet";
 import {AStatement, TStatement} from "./AStatement";
-
-export type TExecutor<Subject, Result> = ((subject: Subject) => Result) | ((subject: Subject) => Promise<Result>);
 
 export type TConnectionPool<Opt, DBOpt> = AConnectionPool<Opt, DBOpt, TResultSet, TStatement, TTransaction,
     TDatabase<DBOpt>>;

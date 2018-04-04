@@ -1,7 +1,10 @@
-import { TExecutor } from "./AConnectionPool";
+import { TExecutor } from "./types";
 import { AStatement, TStatement } from "./AStatement";
 import { AResultSet, TResultSet } from "./AResultSet";
 import { DBStructure } from "./DBStructure";
+export declare type TNamedParams = {
+    [paramName: string]: any;
+};
 export declare type TTransaction = ATransaction<TResultSet, TStatement>;
 export declare abstract class ATransaction<RS extends AResultSet, S extends AStatement<RS>> {
     static executeFromParent<R>(sourceCallback: TExecutor<null, TTransaction>, resultCallback: TExecutor<TTransaction, R>): Promise<R>;
@@ -35,12 +38,12 @@ export declare abstract class ATransaction<RS extends AResultSet, S extends ASta
      * @param {TExecutor<TResultSet, R>} callback
      * @returns {Promise<R>}
      */
-    static executeResultSet<R>(transaction: TTransaction, sql: string, params: any[] | undefined, callback: TExecutor<TResultSet, R>): Promise<R>;
+    static executeResultSet<R>(transaction: TTransaction, sql: string, params: null | any[] | TNamedParams, callback: TExecutor<TResultSet, R>): Promise<R>;
     abstract start(): Promise<void>;
     abstract commit(): Promise<void>;
     abstract rollback(): Promise<void>;
     abstract isActive(): Promise<boolean>;
     abstract prepareSQL(sql: string): Promise<S>;
-    abstract executeSQL(sql: string, params?: any[]): Promise<RS>;
+    abstract executeSQL(sql: string, params?: null | any[] | TNamedParams): Promise<RS>;
     abstract readDBStructure(): Promise<DBStructure>;
 }

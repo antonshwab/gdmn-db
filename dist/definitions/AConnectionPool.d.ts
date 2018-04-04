@@ -1,8 +1,8 @@
+import { TExecutor } from "./types";
 import { ADatabase, TDatabase } from "./ADatabase";
 import { ATransaction, TTransaction } from "./ATransaction";
 import { AResultSet, TResultSet } from "./AResultSet";
 import { AStatement, TStatement } from "./AStatement";
-export declare type TExecutor<Subject, Result> = ((subject: Subject) => Result) | ((subject: Subject) => Promise<Result>);
 export declare type TConnectionPool<Opt, DBOpt> = AConnectionPool<Opt, DBOpt, TResultSet, TStatement, TTransaction, TDatabase<DBOpt>>;
 export declare abstract class AConnectionPool<Options, DBOptions, RS extends AResultSet, S extends AStatement<RS>, T extends ATransaction<RS, S>, D extends ADatabase<DBOptions, RS, S, T>> {
     static executeFromParent<Opt, DBOpt, R>(sourceCallback: TExecutor<null, TConnectionPool<Opt, DBOpt>>, resultCallback: TExecutor<TConnectionPool<Opt, DBOpt>, R>): Promise<R>;

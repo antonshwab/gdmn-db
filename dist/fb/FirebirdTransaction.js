@@ -4,6 +4,7 @@ const ATransaction_1 = require("../ATransaction");
 const FirebirdStatement_1 = require("./FirebirdStatement");
 const FirebirdResultSet_1 = require("./FirebirdResultSet");
 const FirebirdDBStructure_1 = require("./FirebirdDBStructure");
+const ParamsAnalyzer_1 = require("./ParamsAnalyzer");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
     constructor(connect) {
         super();
@@ -33,13 +34,15 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
     async prepareSQL(sql) {
         if (!this._transaction)
             throw new Error("Need to open transaction");
-        const statement = await this._connect.prepare(this._transaction, sql);
-        return new FirebirdStatement_1.FirebirdStatement(this._connect, this._transaction, statement);
+        const paramsAnalyzer = new ParamsAnalyzer_1.ParamsAnalyzer(sql);
+        const statement = await this._connect.prepare(this._transaction, paramsAnalyzer.sql);
+        return new FirebirdStatement_1.FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
     }
     async executeSQL(sql, params) {
         if (!this._transaction)
             throw new Error("Need to open transaction");
-        const resultSet = await this._connect.executeQuery(this._transaction, sql, params);
+        const paramsAnalyzer = new ParamsAnalyzer_1.ParamsAnalyzer(sql);
+        const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
         return new FirebirdResultSet_1.FirebirdResultSet(this._connect, this._transaction, resultSet);
     }
     async readDBStructure() {

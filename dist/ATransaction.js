@@ -50,7 +50,7 @@ class ATransaction {
      * @param {TExecutor<TResultSet, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeResultSet(transaction, sql, params = [], callback) {
+    static async executeResultSet(transaction, sql, params, callback) {
         return await AResultSet_1.AResultSet.executeFromParent(() => transaction.executeSQL(sql, params), callback);
     }
 }

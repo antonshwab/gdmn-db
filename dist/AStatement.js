@@ -27,7 +27,7 @@ class AStatement {
      * @param {TExecutor<TResultSet, R>} callback
      * @returns {Promise<any>}
      */
-    static async executeResultSet(statement, params = [], callback) {
+    static async executeResultSet(statement, params, callback) {
         return await AResultSet_1.AResultSet.executeFromParent(() => statement.executeQuery(params), callback);
     }
 }
