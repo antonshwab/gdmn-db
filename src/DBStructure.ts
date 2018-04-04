@@ -110,14 +110,23 @@ export class DBStructure {
         this.loadRelationConstraints(constraints);
     }
 
-    public relationByUqConstraint(constraintName: string) {
-        for(const name in this._relations) {
-          const r = this._relations[name];
-          const pk = r.primaryKey;
-          if ((pk && pk.name === constraintName) || r.unique[constraintName]) {
-            return r;
-          }
+    public forEachRelation( f: (r: Relation) => void ) {
+        for (const rn in this._relations) {
+            f(this._relations[rn]);
         }
+    }
+
+    public findRelation( f: (r: Relation) => boolean ) {
+        for (const rn in this._relations) {
+            if (f(this._relations[rn])) return this._relations[rn];
+        }
+    }
+
+    public relationByUqConstraint(constraintName: string) {
+        return this.findRelation( r => {
+            const pk = r.primaryKey;
+            return (pk && pk.name === constraintName) || !!r.unique[constraintName];
+        });
     }
 
     private loadFields(fields: IRDB$FIELD[]) {

@@ -58,14 +58,22 @@ class DBStructure {
         this.loadRelations(relations);
         this.loadRelationConstraints(constraints);
     }
-    relationByUqConstraint(constraintName) {
-        for (const name in this._relations) {
-            const r = this._relations[name];
-            const pk = r.primaryKey;
-            if ((pk && pk.name === constraintName) || r.unique[constraintName]) {
-                return r;
-            }
+    forEachRelation(f) {
+        for (const rn in this._relations) {
+            f(this._relations[rn]);
         }
+    }
+    findRelation(f) {
+        for (const rn in this._relations) {
+            if (f(this._relations[rn]))
+                return this._relations[rn];
+        }
+    }
+    relationByUqConstraint(constraintName) {
+        return this.findRelation(r => {
+            const pk = r.primaryKey;
+            return (pk && pk.name === constraintName) || !!r.unique[constraintName];
+        });
     }
     loadFields(fields) {
         this._fields = fields.reduce((fields, item) => {
