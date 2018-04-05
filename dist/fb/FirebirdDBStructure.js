@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ADatabase_1 = require("../ADatabase");
 const ATransaction_1 = require("../ATransaction");
-const DBStructure_1 = require("../dbStructure/DBStructure");
+const DBStructure_1 = require("../DBStructure");
 const Factory_1 = require("../Factory");
 const FirebirdTransaction_1 = require("./FirebirdTransaction");
 class FirebirdDBStructure {

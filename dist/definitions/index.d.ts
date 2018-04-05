@@ -6,7 +6,7 @@ export * from "./AStatement";
 export * from "./AResultSet";
 export * from "./Factory";
 export * from "./default/connectionPool/DefaultConnectionPool";
-export * from "./dbStructure/DBStructure";
+export * from "./DBStructure";
 export * from "./fb/FirebirdDatabase";
 export * from "./fb/FirebirdTransaction";
 export * from "./fb/FirebirdStatement";

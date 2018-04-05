@@ -1,6 +1,6 @@
 import { AResultSet, TResultSet } from "./AResultSet";
 import { AStatement, TStatement } from "./AStatement";
-import { DBStructure } from "./dbStructure/DBStructure";
+import { DBStructure } from "./DBStructure";
 import { TExecutor } from "./types";
 export interface INamedParams {
     [paramName: string]: any;

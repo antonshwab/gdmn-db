@@ -1,4 +1,4 @@
-import { DBStructure } from "../dbStructure/DBStructure";
+import { DBStructure } from "../DBStructure";
 import { FirebirdOptions } from "./FirebirdDatabase";
 import { FirebirdTransaction } from "./FirebirdTransaction";
 export declare class FirebirdDBStructure {

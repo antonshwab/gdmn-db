@@ -1,6 +1,6 @@
 import {Attachment, Transaction, TransactionIsolation, TransactionOptions} from "node-firebird-driver-native";
 import {AccessMode, ATransaction, INamedParams, Isolation, ITransactionOptions} from "../ATransaction";
-import {DBStructure} from "../dbStructure/DBStructure";
+import {DBStructure} from "../DBStructure";
 import {FirebirdDBStructure} from "./FirebirdDBStructure";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";

@@ -1,6 +1,6 @@
 import {ADatabase} from "../ADatabase";
 import {ATransaction, TTransaction} from "../ATransaction";
-import {DBStructure, IRDB$FIELD, IRDB$RELATIONCONSTRAINT, IRDB$RELATIONFIELD} from "../dbStructure/DBStructure";
+import {DBStructure, IRDB$FIELD, IRDB$RELATIONCONSTRAINT, IRDB$RELATIONFIELD} from "../DBStructure";
 import {Factory} from "../Factory";
 import {FirebirdOptions} from "./FirebirdDatabase";
 import {FirebirdTransaction} from "./FirebirdTransaction";
