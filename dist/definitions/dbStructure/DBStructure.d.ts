@@ -79,7 +79,7 @@ export declare class DBStructure {
     readonly relations: IRelations;
     load(fields: IRDB$FIELD[], relations: IRDB$RELATIONFIELD[], constraints: IRDB$RELATIONCONSTRAINT[]): void;
     forEachRelation(f: (r: Relation) => void): void;
-    findRelation(f: (r: Relation) => boolean): null | Relation;
+    findRelation(f: (r: Relation) => boolean): Relation | null;
     relationByUqConstraint(constraintName: string): Relation;
     private loadFields(fields);
     private loadRelations(relationFields);

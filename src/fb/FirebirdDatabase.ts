@@ -88,7 +88,7 @@ export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultS
         return Boolean(this._connect);
     }
 
-    private _clearVariables() {
+    private _clearVariables(): void {
         this._connect = null;
         this._client = null;
     }

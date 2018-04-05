@@ -103,7 +103,7 @@ export class DBStructure {
         Object.entries(this._relations).forEach(([key, value]) => f(value));
     }
 
-    public findRelation(f: (r: Relation) => boolean): null | Relation {
+    public findRelation(f: (r: Relation) => boolean): Relation | null {
         const entry = Object.entries(this._relations).find(([key, value]) => f(value));
         if (entry) {
             return entry[1];
@@ -111,7 +111,7 @@ export class DBStructure {
         return null;
     }
 
-    public relationByUqConstraint(constraintName: string) {
+    public relationByUqConstraint(constraintName: string): Relation {
         const entry = Object.entries(this._relations).find(([key, value]) => {
             const pk = value.primaryKey;
             return (pk && pk.name === constraintName) || !!value.unique[constraintName];
@@ -122,14 +122,14 @@ export class DBStructure {
         throw new Error(`Invalid constraint name ${constraintName}`);
     }
 
-    private loadFields(fields: IRDB$FIELD[]) {
+    private loadFields(fields: IRDB$FIELD[]): void {
         this._fields = fields.reduce((loadedFields, item) => {
             loadedFields[item.RDB$FIELD_NAME] = new Field(item.RDB$FIELD_TYPE, !!item.RDB$NULL_FLAG);
             return loadedFields;
         }, {} as IFields);
     }
 
-    private loadRelations(relationFields: IRDB$RELATIONFIELD[]) {
+    private loadRelations(relationFields: IRDB$RELATIONFIELD[]): void {
         this._relations = relationFields.reduce((prev, item) => {
             if (prev.name !== item.RDB$RELATION_NAME) {
                 prev.name = item.RDB$RELATION_NAME;
@@ -140,7 +140,7 @@ export class DBStructure {
         }, {relations: {}, name: ""} as { relations: IRelations, name: string }).relations;
     }
 
-    private loadRelationConstraints(constraints: IRDB$RELATIONCONSTRAINT[]) {
+    private loadRelationConstraints(constraints: IRDB$RELATIONCONSTRAINT[]): void {
         constraints.forEach((item) => this._relations[item.RDB$RELATION_NAME].loadConstraintField(item));
     }
 }

@@ -14,11 +14,11 @@ export interface IUqConstraints {
 export declare class Relation {
     readonly name: string;
     private _relationFields;
-    private _primaryKey?;
+    private _primaryKey;
     private _foreignKeys;
     private _unique;
     constructor(name: string);
-    readonly primaryKey: RelationConstraint | undefined;
+    readonly primaryKey: RelationConstraint | null;
     readonly foreignKeys: IRefConstraints;
     readonly unique: IUqConstraints;
     loadField(field: IRDB$RELATIONFIELD): void;

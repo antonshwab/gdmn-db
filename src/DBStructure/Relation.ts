@@ -18,31 +18,31 @@ export interface IUqConstraints {
 export class Relation {
 
     private _relationFields: IRelationFields = {};
-    private _primaryKey?: RelationConstraint;
+    private _primaryKey: RelationConstraint | null = null;
     private _foreignKeys: IRefConstraints = {};
     private _unique: IUqConstraints = {};
 
     constructor(public readonly name: string) {
     }
 
-    get primaryKey() {
+    get primaryKey(): RelationConstraint | null {
         return this._primaryKey;
     }
 
-    get foreignKeys() {
+    get foreignKeys(): IRefConstraints {
         return this._foreignKeys;
     }
 
-    get unique() {
+    get unique(): IUqConstraints {
         return this._unique;
     }
 
-    public loadField(field: IRDB$RELATIONFIELD) {
+    public loadField(field: IRDB$RELATIONFIELD): void {
         this._relationFields[field.RDB$FIELD_NAME] = new RelationField(field.RDB$FIELD_NAME, field.RDB$FIELD_SOURCE,
             !!field.RDB$NULL_FLAG);
     }
 
-    public loadConstraintField(constraint: IRDB$RELATIONCONSTRAINT) {
+    public loadConstraintField(constraint: IRDB$RELATIONCONSTRAINT): void {
         switch (constraint.RDB$CONSTRAINT_TYPE) {
             case "PRIMARY KEY":
                 if (!this._primaryKey) {

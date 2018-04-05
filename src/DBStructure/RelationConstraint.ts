@@ -12,7 +12,7 @@ export class RelationConstraint {
         this.fields = fields;
     }
 
-    public loadField(data: IRDB$RELATIONCONSTRAINT) {
+    public loadField(data: IRDB$RELATIONCONSTRAINT): void {
         this.fields.push(data.RDB$FIELD_NAME);
     }
 }

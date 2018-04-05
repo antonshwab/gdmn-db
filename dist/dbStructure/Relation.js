@@ -7,6 +7,7 @@ class Relation {
     constructor(name) {
         this.name = name;
         this._relationFields = {};
+        this._primaryKey = null;
         this._foreignKeys = {};
         this._unique = {};
     }
