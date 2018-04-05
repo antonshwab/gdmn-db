@@ -1,16 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class ParamsAnalyzer {
-    constructor(originalSql) {
+class DefaultParamsAnalyzer {
+    constructor(originalSql, excludePatterns, placeholderPattern) {
         this._placeholdersNames = [];
         this._tmpPlaceholders = {};
         this._originalSql = originalSql;
-        let shortSql = this._originalSql;
-        shortSql = this._replace(ParamsAnalyzer.IN_LINE_COMMENT_PATTERN, shortSql);
-        shortSql = this._replace(ParamsAnalyzer.BLOCK_COMMENT_PATTERN, shortSql);
-        shortSql = this._replace(ParamsAnalyzer.VALUES_PATTERN, shortSql);
-        shortSql = this._replace(ParamsAnalyzer.BEGIN_END_BLOCK_PATTERN, shortSql);
-        shortSql = shortSql.replace(ParamsAnalyzer.PLACEHOLDER_PATTERN, (placeholder) => {
+        let shortSql = excludePatterns.reduce((sql, excludePattern) => {
+            return sql.replace(excludePattern, (str) => {
+                const key = this._generateName();
+                this._tmpPlaceholders[key] = str;
+                return key;
+            });
+        }, this._originalSql);
+        shortSql = shortSql.replace(placeholderPattern, (placeholder) => {
             this._placeholdersNames.push(placeholder.replace(":", ""));
             return "?".padEnd(placeholder.length); // for correct position sql errors
         });
@@ -41,13 +43,6 @@ class ParamsAnalyzer {
             }
         });
     }
-    _replace(pattern, sql) {
-        return sql.replace(pattern, (comment) => {
-            const key = this._generateName();
-            this._tmpPlaceholders[key] = comment;
-            return key;
-        });
-    }
     _generateName(count = Object.keys(this._tmpPlaceholders).length) {
         const name = `$${count}`;
         if (this._originalSql.search(name) !== -1) {
@@ -56,10 +51,5 @@ class ParamsAnalyzer {
         return name;
     }
 }
-ParamsAnalyzer.IN_LINE_COMMENT_PATTERN = /-{2}.*/g;
-ParamsAnalyzer.BLOCK_COMMENT_PATTERN = /\/\*[\s\S]*?\*\//g;
-ParamsAnalyzer.VALUES_PATTERN = /'[\s\S]*?'/g;
-ParamsAnalyzer.BEGIN_END_BLOCK_PATTERN = /BEGIN[\s\S]*END/gi;
-ParamsAnalyzer.PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
-exports.ParamsAnalyzer = ParamsAnalyzer;
-//# sourceMappingURL=ParamsAnalyzer.js.map
+exports.DefaultParamsAnalyzer = DefaultParamsAnalyzer;
+//# sourceMappingURL=DefaultParamsAnalyzer.js.map

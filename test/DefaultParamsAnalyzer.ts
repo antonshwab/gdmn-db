@@ -1,5 +1,6 @@
 import {expect} from "chai";
-import {ParamsAnalyzer} from "../src/fb/ParamsAnalyzer";
+import {DefaultParamsAnalyzer} from "../src/default/DefaultParamsAnalyzer";
+import {FirebirdTransaction} from "../src/fb/FirebirdTransaction";
 
 describe("analysis sql query for the presence of named parameters", () => {
 
@@ -14,7 +15,8 @@ describe("analysis sql query for the presence of named parameters", () => {
             field2: "field2"
         };
 
-        const analyzer = new ParamsAnalyzer(sql);
+        const analyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS,
+            FirebirdTransaction._PLACEHOLDER_PATTERN);
         expect(analyzer.sql).to.equal(
             "SELECT * FROM TABLE\n" +
             "WHERE FIELD = ?      \n" +
@@ -33,7 +35,8 @@ describe("analysis sql query for the presence of named parameters", () => {
             field2: "field2"
         };
 
-        const analyzer = new ParamsAnalyzer(sql);
+        const analyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS,
+            FirebirdTransaction._PLACEHOLDER_PATTERN);
         expect(analyzer.sql).to.equal(
             "SELECT * FROM TABLE --comment with :field\n" +
             "WHERE FIELD = /* comment with :field */?      \n" +
@@ -50,7 +53,8 @@ describe("analysis sql query for the presence of named parameters", () => {
             field1: "field1"
         };
 
-        const analyzer = new ParamsAnalyzer(sql);
+        const analyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS,
+            FirebirdTransaction._PLACEHOLDER_PATTERN);
         expect(analyzer.sql).to.equal(
             "SELECT * FROM TABLE\n" +
             "WHERE FIELD = ?      \n" +
@@ -70,7 +74,8 @@ describe("analysis sql query for the presence of named parameters", () => {
             id: "id"
         };
 
-        const analyzer = new ParamsAnalyzer(sql);
+        const analyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS,
+            FirebirdTransaction._PLACEHOLDER_PATTERN);
         expect(analyzer.sql).to.equal(
             "EXECUTE BLOCK (id int = ?  )\n" +
             "AS /*comment :id :key*/\n" +

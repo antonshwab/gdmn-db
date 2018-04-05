@@ -1,17 +1,20 @@
 import {Attachment, Statement, Transaction} from "node-firebird-driver-native";
 import {AStatement} from "../AStatement";
 import {INamedParams} from "../ATransaction";
+import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
 import {FirebirdResultSet} from "./FirebirdResultSet";
-import {ParamsAnalyzer} from "./ParamsAnalyzer";
 
 export class FirebirdStatement extends AStatement<FirebirdResultSet> {
 
     private readonly _connect: Attachment;
     private readonly _transaction: Transaction;
     private readonly _statement: Statement;
-    private readonly _paramsAnalyzer: ParamsAnalyzer;
+    private readonly _paramsAnalyzer: DefaultParamsAnalyzer;
 
-    constructor(connect: Attachment, transaction: Transaction, statement: Statement, paramsAnalyzer: ParamsAnalyzer) {
+    constructor(connect: Attachment,
+                transaction: Transaction,
+                statement: Statement,
+                paramsAnalyzer: DefaultParamsAnalyzer) {
         super();
         this._connect = connect;
         this._transaction = transaction;

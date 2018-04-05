@@ -4,29 +4,25 @@ interface ITmpPlaceholders {
     [placeholder: string]: string;
 }
 
-export class ParamsAnalyzer {// TODO make default
-
-    private static IN_LINE_COMMENT_PATTERN = /-{2}.*/g;
-    private static BLOCK_COMMENT_PATTERN = /\/\*[\s\S]*?\*\//g;
-    private static VALUES_PATTERN = /'[\s\S]*?'/g;
-    private static BEGIN_END_BLOCK_PATTERN = /BEGIN[\s\S]*END/gi;
-    private static PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
+export class DefaultParamsAnalyzer {
 
     private readonly _originalSql: string;
     private readonly _placeholdersNames: string[] = [];
     private readonly _tmpPlaceholders: ITmpPlaceholders = {};
     private readonly _sql: string;
 
-    constructor(originalSql: string) {
+    constructor(originalSql: string, excludePatterns: RegExp[], placeholderPattern: RegExp) {
         this._originalSql = originalSql;
 
-        let shortSql = this._originalSql;
-        shortSql = this._replace(ParamsAnalyzer.IN_LINE_COMMENT_PATTERN, shortSql);
-        shortSql = this._replace(ParamsAnalyzer.BLOCK_COMMENT_PATTERN, shortSql);
-        shortSql = this._replace(ParamsAnalyzer.VALUES_PATTERN, shortSql);
-        shortSql = this._replace(ParamsAnalyzer.BEGIN_END_BLOCK_PATTERN, shortSql);
+        let shortSql = excludePatterns.reduce((sql, excludePattern) => {
+            return sql.replace(excludePattern, (str) => {
+                const key = this._generateName();
+                this._tmpPlaceholders[key] = str;
+                return key;
+            });
+        }, this._originalSql);
 
-        shortSql = shortSql.replace(ParamsAnalyzer.PLACEHOLDER_PATTERN, (placeholder) => {
+        shortSql = shortSql.replace(placeholderPattern, (placeholder) => {
             this._placeholdersNames.push(placeholder.replace(":", ""));
             return "?".padEnd(placeholder.length); // for correct position sql errors
         });
@@ -59,14 +55,6 @@ export class ParamsAnalyzer {// TODO make default
                     `"${placeholder}" not provided for statement:\n\n${this._sql}\n\n` +
                     `this was provided: ${JSON.stringify(params)}`);
             }
-        });
-    }
-
-    private _replace(pattern: RegExp, sql: string): string {
-        return sql.replace(pattern, (comment) => {
-            const key = this._generateName();
-            this._tmpPlaceholders[key] = comment;
-            return key;
         });
     }
 

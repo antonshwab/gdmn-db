@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_driver_native_1 = require("node-firebird-driver-native");
 const ATransaction_1 = require("../ATransaction");
+const DefaultParamsAnalyzer_1 = require("../default/DefaultParamsAnalyzer");
 const FirebirdDBStructure_1 = require("./FirebirdDBStructure");
 const FirebirdResultSet_1 = require("./FirebirdResultSet");
 const FirebirdStatement_1 = require("./FirebirdStatement");
-const ParamsAnalyzer_1 = require("./ParamsAnalyzer");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
     constructor(connect, options) {
         super(options);
@@ -69,7 +69,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
-        const paramsAnalyzer = new ParamsAnalyzer_1.ParamsAnalyzer(sql);
+        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS, FirebirdTransaction._PLACEHOLDER_PATTERN);
         const statement = await this._connect.prepare(this._transaction, paramsAnalyzer.sql);
         return new FirebirdStatement_1.FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
     }
@@ -77,7 +77,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
-        const paramsAnalyzer = new ParamsAnalyzer_1.ParamsAnalyzer(sql);
+        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS, FirebirdTransaction._PLACEHOLDER_PATTERN);
         const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
         return new FirebirdResultSet_1.FirebirdResultSet(this._connect, this._transaction, resultSet);
     }
@@ -88,5 +88,12 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         return await FirebirdDBStructure_1.FirebirdDBStructure.readStructure(this);
     }
 }
+FirebirdTransaction._EXCLUDE_PATTERNS = [
+    /-{2}.*/g,
+    /\/\*[\s\S]*?\*\//g,
+    /'[\s\S]*?'/g,
+    /BEGIN[\s\S]*END/gi,
+];
+FirebirdTransaction._PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
 exports.FirebirdTransaction = FirebirdTransaction;
 //# sourceMappingURL=FirebirdTransaction.js.map

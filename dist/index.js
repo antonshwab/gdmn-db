@@ -10,6 +10,7 @@ __export(require("./AStatement"));
 __export(require("./AResultSet"));
 __export(require("./Factory"));
 __export(require("./default/connectionPool/DefaultConnectionPool"));
+__export(require("./default/DefaultParamsAnalyzer"));
 __export(require("./DBStructure"));
 __export(require("./fb/FirebirdDatabase"));
 __export(require("./fb/FirebirdTransaction"));
