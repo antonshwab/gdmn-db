@@ -5,6 +5,7 @@
     "object-literal-sort-keys": false,
     "member-ordering": [true, {"order": "fields-first"}],
     "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
-    "unified-signatures": false
+    "unified-signatures": false,
+    "no-console": false
   }
 }
