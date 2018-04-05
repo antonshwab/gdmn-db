@@ -1,0 +1,10 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "trailing-comma": false,
+    "object-literal-sort-keys": false,
+    "member-ordering": [true, {"order": "fields-first"}],
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
+    "unified-signatures": false
+  }
+}

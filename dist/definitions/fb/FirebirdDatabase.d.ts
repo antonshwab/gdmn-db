@@ -1,9 +1,9 @@
-import { ADatabase, TDBOptions } from "../ADatabase";
-import { FirebirdTransaction } from "./FirebirdTransaction";
-import { FirebirdStatement } from "./FirebirdStatement";
-import { FirebirdResultSet } from "./FirebirdResultSet";
+import { ADatabase, IDBOptions } from "../ADatabase";
 import { ITransactionOptions } from "../ATransaction";
-export declare type FirebirdOptions = TDBOptions;
+import { FirebirdResultSet } from "./FirebirdResultSet";
+import { FirebirdStatement } from "./FirebirdStatement";
+import { FirebirdTransaction } from "./FirebirdTransaction";
+export declare type FirebirdOptions = IDBOptions;
 export declare class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdStatement, FirebirdTransaction> {
     private _client;
     private _connect;

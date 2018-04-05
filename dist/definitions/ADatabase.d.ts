@@ -1,15 +1,15 @@
-import { TExecutor } from "./types";
-import { ATransaction, ITransactionOptions, TTransaction } from "./ATransaction";
-import { AStatement, TStatement } from "./AStatement";
 import { AResultSet, TResultSet } from "./AResultSet";
-export declare type TDBOptions = {
+import { AStatement, TStatement } from "./AStatement";
+import { ATransaction, ITransactionOptions, TTransaction } from "./ATransaction";
+import { TExecutor } from "./types";
+export interface IDBOptions {
     host: string;
     port: number;
     username: string;
     password: string;
     path: string;
-};
-export declare type TDatabase = ADatabase<TDBOptions, TResultSet, TStatement, TTransaction>;
+}
+export declare type TDatabase = ADatabase<IDBOptions, TResultSet, TStatement, TTransaction>;
 /**
  * Example:
  * <pre>
@@ -45,7 +45,7 @@ export declare type TDatabase = ADatabase<TDBOptions, TResultSet, TStatement, TT
  * })()
  * </pre>
  */
-export declare abstract class ADatabase<Options extends TDBOptions, RS extends AResultSet, S extends AStatement<RS>, T extends ATransaction<RS, S>> {
+export declare abstract class ADatabase<Options extends IDBOptions, RS extends AResultSet, S extends AStatement<RS>, T extends ATransaction<RS, S>> {
     static executeFromParent<Opt, R>(sourceCallback: TExecutor<null, TDatabase>, resultCallback: TExecutor<TDatabase, R>): Promise<R>;
     /**
      * Example:
@@ -58,11 +58,11 @@ export declare abstract class ADatabase<Options extends TDBOptions, RS extends A
      * </pre>
      *
      * @param {TDatabase} database
-     * @param {TDBOptions} options
+     * @param {IDBOptions} options
      * @param {TExecutor<TDatabase, R>} callback
      * @returns {Promise<R>}
      */
-    static executeConnection<R>(database: TDatabase, options: TDBOptions, callback: TExecutor<TDatabase, R>): Promise<R>;
+    static executeConnection<R>(database: TDatabase, options: IDBOptions, callback: TExecutor<TDatabase, R>): Promise<R>;
     /**
      * Example:
      * <pre>

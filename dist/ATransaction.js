@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const AStatement_1 = require("./AStatement");
 const AResultSet_1 = require("./AResultSet");
+const AStatement_1 = require("./AStatement");
 var AccessMode;
 (function (AccessMode) {
     AccessMode[AccessMode["READ_WRITE"] = 0] = "READ_WRITE";
@@ -54,9 +54,10 @@ class ATransaction {
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2], async (resultSet) => {
-     *      return await resultSet.getArrays();
-     * })}
+     * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2],
+     *      async (resultSet) => {
+     *          return await resultSet.getArrays();
+     *      })
      * </pre>
      *
      * @param {TTransaction} transaction

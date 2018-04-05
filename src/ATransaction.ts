@@ -1,9 +1,11 @@
-import {TExecutor} from "./types";
-import {AStatement, TStatement} from "./AStatement";
 import {AResultSet, TResultSet} from "./AResultSet";
-import {DBStructure} from "./DBStructure";
+import {AStatement, TStatement} from "./AStatement";
+import {DBStructure} from "./dbStructure/DBStructure";
+import {TExecutor} from "./types";
 
-export type TNamedParams = { [paramName: string]: any };
+export interface INamedParams {
+    [paramName: string]: any;
+}
 
 export type TTransaction = ATransaction<TResultSet, TStatement>;
 
@@ -35,8 +37,8 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
         this._options = options;
     }
 
-    static async executeFromParent<R>(sourceCallback: TExecutor<null, TTransaction>,
-                                      resultCallback: TExecutor<TTransaction, R>): Promise<R> {
+    public static async executeFromParent<R>(sourceCallback: TExecutor<null, TTransaction>,
+                                             resultCallback: TExecutor<TTransaction, R>): Promise<R> {
         let transaction: undefined | TTransaction;
         try {
             transaction = await sourceCallback(null);
@@ -66,7 +68,7 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
      * @param {TExecutor<TStatement, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeStatement<R>(
+    public static async executeStatement<R>(
         transaction: TTransaction,
         sql: string,
         callback: TExecutor<TStatement, R>
@@ -77,9 +79,10 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2], async (resultSet) => {
-     *      return await resultSet.getArrays();
-     * })}
+     * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2],
+     *      async (resultSet) => {
+     *          return await resultSet.getArrays();
+     *      })
      * </pre>
      *
      * @param {TTransaction} transaction
@@ -88,26 +91,26 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
      * @param {TExecutor<TResultSet, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeResultSet<R>(
+    public static async executeResultSet<R>(
         transaction: TTransaction,
         sql: string,
-        params: null | any[] | TNamedParams,
+        params: null | any[] | INamedParams,
         callback: TExecutor<TResultSet, R>
     ): Promise<R> {
         return await AResultSet.executeFromParent(() => transaction.executeSQL(sql, params), callback);
     }
 
-    abstract async start(): Promise<void>;
+    public abstract async start(): Promise<void>;
 
-    abstract async commit(): Promise<void>;
+    public abstract async commit(): Promise<void>;
 
-    abstract async rollback(): Promise<void>;
+    public abstract async rollback(): Promise<void>;
 
-    abstract async isActive(): Promise<boolean>;
+    public abstract async isActive(): Promise<boolean>;
 
-    abstract async prepareSQL(sql: string): Promise<S>;
+    public abstract async prepareSQL(sql: string): Promise<S>;
 
-    abstract async executeSQL(sql: string, params?: null | any[] | TNamedParams): Promise<RS>;
+    public abstract async executeSQL(sql: string, params?: null | any[] | INamedParams): Promise<RS>;
 
-    abstract async readDBStructure(): Promise<DBStructure>;
+    public abstract async readDBStructure(): Promise<DBStructure>;
 }

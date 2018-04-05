@@ -5,8 +5,8 @@ export * from "./ATransaction";
 export * from "./AStatement";
 export * from "./AResultSet";
 export * from "./Factory";
-export * from "./DefaultConnectionPool";
-export * from "./DBStructure";
+export * from "./default/connectionPool/DefaultConnectionPool";
+export * from "./dbStructure/DBStructure";
 
 export * from "./fb/FirebirdDatabase";
 export * from "./fb/FirebirdTransaction";

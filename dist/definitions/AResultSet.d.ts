@@ -1,8 +1,8 @@
 /// <reference types="node" />
 import { TExecutor } from "./types";
-export declare type TRow = {
+export interface IRow {
     [fieldName: string]: any;
-};
+}
 export declare type TResultSet = AResultSet;
 export declare abstract class AResultSet {
     readonly abstract position: number;
@@ -36,8 +36,8 @@ export declare abstract class AResultSet {
     abstract getAny(i: number): any;
     abstract getAny(name: string): any;
     abstract getAny(field: number | string): any;
-    abstract getObject(): TRow;
+    abstract getObject(): IRow;
     abstract getArray(): any[];
-    abstract getObjects(): Promise<TRow[]>;
+    abstract getObjects(): Promise<IRow[]>;
     abstract getArrays(): Promise<any[][]>;
 }

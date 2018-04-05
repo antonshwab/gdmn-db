@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ADatabase_1 = require("../ADatabase");
 const ATransaction_1 = require("../ATransaction");
-const FirebirdTransaction_1 = require("./FirebirdTransaction");
+const DBStructure_1 = require("../dbStructure/DBStructure");
 const Factory_1 = require("../Factory");
-const DBStructure_1 = require("../DBStructure");
+const FirebirdTransaction_1 = require("./FirebirdTransaction");
 class FirebirdDBStructure {
     static async readStructure(source) {
         if (source instanceof FirebirdTransaction_1.FirebirdTransaction) {
@@ -21,7 +21,7 @@ class FirebirdDBStructure {
             SELECT
                 TRIM(f.RDB$FIELD_NAME),
                 f.RDB$FIELD_TYPE,
-                f.RDB$NULL_FLAG 
+                f.RDB$NULL_FLAG
             FROM RDB$FIELDS f
         `, null, async (resultSet) => {
             const array = [];

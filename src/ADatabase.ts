@@ -1,17 +1,17 @@
-import {TExecutor} from "./types";
-import {ATransaction, ITransactionOptions, TTransaction} from "./ATransaction";
-import {AStatement, TStatement} from "./AStatement";
 import {AResultSet, TResultSet} from "./AResultSet";
+import {AStatement, TStatement} from "./AStatement";
+import {ATransaction, ITransactionOptions, TTransaction} from "./ATransaction";
+import {TExecutor} from "./types";
 
-export type TDBOptions = {
+export interface IDBOptions {
     host: string;
     port: number;
     username: string;
     password: string;
     path: string;
-};
+}
 
-export type TDatabase = ADatabase<TDBOptions, TResultSet, TStatement, TTransaction>;
+export type TDatabase = ADatabase<IDBOptions, TResultSet, TStatement, TTransaction>;
 
 /**
  * Example:
@@ -48,13 +48,13 @@ export type TDatabase = ADatabase<TDBOptions, TResultSet, TStatement, TTransacti
  * })()
  * </pre>
  */
-export abstract class ADatabase<Options extends TDBOptions,
+export abstract class ADatabase<Options extends IDBOptions,
     RS extends AResultSet,
     S extends AStatement<RS>,
     T extends ATransaction<RS, S>> {
 
-    static async executeFromParent<Opt, R>(sourceCallback: TExecutor<null, TDatabase>,
-                                           resultCallback: TExecutor<TDatabase, R>): Promise<R> {
+    public static async executeFromParent<Opt, R>(sourceCallback: TExecutor<null, TDatabase>,
+                                                  resultCallback: TExecutor<TDatabase, R>): Promise<R> {
         let database: undefined | TDatabase;
         try {
             database = await sourceCallback(null);
@@ -77,13 +77,13 @@ export abstract class ADatabase<Options extends TDBOptions,
      * </pre>
      *
      * @param {TDatabase} database
-     * @param {TDBOptions} options
+     * @param {IDBOptions} options
      * @param {TExecutor<TDatabase, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeConnection<R>(
+    public static async executeConnection<R>(
         database: TDatabase,
-        options: TDBOptions,
+        options: IDBOptions,
         callback: TExecutor<TDatabase, R>
     ): Promise<R> {
         return await ADatabase.executeFromParent(async () => {
@@ -106,7 +106,7 @@ export abstract class ADatabase<Options extends TDBOptions,
      * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransaction<R>(
+    public static async executeTransaction<R>(
         database: TDatabase,
         callback: TExecutor<TTransaction, R>
     ): Promise<R> {
@@ -117,15 +117,15 @@ export abstract class ADatabase<Options extends TDBOptions,
         }, callback);
     }
 
-    abstract async createDatabase(options: Options): Promise<void>;
+    public abstract async createDatabase(options: Options): Promise<void>;
 
-    abstract async dropDatabase(): Promise<void>;
+    public abstract async dropDatabase(): Promise<void>;
 
-    abstract async connect(options: Options): Promise<void>;
+    public abstract async connect(options: Options): Promise<void>;
 
-    abstract async disconnect(): Promise<void>;
+    public abstract async disconnect(): Promise<void>;
 
-    abstract async createTransaction(options?: ITransactionOptions): Promise<T>;
+    public abstract async createTransaction(options?: ITransactionOptions): Promise<T>;
 
-    abstract async isConnected(): Promise<boolean>;
+    public abstract async isConnected(): Promise<boolean>;
 }

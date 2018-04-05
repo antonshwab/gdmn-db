@@ -1,8 +1,8 @@
-import {AModule} from "../AModule";
 import {TConnectionPool} from "../AConnectionPool";
 import {TDatabase} from "../ADatabase";
+import {AModule} from "../AModule";
+import {DefaultConnectionPool, IDefaultConnectionPoolOptions} from "../default/connectionPool/DefaultConnectionPool";
 import {FirebirdDatabase} from "./FirebirdDatabase";
-import {DefaultConnectionPool, DefaultConnectionPoolOptions} from "../DefaultConnectionPool";
 
 export class FirebirdModule extends AModule<void> {
 
@@ -11,9 +11,9 @@ export class FirebirdModule extends AModule<void> {
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}
-     * @returns {TConnectionPool<DefaultConnectionPoolOptions>}
+     * @returns {TConnectionPool<IDefaultConnectionPoolOptions>}
      */
-    newDefaultConnectionPool(): TConnectionPool<DefaultConnectionPoolOptions> {
+    public newDefaultConnectionPool(): TConnectionPool<IDefaultConnectionPoolOptions> {
         return new DefaultConnectionPool(() => new FirebirdDatabase());
     }
 
@@ -22,7 +22,7 @@ export class FirebirdModule extends AModule<void> {
      *
      * @returns {TConnectionPool<void>}
      */
-    newConnectionPool(): TConnectionPool<void> {
+    public newConnectionPool(): TConnectionPool<void> {
         throw new Error("Unsupported yet");
     }
 
@@ -31,7 +31,7 @@ export class FirebirdModule extends AModule<void> {
      *
      * @returns {TDatabase}
      */
-    newDatabase(): TDatabase {
+    public newDatabase(): TDatabase {
         return new FirebirdDatabase();
     }
 }

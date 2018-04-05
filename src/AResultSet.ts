@@ -1,6 +1,8 @@
 import {TExecutor} from "./types";
 
-export type TRow = { [fieldName: string]: any };
+export interface IRow {
+    [fieldName: string]: any;
+}
 
 export type TResultSet = AResultSet;
 
@@ -8,8 +10,8 @@ export abstract class AResultSet {
 
     abstract get position(): number;
 
-    static async executeFromParent<R>(sourceCallback: TExecutor<null, TResultSet>,
-                                      resultCallback: TExecutor<TResultSet, R>): Promise<R> {
+    public static async executeFromParent<R>(sourceCallback: TExecutor<null, TResultSet>,
+                                             resultCallback: TExecutor<TResultSet, R>): Promise<R> {
         let resultSet: undefined | TResultSet;
         try {
             resultSet = await sourceCallback(null);
@@ -21,55 +23,55 @@ export abstract class AResultSet {
         }
     }
 
-    abstract async next(): Promise<boolean>;
+    public abstract async next(): Promise<boolean>;
 
-    abstract async previous(): Promise<boolean>;
+    public abstract async previous(): Promise<boolean>;
 
-    abstract async to(i: number): Promise<boolean>;
+    public abstract async to(i: number): Promise<boolean>;
 
-    abstract async first(): Promise<boolean>;
+    public abstract async first(): Promise<boolean>;
 
-    abstract async last(): Promise<boolean>;
+    public abstract async last(): Promise<boolean>;
 
-    abstract async isFirst(): Promise<boolean>;
+    public abstract async isFirst(): Promise<boolean>;
 
-    abstract async isLast(): Promise<boolean>;
+    public abstract async isLast(): Promise<boolean>;
 
-    abstract async close(): Promise<void>;
+    public abstract async close(): Promise<void>;
 
-    abstract async getBlobBuffer(i: number): Promise<null | Buffer>;
-    abstract async getBlobBuffer(name: string): Promise<null | Buffer>;
-    abstract async getBlobBuffer(field: number | string): Promise<null | Buffer>;
+    public abstract async getBlobBuffer(i: number): Promise<null | Buffer>;
+    public abstract async getBlobBuffer(name: string): Promise<null | Buffer>;
+    public abstract async getBlobBuffer(field: number | string): Promise<null | Buffer>;
 
-    abstract async getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
-    abstract async getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
-    abstract async getBlobStream(field: number | string): Promise<null | NodeJS.ReadableStream>;
+    public abstract async getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
+    public abstract async getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
+    public abstract async getBlobStream(field: number | string): Promise<null | NodeJS.ReadableStream>;
 
-    abstract getString(i: number): null | string;
-    abstract getString(name: string): null | string;
-    abstract getString(field: number | string): null | string;
+    public abstract getString(i: number): null | string;
+    public abstract getString(name: string): null | string;
+    public abstract getString(field: number | string): null | string;
 
-    abstract getNumber(i: number): null | number;
-    abstract getNumber(name: string): null | number;
-    abstract getNumber(field: number | string): null | number;
+    public abstract getNumber(i: number): null | number;
+    public abstract getNumber(name: string): null | number;
+    public abstract getNumber(field: number | string): null | number;
 
-    abstract getBoolean(i: number): null | boolean;
-    abstract getBoolean(name: string): null | boolean;
-    abstract getBoolean(field: number | string): null | boolean;
+    public abstract getBoolean(i: number): null | boolean;
+    public abstract getBoolean(name: string): null | boolean;
+    public abstract getBoolean(field: number | string): null | boolean;
 
-    abstract getDate(i: number): null | Date;
-    abstract getDate(name: string): null | Date;
-    abstract getDate(field: number | string): null | Date;
+    public abstract getDate(i: number): null | Date;
+    public abstract getDate(name: string): null | Date;
+    public abstract getDate(field: number | string): null | Date;
 
-    abstract getAny(i: number): any;
-    abstract getAny(name: string): any;
-    abstract getAny(field: number | string): any;
+    public abstract getAny(i: number): any;
+    public abstract getAny(name: string): any;
+    public abstract getAny(field: number | string): any;
 
-    abstract getObject(): TRow;
+    public abstract getObject(): IRow;
 
-    abstract getArray(): any[];
+    public abstract getArray(): any[];
 
-    abstract async getObjects(): Promise<TRow[]>;
+    public abstract async getObjects(): Promise<IRow[]>;
 
-    abstract async getArrays(): Promise<any[][]>;
+    public abstract async getArrays(): Promise<any[][]>;
 }

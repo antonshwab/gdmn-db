@@ -5,14 +5,14 @@ class ParamsAnalyzer {
         this._placeholdersNames = [];
         this._tmpPlaceholders = {};
         this._originalSql = originalSql;
-        let shortSql = this.originalSql;
+        let shortSql = this._originalSql;
         shortSql = this._replace(ParamsAnalyzer.IN_LINE_COMMENT_PATTERN, shortSql);
         shortSql = this._replace(ParamsAnalyzer.BLOCK_COMMENT_PATTERN, shortSql);
         shortSql = this._replace(ParamsAnalyzer.VALUES_PATTERN, shortSql);
         shortSql = this._replace(ParamsAnalyzer.BEGIN_END_BLOCK_PATTERN, shortSql);
-        shortSql = shortSql.replace(ParamsAnalyzer.PLACEHOLDER_PATTERN, placeholder => {
+        shortSql = shortSql.replace(ParamsAnalyzer.PLACEHOLDER_PATTERN, (placeholder) => {
             this._placeholdersNames.push(placeholder.replace(":", ""));
-            return "?".padEnd(placeholder.length); //for correct position sql errors
+            return "?".padEnd(placeholder.length); // for correct position sql errors
         });
         this._sql = Object.entries(this._tmpPlaceholders)
             .reduce((sql, [key, value]) => sql.replace(key, value), shortSql);
@@ -24,11 +24,13 @@ class ParamsAnalyzer {
         return this._sql;
     }
     prepareParams(params) {
-        if (!params)
+        if (!params) {
             return [];
-        if (Array.isArray(params))
+        }
+        if (Array.isArray(params)) {
             return params;
-        return this._placeholdersNames.map(placeholder => {
+        }
+        return this._placeholdersNames.map((placeholder) => {
             if (placeholder in params) {
                 return params[placeholder];
             }
@@ -40,16 +42,17 @@ class ParamsAnalyzer {
         });
     }
     _replace(pattern, sql) {
-        return sql.replace(pattern, comment => {
+        return sql.replace(pattern, (comment) => {
             const key = this._generateName();
             this._tmpPlaceholders[key] = comment;
             return key;
         });
     }
-    _generateName(number = Object.keys(this._tmpPlaceholders).length) {
-        const name = `$${number}`;
-        if (this._originalSql.search(name) !== -1)
-            return this._generateName(number + 1);
+    _generateName(count = Object.keys(this._tmpPlaceholders).length) {
+        const name = `$${count}`;
+        if (this._originalSql.search(name) !== -1) {
+            return this._generateName(count + 1);
+        }
         return name;
     }
 }

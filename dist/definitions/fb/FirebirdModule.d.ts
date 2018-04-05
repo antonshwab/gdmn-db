@@ -1,16 +1,16 @@
-import { AModule } from "../AModule";
 import { TConnectionPool } from "../AConnectionPool";
 import { TDatabase } from "../ADatabase";
-import { DefaultConnectionPoolOptions } from "../DefaultConnectionPool";
+import { AModule } from "../AModule";
+import { IDefaultConnectionPoolOptions } from "../default/connectionPool/DefaultConnectionPool";
 export declare class FirebirdModule extends AModule<void> {
     /**
      * Create object for access to a default connection pool of driver.
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}
-     * @returns {TConnectionPool<DefaultConnectionPoolOptions>}
+     * @returns {TConnectionPool<IDefaultConnectionPoolOptions>}
      */
-    newDefaultConnectionPool(): TConnectionPool<DefaultConnectionPoolOptions>;
+    newDefaultConnectionPool(): TConnectionPool<IDefaultConnectionPoolOptions>;
     /**
      * Do not support this driver
      *

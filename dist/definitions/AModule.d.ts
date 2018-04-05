@@ -1,6 +1,6 @@
 import { TConnectionPool } from "./AConnectionPool";
 import { TDatabase } from "./ADatabase";
-import { DefaultConnectionPoolOptions } from "./DefaultConnectionPool";
+import { IDefaultConnectionPoolOptions } from "./default/connectionPool/DefaultConnectionPool";
 export declare abstract class AModule<PoolOptions> {
     /**
      * Create object for access to the database
@@ -19,7 +19,7 @@ export declare abstract class AModule<PoolOptions> {
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}
-     * @returns {TConnectionPool<DefaultConnectionPoolOptions>}
+     * @returns {TConnectionPool<IDefaultConnectionPoolOptions>}
      */
-    abstract newDefaultConnectionPool(): TConnectionPool<DefaultConnectionPoolOptions>;
+    abstract newDefaultConnectionPool(): TConnectionPool<IDefaultConnectionPoolOptions>;
 }

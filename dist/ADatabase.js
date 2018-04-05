@@ -60,7 +60,7 @@ class ADatabase {
      * </pre>
      *
      * @param {TDatabase} database
-     * @param {TDBOptions} options
+     * @param {IDBOptions} options
      * @param {TExecutor<TDatabase, R>} callback
      * @returns {Promise<R>}
      */

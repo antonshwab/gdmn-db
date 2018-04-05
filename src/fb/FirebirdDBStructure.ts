@@ -1,9 +1,9 @@
 import {ADatabase} from "../ADatabase";
 import {ATransaction, TTransaction} from "../ATransaction";
+import {DBStructure, IRDB$FIELD, IRDB$RELATIONCONSTRAINT, IRDB$RELATIONFIELD} from "../dbStructure/DBStructure";
+import {Factory} from "../Factory";
 import {FirebirdOptions} from "./FirebirdDatabase";
 import {FirebirdTransaction} from "./FirebirdTransaction";
-import {Factory} from "../Factory";
-import {DBStructure, IRDB$FIELD, IRDB$RELATIONCONSTRAINT, IRDB$RELATIONFIELD} from "../DBStructure";
 
 export class FirebirdDBStructure {
 
@@ -13,22 +13,22 @@ export class FirebirdDBStructure {
      * @param {FirebirdOptions} options
      * @returns {Promise<DBStructure>}
      */
-    static async readStructure(options: FirebirdOptions): Promise<DBStructure>;
+    public static async readStructure(options: FirebirdOptions): Promise<DBStructure>;
     /**
      * Read the structure of database.
      *
      * @param {FirebirdTransaction} transaction
      * @returns {Promise<DBStructure>}
      */
-    static async readStructure(transaction: FirebirdTransaction): Promise<DBStructure>;
-    static async readStructure(source: FirebirdOptions | FirebirdTransaction): Promise<DBStructure> {
+    public static async readStructure(transaction: FirebirdTransaction): Promise<DBStructure>;
+    public static async readStructure(source: FirebirdOptions | FirebirdTransaction): Promise<DBStructure> {
         if (source instanceof FirebirdTransaction) {
             return await FirebirdDBStructure.read(source);
         }
 
         return await ADatabase.executeConnection(Factory.FBModule.newDatabase(), source,
-            async database => {
-                return await ADatabase.executeTransaction(database, async transaction => {
+            async (database) => {
+                return await ADatabase.executeTransaction(database, async (transaction) => {
                     return await FirebirdDBStructure.read(transaction);
                 });
             });
@@ -39,9 +39,9 @@ export class FirebirdDBStructure {
             SELECT
                 TRIM(f.RDB$FIELD_NAME),
                 f.RDB$FIELD_TYPE,
-                f.RDB$NULL_FLAG 
+                f.RDB$NULL_FLAG
             FROM RDB$FIELDS f
-        `, null, async resultSet => {
+        `, null, async (resultSet) => {
             const array: IRDB$FIELD[] = [];
             while (await resultSet.next()) {
                 array.push({
@@ -61,7 +61,7 @@ export class FirebirdDBStructure {
                 rf.RDB$NULL_FLAG
             FROM RDB$RELATION_FIELDS rf
             ORDER BY RDB$RELATION_NAME
-        `, null, async resultSet => {
+        `, null, async (resultSet) => {
             const array: IRDB$RELATIONFIELD[] = [];
             while (await resultSet.next()) {
                 array.push({
@@ -88,7 +88,7 @@ export class FirebirdDBStructure {
                 JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = rc.RDB$INDEX_NAME
                 LEFT JOIN RDB$REF_CONSTRAINTS rfc ON rfc.RDB$CONSTRAINT_NAME = rc.RDB$CONSTRAINT_NAME
             ORDER BY rc.RDB$RELATION_NAME, rc.RDB$CONSTRAINT_NAME, s.RDB$FIELD_POSITION
-        `, null, async resultSet => {
+        `, null, async (resultSet) => {
             const array: IRDB$RELATIONCONSTRAINT[] = [];
             while (await resultSet.next()) {
                 array.push({

@@ -1,9 +1,9 @@
 import {Attachment, Transaction, TransactionIsolation, TransactionOptions} from "node-firebird-driver-native";
-import {AccessMode, ATransaction, Isolation, ITransactionOptions, TNamedParams} from "../ATransaction";
-import {DBStructure} from "../DBStructure";
-import {FirebirdStatement} from "./FirebirdStatement";
-import {FirebirdResultSet} from "./FirebirdResultSet";
+import {AccessMode, ATransaction, INamedParams, Isolation, ITransactionOptions} from "../ATransaction";
+import {DBStructure} from "../dbStructure/DBStructure";
 import {FirebirdDBStructure} from "./FirebirdDBStructure";
+import {FirebirdResultSet} from "./FirebirdResultSet";
+import {FirebirdStatement} from "./FirebirdStatement";
 import {ParamsAnalyzer} from "./ParamsAnalyzer";
 
 export class FirebirdTransaction extends ATransaction<FirebirdResultSet, FirebirdStatement> {
@@ -16,8 +16,10 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
         this._connect = connect;
     }
 
-    async start(): Promise<void> {
-        if (this._transaction) throw new Error("Transaction already opened");
+    public async start(): Promise<void> {
+        if (this._transaction) {
+            throw new Error("Transaction already opened");
+        }
 
         const options: TransactionOptions = {};
         switch (this._options.isolation) {
@@ -54,34 +56,42 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
         this._transaction = await this._connect.startTransaction(options);
     }
 
-    async commit(): Promise<void> {
-        if (!this._transaction) throw new Error("Need to open transaction");
+    public async commit(): Promise<void> {
+        if (!this._transaction) {
+            throw new Error("Need to open transaction");
+        }
 
         await this._transaction.commit();
         this._transaction = null;
     }
 
-    async rollback(): Promise<void> {
-        if (!this._transaction) throw new Error("Need to open transaction");
+    public async rollback(): Promise<void> {
+        if (!this._transaction) {
+            throw new Error("Need to open transaction");
+        }
 
         await this._transaction.rollback();
         this._transaction = null;
     }
 
-    async isActive(): Promise<boolean> {
+    public async isActive(): Promise<boolean> {
         return Boolean(this._transaction);
     }
 
-    async prepareSQL(sql: string): Promise<FirebirdStatement> {
-        if (!this._transaction) throw new Error("Need to open transaction");
+    public async prepareSQL(sql: string): Promise<FirebirdStatement> {
+        if (!this._transaction) {
+            throw new Error("Need to open transaction");
+        }
 
         const paramsAnalyzer = new ParamsAnalyzer(sql);
         const statement = await this._connect.prepare(this._transaction, paramsAnalyzer.sql);
         return new FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
     }
 
-    async executeSQL(sql: string, params?: any[] | TNamedParams): Promise<FirebirdResultSet> {
-        if (!this._transaction) throw new Error("Need to open transaction");
+    public async executeSQL(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet> {
+        if (!this._transaction) {
+            throw new Error("Need to open transaction");
+        }
 
         const paramsAnalyzer = new ParamsAnalyzer(sql);
         const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql,
@@ -89,8 +99,10 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
         return new FirebirdResultSet(this._connect, this._transaction, resultSet);
     }
 
-    async readDBStructure(): Promise<DBStructure> {
-        if (!this._transaction) throw new Error("Need to open transaction");
+    public async readDBStructure(): Promise<DBStructure> {
+        if (!this._transaction) {
+            throw new Error("Need to open transaction");
+        }
 
         return await FirebirdDBStructure.readStructure(this);
     }

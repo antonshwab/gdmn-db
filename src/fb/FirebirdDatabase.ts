@@ -1,11 +1,11 @@
 import {Attachment, Client, createNativeClient, getDefaultLibraryFilename} from "node-firebird-driver-native";
-import {ADatabase, TDBOptions} from "../ADatabase";
-import {FirebirdTransaction} from "./FirebirdTransaction";
-import {FirebirdStatement} from "./FirebirdStatement";
-import {FirebirdResultSet} from "./FirebirdResultSet";
+import {ADatabase, IDBOptions} from "../ADatabase";
 import {ITransactionOptions} from "../ATransaction";
+import {FirebirdResultSet} from "./FirebirdResultSet";
+import {FirebirdStatement} from "./FirebirdStatement";
+import {FirebirdTransaction} from "./FirebirdTransaction";
 
-export type FirebirdOptions = TDBOptions;
+export type FirebirdOptions = IDBOptions;
 
 export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdStatement,
     FirebirdTransaction> {
@@ -19,15 +19,23 @@ export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultS
 
     private static _optionsToUri(options: FirebirdOptions): string {
         let url = "";
-        if (options.host) url += options.host;
-        if (options.port) url += `/${options.port}`;
-        if (url) url += ":";
+        if (options.host) {
+            url += options.host;
+        }
+        if (options.port) {
+            url += `/${options.port}`;
+        }
+        if (url) {
+            url += ":";
+        }
         url += options.path;
         return url;
     }
 
-    async createDatabase(options: FirebirdOptions): Promise<void> {
-        if (this._connect) throw new Error("Database already connected");
+    public async createDatabase(options: FirebirdOptions): Promise<void> {
+        if (this._connect) {
+            throw new Error("Database already connected");
+        }
 
         this._client = createNativeClient(getDefaultLibraryFilename());
         this._connect = await this._client.createDatabase(FirebirdDatabase._optionsToUri(options), {
@@ -36,16 +44,20 @@ export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultS
         });
     }
 
-    async dropDatabase(): Promise<void> {
-        if (!this._connect || !this._client) throw new Error("Need database connection");
+    public async dropDatabase(): Promise<void> {
+        if (!this._connect || !this._client) {
+            throw new Error("Need database connection");
+        }
 
         await this._connect.dropDatabase();
         await this._client.dispose();
         this._clearVariables();
     }
 
-    async connect(options: FirebirdOptions): Promise<void> {
-        if (this._connect) throw new Error("Database already connected");
+    public async connect(options: FirebirdOptions): Promise<void> {
+        if (this._connect) {
+            throw new Error("Database already connected");
+        }
 
         this._client = createNativeClient(getDefaultLibraryFilename());
         this._connect = await this._client.connect(FirebirdDatabase._optionsToUri(options), {
@@ -54,21 +66,25 @@ export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultS
         });
     }
 
-    async createTransaction(options?: ITransactionOptions): Promise<FirebirdTransaction> {
-        if (!this._connect) throw new Error("Need database connection");
+    public async createTransaction(options?: ITransactionOptions): Promise<FirebirdTransaction> {
+        if (!this._connect) {
+            throw new Error("Need database connection");
+        }
 
         return new FirebirdTransaction(this._connect, options);
     }
 
-    async disconnect(): Promise<void> {
-        if (!this._connect || !this._client) throw new Error("Need database connection");
+    public async disconnect(): Promise<void> {
+        if (!this._connect || !this._client) {
+            throw new Error("Need database connection");
+        }
 
         await this._connect.disconnect();
         await this._client.dispose();
         this._clearVariables();
     }
 
-    async isConnected(): Promise<boolean> {
+    public async isConnected(): Promise<boolean> {
         return Boolean(this._connect);
     }
 

@@ -1,6 +1,6 @@
 import {Attachment, Blob, ResultSet, Transaction} from "node-firebird-driver-native";
 import {Readable} from "stream";
-import {AResultSet, TRow} from "../AResultSet";
+import {AResultSet, IRow} from "../AResultSet";
 
 export class FirebirdResultSet extends AResultSet {
 
@@ -22,13 +22,13 @@ export class FirebirdResultSet extends AResultSet {
         return this._currentIndex;
     }
 
-    async next(): Promise<boolean> {
+    public async next(): Promise<boolean> {
         if (this._currentIndex < this._data.length - 1) {
             this._currentIndex++;
             return true;
         }
 
-        //loading next row
+        // loading next row
         if (!this._done) {
             const newResult = await this._resultSet.fetch({fetchSize: 1});
             if (newResult.length) {
@@ -41,7 +41,7 @@ export class FirebirdResultSet extends AResultSet {
         return false;
     }
 
-    async previous(): Promise<boolean> {
+    public async previous(): Promise<boolean> {
         if (this._currentIndex > 0) {
             this._currentIndex--;
             return true;
@@ -49,22 +49,24 @@ export class FirebirdResultSet extends AResultSet {
         return false;
     }
 
-    async to(i: number): Promise<boolean> {
+    public async to(i: number): Promise<boolean> {
         if (i < this._data.length && i >= 0) {
             this._currentIndex = i;
             return true;
         }
 
-        //loading all rows
+        // loading all rows
         if (!this._done) {
             while (await this.next()) {
-                if (this._currentIndex === i) return true;
+                if (this._currentIndex === i) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    async first(): Promise<boolean> {
+    public async first(): Promise<boolean> {
         if (this._data.length) {
             this._currentIndex = 0;
             return true;
@@ -72,10 +74,11 @@ export class FirebirdResultSet extends AResultSet {
         return false;
     }
 
-    async last(): Promise<boolean> {
-        //loading all rows
+    public async last(): Promise<boolean> {
+        // loading all rows
         if (!this._done) {
             while (await this.next()) {
+                // nothing
             }
         }
 
@@ -86,12 +89,12 @@ export class FirebirdResultSet extends AResultSet {
         return false;
     }
 
-    async isFirst(): Promise<boolean> {
+    public async isFirst(): Promise<boolean> {
         return this._currentIndex === 0;
     }
 
-    async isLast(): Promise<boolean> {
-        //loading and check next
+    public async isLast(): Promise<boolean> {
+        // loading and check next
         if (!this._done) {
             if (await this.next()) {
                 await this.previous();
@@ -104,16 +107,18 @@ export class FirebirdResultSet extends AResultSet {
         return this._currentIndex === this._data.length - 1;
     }
 
-    async close(): Promise<void> {
+    public async close(): Promise<void> {
         await this._resultSet.close();
         this._done = true;
     }
 
-    async getBlobBuffer(i: number): Promise<null | Buffer>;
-    async getBlobBuffer(name: string): Promise<null | Buffer>;
-    async getBlobBuffer(field: number | string): Promise<null | Buffer> {
+    public async getBlobBuffer(i: number): Promise<null | Buffer>;
+    public async getBlobBuffer(name: string): Promise<null | Buffer>;
+    public async getBlobBuffer(field: number | string): Promise<null | Buffer> {
         const value = this._getValue(field);
-        if (value === null || value === undefined) return null;
+        if (value === null || value === undefined) {
+            return null;
+        }
         if (value instanceof Blob) {
             const blobStream = await this._connect.openBlob(this._transaction, value);
             const length = await blobStream.length;
@@ -121,7 +126,7 @@ export class FirebirdResultSet extends AResultSet {
             const buffers: Buffer[] = [];
             let i = 0;
             while (i < length) {
-                let size = length - i < 1024 * 16 ? length - i : 1024 * 16;
+                const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
                 i += size;
                 const buffer = Buffer.alloc(size);
                 buffers.push(buffer);
@@ -132,11 +137,13 @@ export class FirebirdResultSet extends AResultSet {
         return null;
     }
 
-    async getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
-    async getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
-    async getBlobStream(field: number | string): Promise<null | NodeJS.ReadableStream> {
+    public async getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
+    public async getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
+    public async getBlobStream(field: number | string): Promise<null | NodeJS.ReadableStream> {
         const value = this._getValue(field);
-        if (value === null || value === undefined) return null;
+        if (value === null || value === undefined) {
+            return null;
+        }
         const stream = new Readable({read: () => null});
         if (value instanceof Blob) {
             const blobStream = await this._connect.openBlob(this._transaction, value);
@@ -145,11 +152,11 @@ export class FirebirdResultSet extends AResultSet {
             const buffers: Buffer[] = [];
             let i = 0;
             while (i < length) {
-                let size = length - i < 1024 * 16 ? length - i : 1024 * 16;
+                const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
                 i += size;
                 buffers.push(Buffer.alloc(size));
             }
-            const promises = buffers.map(async buffer => {
+            const promises = buffers.map(async (buffer) => {
                 await blobStream.read(buffer);
                 stream.push(buffer);
             });
@@ -158,67 +165,76 @@ export class FirebirdResultSet extends AResultSet {
         return stream;
     }
 
-    getBoolean(i: number): null | boolean;
-    getBoolean(name: string): null | boolean;
-    getBoolean(field: number | string): null | boolean {
+    public getBoolean(i: number): null | boolean;
+    public getBoolean(name: string): null | boolean;
+    public getBoolean(field: number | string): null | boolean {
         const value = this._getValue(field);
-        if (value === null || value === undefined) return null;
+        if (value === null || value === undefined) {
+            return null;
+        }
         return Boolean(this._getValue(field));
     }
 
-    getDate(i: number): null | Date;
-    getDate(name: string): null | Date;
-    getDate(field: number | string): null | Date {
+    public getDate(i: number): null | Date;
+    public getDate(name: string): null | Date;
+    public getDate(field: number | string): null | Date {
         const value = this._getValue(field);
-        if (value === null || value === undefined) return null;
+        if (value === null || value === undefined) {
+            return null;
+        }
         return new Date(value);
     }
 
-    getNumber(i: number): null | number;
-    getNumber(name: string): null | number;
-    getNumber(field: number | string): null | number {
+    public getNumber(i: number): null | number;
+    public getNumber(name: string): null | number;
+    public getNumber(field: number | string): null | number {
         const value = this._getValue(field);
-        if (value === null || value === undefined) return null;
+        if (value === null || value === undefined) {
+            return null;
+        }
         return Number.parseFloat(value);
     }
 
-    getString(i: number): null | string;
-    getString(name: string): null | string;
-    getString(field: number | string): null | string {
+    public getString(i: number): null | string;
+    public getString(name: string): null | string;
+    public getString(field: number | string): null | string {
         const value = this._getValue(field);
-        if (value === null || value === undefined) return null;
+        if (value === null || value === undefined) {
+            return null;
+        }
         return String(value);
     }
 
-    getAny(i: number): any;
-    getAny(name: string): any;
-    getAny(field: number | string): any {
+    public getAny(i: number): any;
+    public getAny(name: string): any;
+    public getAny(field: number | string): any {
         return this._getValue(field);
     }
 
-    getObject(): TRow {
+    public getObject(): IRow {
         return this.getArray().reduce((object, item, index) => {
             object[index] = item;
             return object;
         }, {});
     }
 
-    getArray(): any[] {
+    public getArray(): any[] {
         return this._data[this._currentIndex];
     }
 
-    async getObjects(): Promise<TRow[]> {
+    public async getObjects(): Promise<IRow[]> {
         const arrays = await this.getArrays();
-        return arrays.map(array => array.reduce((object, item, index) => {
+        return arrays.map((array) => array.reduce((object, item, index) => {
             object[index] = item;
             return object;
         }, {}));
     }
 
-    async getArrays(): Promise<any[][]> {
-        //loading all rows
+    public async getArrays(): Promise<any[][]> {
+        // loading all rows
         if (!this._done) {
             while (await this.next()) {
+                // nothing
             }
         }
         return this._data;

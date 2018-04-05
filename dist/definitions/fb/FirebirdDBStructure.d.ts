@@ -1,6 +1,6 @@
+import { DBStructure } from "../dbStructure/DBStructure";
 import { FirebirdOptions } from "./FirebirdDatabase";
 import { FirebirdTransaction } from "./FirebirdTransaction";
-import { DBStructure } from "../DBStructure";
 export declare class FirebirdDBStructure {
     /**
      * Execute database connection, execute transaction and read the structure of database.

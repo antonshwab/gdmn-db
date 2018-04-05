@@ -26,7 +26,7 @@ class AConnectionPool {
      * </pre>
      *
      * @param {TConnectionPool<Opt>} connectionPool
-     * @param {TDBOptions} dbOptions
+     * @param {IDBOptions} dbOptions
      * @param {Opt} options
      * @param {TExecutor<TConnectionPool<Opt>, R>} callback
      * @returns {Promise<R>}

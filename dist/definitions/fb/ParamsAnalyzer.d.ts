@@ -1,4 +1,4 @@
-import { TNamedParams } from "../ATransaction";
+import { INamedParams } from "../ATransaction";
 export declare class ParamsAnalyzer {
     private static IN_LINE_COMMENT_PATTERN;
     private static BLOCK_COMMENT_PATTERN;
@@ -12,7 +12,7 @@ export declare class ParamsAnalyzer {
     constructor(originalSql: string);
     readonly originalSql: string;
     readonly sql: string;
-    prepareParams(params?: null | any[] | TNamedParams): any[];
+    prepareParams(params?: null | any[] | INamedParams): any[];
     private _replace(pattern, sql);
-    private _generateName(number?);
+    private _generateName(count?);
 }

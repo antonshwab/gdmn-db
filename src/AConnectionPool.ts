@@ -1,21 +1,23 @@
-import {TExecutor} from "./types";
-import {ADatabase, TDatabase, TDBOptions} from "./ADatabase";
-import {ATransaction, TTransaction} from "./ATransaction";
+import {ADatabase, IDBOptions, TDatabase} from "./ADatabase";
 import {AResultSet, TResultSet} from "./AResultSet";
 import {AStatement, TStatement} from "./AStatement";
+import {ATransaction, TTransaction} from "./ATransaction";
+import {TExecutor} from "./types";
 
-export type TConnectionPool<Opt> = AConnectionPool<Opt, TDBOptions, TResultSet, TStatement, TTransaction,
+export type TConnectionPool<Opt> = AConnectionPool<Opt, IDBOptions, TResultSet, TStatement, TTransaction,
     TDatabase>;
 
 export abstract class AConnectionPool<Options,
-    DBOptions extends TDBOptions,
+    DBOptions extends IDBOptions,
     RS extends AResultSet,
     S extends AStatement<RS>,
     T extends ATransaction<RS, S>,
     D extends ADatabase<DBOptions, RS, S, T>> {
 
-    static async executeFromParent<Opt, DBOpt, R>(sourceCallback: TExecutor<null, TConnectionPool<Opt>>,
-                                                  resultCallback: TExecutor<TConnectionPool<Opt>, R>): Promise<R> {
+    public static async executeFromParent<Opt, DBOpt, R>(
+        sourceCallback: TExecutor<null, TConnectionPool<Opt>>,
+        resultCallback: TExecutor<TConnectionPool<Opt>, R>
+    ): Promise<R> {
         let connectionPool: undefined | TConnectionPool<Opt>;
         try {
             connectionPool = await sourceCallback(null);
@@ -39,14 +41,14 @@ export abstract class AConnectionPool<Options,
      * </pre>
      *
      * @param {TConnectionPool<Opt>} connectionPool
-     * @param {TDBOptions} dbOptions
+     * @param {IDBOptions} dbOptions
      * @param {Opt} options
      * @param {TExecutor<TConnectionPool<Opt>, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeConnectionPool<Opt, R>(
+    public static async executeConnectionPool<Opt, R>(
         connectionPool: TConnectionPool<Opt>,
-        dbOptions: TDBOptions,
+        dbOptions: IDBOptions,
         options: Opt,
         callback: TExecutor<TConnectionPool<Opt>, R>
     ): Promise<R> {
@@ -70,7 +72,7 @@ export abstract class AConnectionPool<Options,
      * @param {TExecutor<TDatabase, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeDatabase<Opt, R>(
+    public static async executeDatabase<Opt, R>(
         connectionPool: TConnectionPool<Opt>,
         callback: TExecutor<TDatabase, R>
     ): Promise<R> {
@@ -82,7 +84,7 @@ export abstract class AConnectionPool<Options,
      *
      * @returns {Promise<boolean>}
      */
-    abstract isCreated(): Promise<boolean>;
+    public abstract isCreated(): Promise<boolean>;
 
     /**
      * Prepare the connection pool for use with some database.
@@ -92,14 +94,14 @@ export abstract class AConnectionPool<Options,
      * @param {Options} options
      * @returns {Promise<void>}
      */
-    abstract create(dbOptions: DBOptions, options: Options): Promise<void>;
+    public abstract create(dbOptions: DBOptions, options: Options): Promise<void>;
 
     /**
      * Release resources occupied by the connection pool.
      *
      * @returns {Promise<void>}
      */
-    abstract destroy(): Promise<void>;
+    public abstract destroy(): Promise<void>;
 
     /**
      * Get free database connection. With this connection you
@@ -107,5 +109,5 @@ export abstract class AConnectionPool<Options,
      *
      * @returns {Promise<D extends ADatabase<DBOptions, RS, S, T>>}
      */
-    abstract get(): Promise<D>;
+    public abstract get(): Promise<D>;
 }

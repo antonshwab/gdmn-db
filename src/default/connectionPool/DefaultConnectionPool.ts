@@ -1,9 +1,12 @@
-import { AConnectionPool } from "./AConnectionPool";
-import { TDatabase, TDBOptions } from "./ADatabase";
-import { TTransaction } from "./ATransaction";
-import { TStatement } from "./AStatement";
-import { AResultSet } from "./AResultSet";
-export declare type DefaultConnectionPoolOptions = {
+import {createPool, Pool} from "generic-pool";
+import {AConnectionPool} from "../../AConnectionPool";
+import {IDBOptions, TDatabase} from "../../ADatabase";
+import {AResultSet} from "../../AResultSet";
+import {TStatement} from "../../AStatement";
+import {TTransaction} from "../../ATransaction";
+import {DatabaseProxy} from "./DefaultDatabaseProxy";
+
+export interface IDefaultConnectionPoolOptions {    // from require(generic-pool).Options
     /**
      * Maximum number of resources to create at any given time.
      *
@@ -85,19 +88,68 @@ export declare type DefaultConnectionPoolOptions = {
     /**
      * The minimum amount of time that an object may sit idle in the
      * pool before it is eligible for eviction due to idle time.
-     * Supercedes {@link DefaultConnectionPoolOptions.softIdleTimeoutMillis}
+     * Supercedes {@link IDefaultConnectionPoolOptions.softIdleTimeoutMillis}
      *
      * @default 30000
      */
     idleTimeoutMillis?: number;
-};
-export declare type DBCreator<DB> = () => DB;
-export declare class DefaultConnectionPool<DBOptions> extends AConnectionPool<DefaultConnectionPoolOptions, TDBOptions, AResultSet, TStatement, TTransaction, TDatabase> {
-    private readonly _databaseCreator;
-    private _connectionPool;
-    constructor(databaseCreator: DBCreator<TDatabase>);
-    create(dbOptions: TDBOptions, options: DefaultConnectionPoolOptions): Promise<void>;
-    destroy(): Promise<void>;
-    get(): Promise<TDatabase>;
-    isCreated(): Promise<boolean>;
+}
+
+export type DBCreator<DB> = () => DB;
+
+export class DefaultConnectionPool<DBOptions> extends AConnectionPool<IDefaultConnectionPoolOptions, IDBOptions,
+    AResultSet, TStatement, TTransaction, TDatabase> {
+
+    private readonly _databaseCreator: DBCreator<TDatabase>;
+    private _connectionPool: null | Pool<TDatabase> = null;
+
+    constructor(databaseCreator: DBCreator<TDatabase>) {
+        super();
+        this._databaseCreator = databaseCreator;
+    }
+
+    public async create(dbOptions: IDBOptions, options: IDefaultConnectionPoolOptions): Promise<void> {
+        if (this._connectionPool) {
+            throw new Error("Connection pool already created");
+        }
+
+        this._connectionPool = createPool({
+            create: async () => {
+                if (!this._connectionPool) {
+                    throw new Error("This error should never been happen");
+                }
+
+                const proxy = new DatabaseProxy(this._connectionPool, this._databaseCreator);
+                await proxy.connect(dbOptions);
+                return proxy;
+            },
+            destroy: async (proxy) => {
+                await proxy.disconnect();
+                return undefined;
+            },
+            validate: async (proxy) => await proxy.isConnected()
+        }, options);
+    }
+
+    public async destroy(): Promise<void> {
+        if (!this._connectionPool) {
+            throw new Error("Connection pool need created");
+        }
+
+        await this._connectionPool.drain();
+        await this._connectionPool.clear();
+        this._connectionPool = null;
+    }
+
+    public async get(): Promise<TDatabase> {
+        if (!this._connectionPool) {
+            throw new Error("Connection pool need created");
+        }
+
+        return await this._connectionPool.acquire();
+    }
+
+    public async isCreated(): Promise<boolean> {
+        return Boolean(this._connectionPool);
+    }
 }

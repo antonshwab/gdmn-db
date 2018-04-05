@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { Attachment, ResultSet, Transaction } from "node-firebird-driver-native";
-import { AResultSet, TRow } from "../AResultSet";
+import { AResultSet, IRow } from "../AResultSet";
 export declare class FirebirdResultSet extends AResultSet {
     private readonly _connect;
     private readonly _transaction;
@@ -32,9 +32,9 @@ export declare class FirebirdResultSet extends AResultSet {
     getString(name: string): null | string;
     getAny(i: number): any;
     getAny(name: string): any;
-    getObject(): TRow;
+    getObject(): IRow;
     getArray(): any[];
-    getObjects(): Promise<TRow[]>;
+    getObjects(): Promise<IRow[]>;
     getArrays(): Promise<any[][]>;
     private _getValue(field);
 }

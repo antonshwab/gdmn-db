@@ -1,8 +1,8 @@
 import {Attachment, Statement, Transaction} from "node-firebird-driver-native";
 import {AStatement} from "../AStatement";
+import {INamedParams} from "../ATransaction";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {ParamsAnalyzer} from "./ParamsAnalyzer";
-import {TNamedParams} from "../ATransaction";
 
 export class FirebirdStatement extends AStatement<FirebirdResultSet> {
 
@@ -19,15 +19,15 @@ export class FirebirdStatement extends AStatement<FirebirdResultSet> {
         this._paramsAnalyzer = paramsAnalyzer;
     }
 
-    async dispose(): Promise<void> {
+    public async dispose(): Promise<void> {
         await this._statement.dispose();
     }
 
-    async execute(params?: null | any[] | TNamedParams): Promise<void> {
+    public async execute(params?: null | any[] | INamedParams): Promise<void> {
         await this._statement.execute(this._transaction, this._paramsAnalyzer.prepareParams(params));
     }
 
-    async executeQuery(params?: null | any[] | TNamedParams): Promise<FirebirdResultSet> {
+    public async executeQuery(params?: null | any[] | INamedParams): Promise<FirebirdResultSet> {
         const resultSet = await this._statement.executeQuery(this._transaction,
             this._paramsAnalyzer.prepareParams(params));
         return new FirebirdResultSet(this._connect, this._transaction, resultSet);
