@@ -25,7 +25,7 @@ class DatabaseProxy extends ADatabase_1.ADatabase {
         if (!this._database) {
             throw new Error("Need database connection");
         }
-        if (this._pool.isBorrowedResource(this)) { // there is no method in the file in .d.ts
+        if (this.isBorrowed()) {
             this._pool.release(this);
         }
         else {
@@ -33,16 +33,19 @@ class DatabaseProxy extends ADatabase_1.ADatabase {
         }
     }
     async createTransaction() {
-        if (!this._database) {
+        if (!this._database || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }
         return this._database.createTransaction();
     }
     async isConnected() {
-        if (!this._database) {
+        if (!this._database || !this.isBorrowed()) {
             return false;
         }
         return this._database.isConnected();
+    }
+    isBorrowed() {
+        return this._pool.isBorrowedResource(this); // there is no method in the file in .d.ts
     }
 }
 exports.DatabaseProxy = DatabaseProxy;

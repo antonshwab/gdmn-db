@@ -38,7 +38,7 @@ export class DatabaseProxy<DBOptions> extends ADatabase<IDBOptions, AResultSet, 
             throw new Error("Need database connection");
         }
 
-        if ((this._pool as any).isBorrowedResource(this)) {// there is no method in the file in .d.ts
+        if (this.isBorrowed()) {
             this._pool.release(this);
         } else {
             await this._database.disconnect();
@@ -46,16 +46,20 @@ export class DatabaseProxy<DBOptions> extends ADatabase<IDBOptions, AResultSet, 
     }
 
     public async createTransaction(): Promise<TTransaction> {
-        if (!this._database) {
+        if (!this._database || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }
         return this._database.createTransaction();
     }
 
     public async isConnected(): Promise<boolean> {
-        if (!this._database) {
+        if (!this._database || !this.isBorrowed()) {
             return false;
         }
         return this._database.isConnected();
+    }
+
+    private isBorrowed(): boolean {
+        return (this._pool as any).isBorrowedResource(this);    // there is no method in the file in .d.ts
     }
 }

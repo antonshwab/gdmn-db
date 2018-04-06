@@ -14,4 +14,5 @@ export declare class DatabaseProxy<DBOptions> extends ADatabase<IDBOptions, ARes
     disconnect(): Promise<void>;
     createTransaction(): Promise<TTransaction>;
     isConnected(): Promise<boolean>;
+    private isBorrowed();
 }
