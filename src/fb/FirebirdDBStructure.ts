@@ -26,9 +26,9 @@ export class FirebirdDBStructure {
             return await FirebirdDBStructure.read(source);
         }
 
-        return await ADatabase.executeConnection(Factory.FBModule.newDatabase(), source,
+        return await ADatabase.executeConnection(Factory.FBDriver.newDatabase(), source,
             async (database) => {
-                return await ADatabase.executeTransaction(database, async (transaction) => {
+                return await ADatabase.executeTransaction(database, null, async (transaction) => {
                     return await FirebirdDBStructure.read(transaction);
                 });
             });

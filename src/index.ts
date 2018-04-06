@@ -14,4 +14,4 @@ export * from "./fb/FirebirdTransaction";
 export * from "./fb/FirebirdStatement";
 export * from "./fb/FirebirdResultSet";
 export * from "./fb/FirebirdDBStructure";
-export * from "./fb/FirebirdModule";
+export * from "./fb/FirebirdDriver";

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const AModule_1 = require("../AModule");
+const ADriver_1 = require("../ADriver");
 const DefaultConnectionPool_1 = require("../default/connectionPool/DefaultConnectionPool");
 const FirebirdDatabase_1 = require("./FirebirdDatabase");
-class FirebirdModule extends AModule_1.AModule {
+class FirebirdDriver extends ADriver_1.ADriver {
     /**
      * Create object for access to a default connection pool of driver.
      * Available for all drivers.
@@ -31,5 +31,5 @@ class FirebirdModule extends AModule_1.AModule {
         return new FirebirdDatabase_1.FirebirdDatabase();
     }
 }
-exports.FirebirdModule = FirebirdModule;
-//# sourceMappingURL=FirebirdModule.js.map
+exports.FirebirdDriver = FirebirdDriver;
+//# sourceMappingURL=FirebirdDriver.js.map

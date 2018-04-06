@@ -1,10 +1,10 @@
 import {TConnectionPool} from "../AConnectionPool";
 import {TDatabase} from "../ADatabase";
-import {AModule} from "../AModule";
+import {ADriver} from "../ADriver";
 import {DefaultConnectionPool, IDefaultConnectionPoolOptions} from "../default/connectionPool/DefaultConnectionPool";
 import {FirebirdDatabase} from "./FirebirdDatabase";
 
-export class FirebirdModule extends AModule<void> {
+export class FirebirdDriver extends ADriver<void> {
 
     /**
      * Create object for access to a default connection pool of driver.

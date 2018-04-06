@@ -13,7 +13,8 @@ export declare class FirebirdTransaction extends ATransaction<FirebirdResultSet,
     commit(): Promise<void>;
     rollback(): Promise<void>;
     isActive(): Promise<boolean>;
-    prepareSQL(sql: string): Promise<FirebirdStatement>;
-    executeSQL(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet>;
+    prepare(sql: string): Promise<FirebirdStatement>;
+    executeQuery(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet>;
+    execute(sql: string, params?: any[] | INamedParams | null): Promise<void>;
     readDBStructure(): Promise<DBStructure>;
 }

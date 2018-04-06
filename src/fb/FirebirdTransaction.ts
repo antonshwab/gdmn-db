@@ -86,7 +86,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
         return Boolean(this._transaction);
     }
 
-    public async prepareSQL(sql: string): Promise<FirebirdStatement> {
+    public async prepare(sql: string): Promise<FirebirdStatement> {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
@@ -97,7 +97,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
         return new FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
     }
 
-    public async executeSQL(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet> {
+    public async executeQuery(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet> {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
@@ -107,6 +107,16 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
         const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql,
             paramsAnalyzer.prepareParams(params));
         return new FirebirdResultSet(this._connect, this._transaction, resultSet);
+    }
+
+    public async execute(sql: string, params?: any[] | INamedParams | null): Promise<void> {
+        if (!this._transaction) {
+            throw new Error("Need to open transaction");
+        }
+
+        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS,
+            FirebirdTransaction._PLACEHOLDER_PATTERN);
+        await this._connect.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
     }
 
     public async readDBStructure(): Promise<DBStructure> {

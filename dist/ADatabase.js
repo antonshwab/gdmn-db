@@ -13,7 +13,7 @@ const ATransaction_1 = require("./ATransaction");
  *          try {
  *              await transaction.start();
  *
- *              const resultSet = await transaction.executeSQL("some sql");
+ *              const resultSet = await transaction.executeQuery("some sql");
  *              await resultSet.getArrays();
  *              await resultSet.close();
  *
@@ -81,12 +81,13 @@ class ADatabase {
      * </pre>
      *
      * @param {TDatabase} database
+     * @param {ITransactionOptions | null} options
      * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
-    static async executeTransaction(database, callback) {
+    static async executeTransaction(database, options, callback) {
         return await ATransaction_1.ATransaction.executeFromParent(async () => {
-            const transaction = await database.createTransaction();
+            const transaction = await database.createTransaction(options || undefined);
             await transaction.start();
             return transaction;
         }, callback);

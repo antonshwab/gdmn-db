@@ -10,8 +10,8 @@ class FirebirdDBStructure {
         if (source instanceof FirebirdTransaction_1.FirebirdTransaction) {
             return await FirebirdDBStructure.read(source);
         }
-        return await ADatabase_1.ADatabase.executeConnection(Factory_1.Factory.FBModule.newDatabase(), source, async (database) => {
-            return await ADatabase_1.ADatabase.executeTransaction(database, async (transaction) => {
+        return await ADatabase_1.ADatabase.executeConnection(Factory_1.Factory.FBDriver.newDatabase(), source, async (database) => {
+            return await ADatabase_1.ADatabase.executeTransaction(database, null, async (transaction) => {
                 return await FirebirdDBStructure.read(transaction);
             });
         });

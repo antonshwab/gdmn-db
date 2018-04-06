@@ -61,7 +61,8 @@ export declare abstract class ATransaction<RS extends AResultSet, S extends ASta
     abstract commit(): Promise<void>;
     abstract rollback(): Promise<void>;
     abstract isActive(): Promise<boolean>;
-    abstract prepareSQL(sql: string): Promise<S>;
-    abstract executeSQL(sql: string, params?: null | any[] | INamedParams): Promise<RS>;
+    abstract prepare(sql: string): Promise<S>;
+    abstract executeQuery(sql: string, params?: null | any[] | INamedParams): Promise<RS>;
+    abstract execute(sql: string, params?: null | any[] | INamedParams): Promise<void>;
     abstract readDBStructure(): Promise<DBStructure>;
 }

@@ -25,7 +25,7 @@ export type TDatabase = ADatabase<IDBOptions, TResultSet, TStatement, TTransacti
  *          try {
  *              await transaction.start();
  *
- *              const resultSet = await transaction.executeSQL("some sql");
+ *              const resultSet = await transaction.executeQuery("some sql");
  *              await resultSet.getArrays();
  *              await resultSet.close();
  *
@@ -103,15 +103,17 @@ export abstract class ADatabase<Options extends IDBOptions,
      * </pre>
      *
      * @param {TDatabase} database
+     * @param {ITransactionOptions | null} options
      * @param {TExecutor<TTransaction, R>} callback
      * @returns {Promise<R>}
      */
     public static async executeTransaction<R>(
         database: TDatabase,
+        options: null | ITransactionOptions,
         callback: TExecutor<TTransaction, R>
     ): Promise<R> {
         return await ATransaction.executeFromParent(async () => {
-            const transaction = await database.createTransaction();
+            const transaction = await database.createTransaction(options || undefined);
             await transaction.start();
             return transaction;
         }, callback);

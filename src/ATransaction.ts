@@ -73,7 +73,7 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
         sql: string,
         callback: TExecutor<TStatement, R>
     ): Promise<R> {
-        return await AStatement.executeFromParent(() => transaction.prepareSQL(sql), callback);
+        return await AStatement.executeFromParent(() => transaction.prepare(sql), callback);
     }
 
     /**
@@ -97,7 +97,7 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
         params: null | any[] | INamedParams,
         callback: TExecutor<TResultSet, R>
     ): Promise<R> {
-        return await AResultSet.executeFromParent(() => transaction.executeSQL(sql, params), callback);
+        return await AResultSet.executeFromParent(() => transaction.executeQuery(sql, params), callback);
     }
 
     public abstract async start(): Promise<void>;
@@ -108,9 +108,11 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
 
     public abstract async isActive(): Promise<boolean>;
 
-    public abstract async prepareSQL(sql: string): Promise<S>;
+    public abstract async prepare(sql: string): Promise<S>;
 
-    public abstract async executeSQL(sql: string, params?: null | any[] | INamedParams): Promise<RS>;
+    public abstract async executeQuery(sql: string, params?: null | any[] | INamedParams): Promise<RS>;
+
+    public abstract async execute(sql: string, params?: null | any[] | INamedParams): Promise<void>;
 
     public abstract async readDBStructure(): Promise<DBStructure>;
 }

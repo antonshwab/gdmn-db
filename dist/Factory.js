@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const FirebirdModule_1 = require("./fb/FirebirdModule");
+const FirebirdDriver_1 = require("./fb/FirebirdDriver");
 class Factory {
     /**
      * Firebird driver
      *
-     * @returns {FirebirdModule}
+     * @returns {FirebirdDriver}
      */
-    static get FBModule() {
-        return new FirebirdModule_1.FirebirdModule();
+    static get FBDriver() {
+        return new FirebirdDriver_1.FirebirdDriver();
     }
 }
 exports.Factory = Factory;

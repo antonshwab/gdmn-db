@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class AModule {
+class ADriver {
 }
-exports.AModule = AModule;
-//# sourceMappingURL=AModule.js.map
+exports.ADriver = ADriver;
+//# sourceMappingURL=ADriver.js.map

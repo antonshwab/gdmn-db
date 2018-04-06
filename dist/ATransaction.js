@@ -49,7 +49,7 @@ class ATransaction {
      * @returns {Promise<R>}
      */
     static async executeStatement(transaction, sql, callback) {
-        return await AStatement_1.AStatement.executeFromParent(() => transaction.prepareSQL(sql), callback);
+        return await AStatement_1.AStatement.executeFromParent(() => transaction.prepare(sql), callback);
     }
     /**
      * Example:
@@ -67,7 +67,7 @@ class ATransaction {
      * @returns {Promise<R>}
      */
     static async executeResultSet(transaction, sql, params, callback) {
-        return await AResultSet_1.AResultSet.executeFromParent(() => transaction.executeSQL(sql, params), callback);
+        return await AResultSet_1.AResultSet.executeFromParent(() => transaction.executeQuery(sql, params), callback);
     }
 }
 ATransaction._DEFAULT_OPTIONS = {

@@ -1,13 +1,13 @@
-import {FirebirdModule} from "./fb/FirebirdModule";
+import {FirebirdDriver} from "./fb/FirebirdDriver";
 
 export abstract class Factory {
 
     /**
      * Firebird driver
      *
-     * @returns {FirebirdModule}
+     * @returns {FirebirdDriver}
      */
-    static get FBModule(): FirebirdModule {
-        return new FirebirdModule();
+    static get FBDriver(): FirebirdDriver {
+        return new FirebirdDriver();
     }
 }

@@ -17,5 +17,5 @@ __export(require("./fb/FirebirdTransaction"));
 __export(require("./fb/FirebirdStatement"));
 __export(require("./fb/FirebirdResultSet"));
 __export(require("./fb/FirebirdDBStructure"));
-__export(require("./fb/FirebirdModule"));
+__export(require("./fb/FirebirdDriver"));
 //# sourceMappingURL=index.js.map
