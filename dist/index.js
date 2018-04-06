@@ -8,6 +8,7 @@ __export(require("./ADatabase"));
 __export(require("./ATransaction"));
 __export(require("./AStatement"));
 __export(require("./AResultSet"));
+__export(require("./ADriver"));
 __export(require("./Factory"));
 __export(require("./default/connectionPool/DefaultConnectionPool"));
 __export(require("./default/DefaultParamsAnalyzer"));

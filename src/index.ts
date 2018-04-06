@@ -4,6 +4,7 @@ export * from "./ADatabase";
 export * from "./ATransaction";
 export * from "./AStatement";
 export * from "./AResultSet";
+export * from "./ADriver";
 export * from "./Factory";
 export * from "./default/connectionPool/DefaultConnectionPool";
 export * from "./default/DefaultParamsAnalyzer";
