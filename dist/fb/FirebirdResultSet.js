@@ -95,6 +95,8 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
     async close() {
         await this._resultSet.close();
         this._done = true;
+        this._data = [];
+        this._currentIndex = -1;
     }
     async getBlobBuffer(field) {
         const value = this._getValue(field);

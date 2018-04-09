@@ -110,6 +110,8 @@ export class FirebirdResultSet extends AResultSet {
     public async close(): Promise<void> {
         await this._resultSet.close();
         this._done = true;
+        this._data = [];
+        this._currentIndex = -1;
     }
 
     public async getBlobBuffer(i: number): Promise<null | Buffer>;
