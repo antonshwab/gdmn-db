@@ -3,12 +3,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_driver_native_1 = require("node-firebird-driver-native");
 const stream_1 = require("stream");
 const AResultSet_1 = require("../AResultSet");
+var Status;
+(function (Status) {
+    Status[Status["UNFINISHED"] = 0] = "UNFINISHED";
+    Status[Status["FINISHED"] = 1] = "FINISHED";
+    Status[Status["CLOSED"] = 2] = "CLOSED";
+})(Status || (Status = {}));
 class FirebirdResultSet extends AResultSet_1.AResultSet {
     constructor(connect, transaction, resultSet) {
         super();
         this._data = [];
         this._currentIndex = -1;
-        this._done = false;
+        this._status = Status.UNFINISHED;
         this._connect = connect;
         this._transaction = transaction;
         this._resultSet = resultSet;
@@ -22,13 +28,13 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             return true;
         }
         // loading next row
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             const newResult = await this._resultSet.fetch({ fetchSize: 1 });
             if (newResult.length) {
                 this._data.push(newResult[0]);
             }
             else {
-                this._done = true;
+                this._status = Status.FINISHED;
             }
             return await this.next();
         }
@@ -47,7 +53,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             return true;
         }
         // loading all rows
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             while (await this.next()) {
                 if (this._currentIndex === i) {
                     return true;
@@ -65,7 +71,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
     }
     async last() {
         // loading all rows
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             while (await this.next()) {
                 // nothing
             }
@@ -81,7 +87,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
     }
     async isLast() {
         // loading and check next
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             if (await this.next()) {
                 await this.previous();
                 return false;
@@ -92,9 +98,12 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
         return this._currentIndex === this._data.length - 1;
     }
+    async isClosed() {
+        return this._status === Status.CLOSED;
+    }
     async close() {
         await this._resultSet.close();
-        this._done = true;
+        this._status = Status.CLOSED;
         this._data = [];
         this._currentIndex = -1;
     }
@@ -192,7 +201,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
     }
     async getArrays() {
         // loading all rows
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             while (await this.next()) {
                 // nothing
             }

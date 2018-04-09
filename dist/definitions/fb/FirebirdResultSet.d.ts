@@ -7,7 +7,7 @@ export declare class FirebirdResultSet extends AResultSet {
     private readonly _resultSet;
     private _data;
     private _currentIndex;
-    private _done;
+    private _status;
     constructor(connect: Attachment, transaction: Transaction, resultSet: ResultSet);
     readonly position: number;
     next(): Promise<boolean>;
@@ -17,6 +17,7 @@ export declare class FirebirdResultSet extends AResultSet {
     last(): Promise<boolean>;
     isFirst(): Promise<boolean>;
     isLast(): Promise<boolean>;
+    isClosed(): Promise<boolean>;
     close(): Promise<void>;
     getBlobBuffer(i: number): Promise<null | Buffer>;
     getBlobBuffer(name: string): Promise<null | Buffer>;

@@ -37,6 +37,8 @@ export abstract class AResultSet {
 
     public abstract async isLast(): Promise<boolean>;
 
+    public abstract async isClosed(): Promise<boolean>;
+
     public abstract async close(): Promise<void>;
 
     public abstract async getBlobBuffer(i: number): Promise<null | Buffer>;

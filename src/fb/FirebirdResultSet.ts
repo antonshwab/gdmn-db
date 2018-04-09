@@ -2,6 +2,10 @@ import {Attachment, Blob, ResultSet, Transaction} from "node-firebird-driver-nat
 import {Readable} from "stream";
 import {AResultSet, IRow} from "../AResultSet";
 
+enum Status {
+    UNFINISHED, FINISHED, CLOSED
+}
+
 export class FirebirdResultSet extends AResultSet {
 
     private readonly _connect: Attachment;
@@ -9,7 +13,7 @@ export class FirebirdResultSet extends AResultSet {
     private readonly _resultSet: ResultSet;
     private _data: any[][] = [];
     private _currentIndex: number = -1;
-    private _done: boolean = false;
+    private _status = Status.UNFINISHED;
 
     constructor(connect: Attachment, transaction: Transaction, resultSet: ResultSet) {
         super();
@@ -29,12 +33,12 @@ export class FirebirdResultSet extends AResultSet {
         }
 
         // loading next row
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             const newResult = await this._resultSet.fetch({fetchSize: 1});
             if (newResult.length) {
                 this._data.push(newResult[0]);
             } else {
-                this._done = true;
+                this._status = Status.FINISHED;
             }
             return await this.next();
         }
@@ -56,7 +60,7 @@ export class FirebirdResultSet extends AResultSet {
         }
 
         // loading all rows
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             while (await this.next()) {
                 if (this._currentIndex === i) {
                     return true;
@@ -76,7 +80,7 @@ export class FirebirdResultSet extends AResultSet {
 
     public async last(): Promise<boolean> {
         // loading all rows
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             while (await this.next()) {
                 // nothing
             }
@@ -95,7 +99,7 @@ export class FirebirdResultSet extends AResultSet {
 
     public async isLast(): Promise<boolean> {
         // loading and check next
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             if (await this.next()) {
                 await this.previous();
                 return false;
@@ -107,9 +111,13 @@ export class FirebirdResultSet extends AResultSet {
         return this._currentIndex === this._data.length - 1;
     }
 
+    public async isClosed(): Promise<boolean> {
+        return this._status === Status.CLOSED;
+    }
+
     public async close(): Promise<void> {
         await this._resultSet.close();
-        this._done = true;
+        this._status = Status.CLOSED;
         this._data = [];
         this._currentIndex = -1;
     }
@@ -234,7 +242,7 @@ export class FirebirdResultSet extends AResultSet {
 
     public async getArrays(): Promise<any[][]> {
         // loading all rows
-        if (!this._done) {
+        if (this._status === Status.UNFINISHED) {
             while (await this.next()) {
                 // nothing
             }
