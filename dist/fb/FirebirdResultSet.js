@@ -89,7 +89,8 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         // loading and check next
         if (this._status === Status.UNFINISHED) {
             if (await this.next()) {
-                await this.previous();
+                this._currentIndex--;
+                // await this.previous();
                 return false;
             }
             else {
