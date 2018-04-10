@@ -14,5 +14,6 @@ class AResultSet {
         }
     }
 }
+AResultSet.NO_INDEX = -1;
 exports.AResultSet = AResultSet;
 //# sourceMappingURL=AResultSet.js.map

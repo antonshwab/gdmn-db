@@ -13,89 +13,133 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
     constructor(connect, transaction, resultSet) {
         super();
         this._data = [];
-        this._currentIndex = -1;
+        this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
         this._status = Status.UNFINISHED;
         this._connect = connect;
         this._transaction = transaction;
         this._resultSet = resultSet;
     }
     get position() {
+        this._checkClosed();
         return this._currentIndex;
     }
     async next() {
-        if (this._currentIndex < this._data.length - 1) {
+        this._checkClosed();
+        if (this._currentIndex < this._data.length) {
             this._currentIndex++;
+            if (this._currentIndex === this._data.length) {
+                if (this._status === Status.UNFINISHED) {
+                    const newResult = await this._resultSet.fetch({ fetchSize: 1 });
+                    if (newResult.length) {
+                        this._data.push(newResult[0]);
+                        return true;
+                    }
+                    else {
+                        this._status = Status.FINISHED;
+                    }
+                }
+                return false;
+            }
             return true;
-        }
-        // loading next row
-        if (this._status === Status.UNFINISHED) {
-            const newResult = await this._resultSet.fetch({ fetchSize: 1 });
-            if (newResult.length) {
-                this._data.push(newResult[0]);
-            }
-            else {
-                this._status = Status.FINISHED;
-            }
-            return await this.next();
         }
         return false;
     }
     async previous() {
-        if (this._currentIndex > 0) {
+        this._checkClosed();
+        if (this._currentIndex > AResultSet_1.AResultSet.NO_INDEX) {
             this._currentIndex--;
-            return true;
+            return this._currentIndex !== AResultSet_1.AResultSet.NO_INDEX;
         }
         return false;
     }
     async to(i) {
-        if (i < this._data.length && i >= 0) {
-            this._currentIndex = i;
-            return true;
+        this._checkClosed();
+        if (i < AResultSet_1.AResultSet.NO_INDEX) {
+            return false;
         }
-        // loading all rows
-        if (this._status === Status.UNFINISHED) {
+        if (this._currentIndex < i) {
             while (await this.next()) {
                 if (this._currentIndex === i) {
                     return true;
                 }
             }
+            return false;
         }
-        return false;
+        if (this._currentIndex > i) {
+            while (await this.previous()) {
+                if (this._currentIndex === i) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+    async beforeFirst() {
+        this._checkClosed();
+        if (this._status === Status.UNFINISHED) {
+            const index = this._currentIndex;
+            await this.next();
+            await this.to(index);
+        }
+        if (this._data.length) {
+            await this.to(AResultSet_1.AResultSet.NO_INDEX);
+        }
+    }
+    async afterLast() {
+        this._checkClosed();
+        if (this._status === Status.UNFINISHED) {
+            const index = this._currentIndex;
+            await this.last();
+            await this.to(index);
+        }
+        if (this._data.length) {
+            await this.to(this._data.length);
+        }
     }
     async first() {
+        this._checkClosed();
+        this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
+        return await this.next();
+    }
+    async last() {
+        this._checkClosed();
+        while (await this.next()) {
+            // nothing
+        }
         if (this._data.length) {
-            this._currentIndex = 0;
-            return true;
+            return await this.to(this._data.length - 1);
         }
         return false;
     }
-    async last() {
-        // loading all rows
-        if (this._status === Status.UNFINISHED) {
-            while (await this.next()) {
-                // nothing
-            }
+    async isBeforeFirst() {
+        this._checkClosed();
+        if (this._currentIndex === AResultSet_1.AResultSet.NO_INDEX) {
+            const firstExists = await this.next();
+            await this.previous();
+            return firstExists;
         }
-        if (this._data.length) {
-            this._currentIndex = this._data.length - 1;
-            return true;
+        return false;
+    }
+    async isAfterLast() {
+        this._checkClosed();
+        if (this._status === Status.FINISHED) {
+            return !!this._data.length && this._currentIndex === this._data.length;
         }
         return false;
     }
     async isFirst() {
-        return this._currentIndex === 0;
+        this._checkClosed();
+        return !!this._data.length && this._currentIndex === 0;
     }
     async isLast() {
-        // loading and check next
+        this._checkClosed();
+        if (this._currentIndex === AResultSet_1.AResultSet.NO_INDEX) {
+            return false;
+        }
         if (this._status === Status.UNFINISHED) {
-            if (await this.next()) {
-                this._currentIndex--;
-                // await this.previous();
-                return false;
-            }
-            else {
-                return true;
-            }
+            await this.next();
+            await this.previous();
         }
         return this._currentIndex === this._data.length - 1;
     }
@@ -103,10 +147,11 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return this._status === Status.CLOSED;
     }
     async close() {
+        this._checkClosed();
         await this._resultSet.close();
         this._status = Status.CLOSED;
         this._data = [];
-        this._currentIndex = -1;
+        this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
     }
     async getBlobBuffer(field) {
         const value = this._getValue(field);
@@ -191,6 +236,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }, {});
     }
     getArray() {
+        this._checkClosed();
         return this._data[this._currentIndex];
     }
     async getObjects() {
@@ -201,6 +247,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }, {}));
     }
     async getArrays() {
+        this._checkClosed();
         // loading all rows
         if (this._status === Status.UNFINISHED) {
             while (await this.next()) {
@@ -210,12 +257,18 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return this._data;
     }
     _getValue(field) {
+        this._checkClosed();
         const row = this._data[this._currentIndex];
         if (typeof field === "number") {
             return row[field];
         }
         else {
             throw new Error("Not supported yet");
+        }
+    }
+    _checkClosed() {
+        if (this._status === Status.CLOSED) {
+            throw new Error("ResultSet is closed");
         }
     }
 }

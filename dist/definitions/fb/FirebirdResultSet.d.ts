@@ -13,8 +13,12 @@ export declare class FirebirdResultSet extends AResultSet {
     next(): Promise<boolean>;
     previous(): Promise<boolean>;
     to(i: number): Promise<boolean>;
+    beforeFirst(): Promise<void>;
+    afterLast(): Promise<void>;
     first(): Promise<boolean>;
     last(): Promise<boolean>;
+    isBeforeFirst(): Promise<boolean>;
+    isAfterLast(): Promise<boolean>;
     isFirst(): Promise<boolean>;
     isLast(): Promise<boolean>;
     isClosed(): Promise<boolean>;
@@ -38,4 +42,5 @@ export declare class FirebirdResultSet extends AResultSet {
     getObjects(): Promise<IRow[]>;
     getArrays(): Promise<any[][]>;
     private _getValue(field);
+    private _checkClosed();
 }
