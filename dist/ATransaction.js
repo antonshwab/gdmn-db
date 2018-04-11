@@ -14,8 +14,11 @@ var Isolation;
     Isolation[Isolation["REPEATABLE_READ"] = 2] = "REPEATABLE_READ";
     Isolation[Isolation["SERIALIZABLE"] = 3] = "SERIALIZABLE";
 })(Isolation = exports.Isolation || (exports.Isolation = {}));
+/**
+ * The transaction object
+ */
 class ATransaction {
-    constructor(options = ATransaction._DEFAULT_OPTIONS) {
+    constructor(options = ATransaction.DEFAULT_OPTIONS) {
         this._options = options;
     }
     static async executeFromParent(sourceCallback, resultCallback) {
@@ -42,11 +45,6 @@ class ATransaction {
      *      return "some value";
      * })}
      * </pre>
-     *
-     * @param {TTransaction} transaction
-     * @param {string} sql
-     * @param {TExecutor<TStatement, R>} callback
-     * @returns {Promise<R>}
      */
     static async executeStatement(transaction, sql, callback) {
         return await AStatement_1.AStatement.executeFromParent(() => transaction.prepare(sql), callback);
@@ -59,18 +57,12 @@ class ATransaction {
      *          return await resultSet.getArrays();
      *      })
      * </pre>
-     *
-     * @param {TTransaction} transaction
-     * @param {string} sql
-     * @param {any[]} params
-     * @param {TExecutor<TResultSet, R>} callback
-     * @returns {Promise<R>}
      */
     static async executeResultSet(transaction, sql, params, callback) {
         return await AResultSet_1.AResultSet.executeFromParent(() => transaction.executeQuery(sql, params), callback);
     }
 }
-ATransaction._DEFAULT_OPTIONS = {
+ATransaction.DEFAULT_OPTIONS = {
     isolation: Isolation.READ_COMMITED,
     accessMode: AccessMode.READ_WRITE
 };

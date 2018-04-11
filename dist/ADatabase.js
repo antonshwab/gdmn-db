@@ -58,11 +58,6 @@ class ADatabase {
      *      });
      * })}
      * </pre>
-     *
-     * @param {TDatabase} database
-     * @param {IDBOptions} options
-     * @param {TExecutor<TDatabase, R>} callback
-     * @returns {Promise<R>}
      */
     static async executeConnection(database, options, callback) {
         return await ADatabase.executeFromParent(async () => {
@@ -79,11 +74,6 @@ class ADatabase {
      *      });
      * })}
      * </pre>
-     *
-     * @param {TDatabase} database
-     * @param {ITransactionOptions | null} options
-     * @param {TExecutor<TTransaction, R>} callback
-     * @returns {Promise<R>}
      */
     static async executeTransaction(database, options, callback) {
         return await ATransaction_1.ATransaction.executeFromParent(async () => {

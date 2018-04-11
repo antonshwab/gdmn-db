@@ -24,12 +24,6 @@ class AConnectionPool {
      *          });
      *      })}
      * </pre>
-     *
-     * @param {TConnectionPool<Opt>} connectionPool
-     * @param {IDBOptions} dbOptions
-     * @param {Opt} options
-     * @param {TExecutor<TConnectionPool<Opt>, R>} callback
-     * @returns {Promise<R>}
      */
     static async executeConnectionPool(connectionPool, dbOptions, options, callback) {
         return await AConnectionPool.executeFromParent(async () => {
@@ -46,10 +40,6 @@ class AConnectionPool {
      *      });
      * })}
      * </pre>
-     *
-     * @param {TConnectionPool<Opt>} connectionPool
-     * @param {TExecutor<TDatabase, R>} callback
-     * @returns {Promise<R>}
      */
     static async executeDatabase(connectionPool, callback) {
         return await ADatabase_1.ADatabase.executeFromParent(() => connectionPool.get(), callback);

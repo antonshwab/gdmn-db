@@ -11,26 +11,17 @@ export class FirebirdDriver extends ADriver<void> {
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}
-     * @returns {TConnectionPool<IDefaultConnectionPoolOptions>}
      */
     public newDefaultConnectionPool(): TConnectionPool<IDefaultConnectionPoolOptions> {
         return new DefaultConnectionPool(() => new FirebirdDatabase());
     }
 
-    /**
-     * Do not support this driver
-     *
-     * @returns {TConnectionPool<void>}
-     */
+    /** Do not support this driver */
     public newConnectionPool(): TConnectionPool<void> {
         throw new Error("Unsupported yet");
     }
 
-    /**
-     * Create object for access to the database
-     *
-     * @returns {TDatabase}
-     */
+    /** Create object for access to the database */
     public newDatabase(): TDatabase {
         return new FirebirdDatabase();
     }

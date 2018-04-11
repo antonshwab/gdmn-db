@@ -69,7 +69,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
-        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS, FirebirdTransaction._PLACEHOLDER_PATTERN);
+        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
         const statement = await this._connect.prepare(this._transaction, paramsAnalyzer.sql);
         return new FirebirdStatement_1.FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
     }
@@ -77,7 +77,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
-        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS, FirebirdTransaction._PLACEHOLDER_PATTERN);
+        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
         const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
         return new FirebirdResultSet_1.FirebirdResultSet(this._connect, this._transaction, resultSet);
     }
@@ -85,7 +85,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
-        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS, FirebirdTransaction._PLACEHOLDER_PATTERN);
+        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
         await this._connect.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
     }
     async readDBStructure() {
@@ -95,12 +95,12 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         return await FirebirdDBStructure_1.FirebirdDBStructure.readStructure(this);
     }
 }
-FirebirdTransaction._EXCLUDE_PATTERNS = [
+FirebirdTransaction.EXCLUDE_PATTERNS = [
     /-{2}.*/g,
     /\/\*[\s\S]*?\*\//g,
     /'[\s\S]*?'/g,
     /BEGIN[\s\S]*END/gi,
 ];
-FirebirdTransaction._PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
+FirebirdTransaction.PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
 exports.FirebirdTransaction = FirebirdTransaction;
 //# sourceMappingURL=FirebirdTransaction.js.map

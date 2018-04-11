@@ -4,18 +4,10 @@ import {IDefaultConnectionPoolOptions} from "./default/connectionPool/DefaultCon
 
 export abstract class ADriver<PoolOptions> {
 
-    /**
-     * Create object for access to the database
-     *
-     * @returns {TDatabase}
-     */
+    /** Create object for access to the database */
     public abstract newDatabase(): TDatabase;
 
-    /**
-     * Create object for access to a specific connection pool of driver.
-     *
-     * @returns {TConnectionPool<PoolOptions>}
-     */
+    /** Create object for access to a specific connection pool of driver. */
     public abstract newConnectionPool(): TConnectionPool<PoolOptions>;
 
     /**
@@ -23,7 +15,6 @@ export abstract class ADriver<PoolOptions> {
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}
-     * @returns {TConnectionPool<IDefaultConnectionPoolOptions>}
      */
     public abstract newDefaultConnectionPool(): TConnectionPool<IDefaultConnectionPoolOptions>;
 }

@@ -2,11 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const FirebirdDriver_1 = require("./fb/FirebirdDriver");
 class Factory {
-    /**
-     * Firebird driver
-     *
-     * @returns {FirebirdDriver}
-     */
+    /** Firebird driver */
     static get FBDriver() {
         return new FirebirdDriver_1.FirebirdDriver();
     }

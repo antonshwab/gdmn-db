@@ -4,8 +4,10 @@ import {AStatement, TStatement} from "./AStatement";
 import {ATransaction, TTransaction} from "./ATransaction";
 import {TExecutor} from "./types";
 
-export type TConnectionPool<Opt> = AConnectionPool<Opt, IDBOptions, TResultSet, TStatement, TTransaction,
-    TDatabase>;
+/**
+ * Simplified type of {@link AConnectionPool}
+ */
+export type TConnectionPool<Opt> = AConnectionPool<Opt, IDBOptions, TResultSet, TStatement, TTransaction, TDatabase>;
 
 export abstract class AConnectionPool<Options,
     DBOptions extends IDBOptions,
@@ -39,12 +41,6 @@ export abstract class AConnectionPool<Options,
      *          });
      *      })}
      * </pre>
-     *
-     * @param {TConnectionPool<Opt>} connectionPool
-     * @param {IDBOptions} dbOptions
-     * @param {Opt} options
-     * @param {TExecutor<TConnectionPool<Opt>, R>} callback
-     * @returns {Promise<R>}
      */
     public static async executeConnectionPool<Opt, R>(
         connectionPool: TConnectionPool<Opt>,
@@ -67,10 +63,6 @@ export abstract class AConnectionPool<Options,
      *      });
      * })}
      * </pre>
-     *
-     * @param {TConnectionPool<Opt>} connectionPool
-     * @param {TExecutor<TDatabase, R>} callback
-     * @returns {Promise<R>}
      */
     public static async executeDatabase<Opt, R>(
         connectionPool: TConnectionPool<Opt>,
@@ -83,6 +75,8 @@ export abstract class AConnectionPool<Options,
      * Is the connection pool prepared?
      *
      * @returns {Promise<boolean>}
+     * true if the connection pool created;
+     * false if the connection pool destroyed or not created
      */
     public abstract isCreated(): Promise<boolean>;
 
@@ -91,16 +85,13 @@ export abstract class AConnectionPool<Options,
      * After work you need to call {@link AConnectionPool.destroy()} method.
      *
      * @param {DBOptions} dbOptions
+     * the options for opening database connection
      * @param {Options} options
-     * @returns {Promise<void>}
+     * the options for creating connection pool
      */
     public abstract create(dbOptions: DBOptions, options: Options): Promise<void>;
 
-    /**
-     * Release resources occupied by the connection pool.
-     *
-     * @returns {Promise<void>}
-     */
+    /** Release resources occupied by the connection pool. */
     public abstract destroy(): Promise<void>;
 
     /**
@@ -108,6 +99,7 @@ export abstract class AConnectionPool<Options,
      * need to work as usual. i.e close it is also necessary
      *
      * @returns {Promise<D extends ADatabase<DBOptions, RS, S, T>>}
+     * the database connection
      */
     public abstract get(): Promise<D>;
 }

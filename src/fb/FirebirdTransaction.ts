@@ -8,13 +8,13 @@ import {FirebirdStatement} from "./FirebirdStatement";
 
 export class FirebirdTransaction extends ATransaction<FirebirdResultSet, FirebirdStatement> {
 
-    public static _EXCLUDE_PATTERNS = [
+    public static EXCLUDE_PATTERNS = [
         /-{2}.*/g,                  // in-line comments
         /\/\*[\s\S]*?\*\//g,        // block comments
         /'[\s\S]*?'/g,              // values
         /BEGIN[\s\S]*END/gi,        // begin ... end
     ];
-    public static _PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
+    public static PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
 
     private readonly _connect: Attachment;
     private _transaction: null | Transaction = null;
@@ -91,8 +91,8 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
             throw new Error("Need to open transaction");
         }
 
-        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS,
-            FirebirdTransaction._PLACEHOLDER_PATTERN);
+        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
+            FirebirdTransaction.PLACEHOLDER_PATTERN);
         const statement = await this._connect.prepare(this._transaction, paramsAnalyzer.sql);
         return new FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
     }
@@ -102,8 +102,8 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
             throw new Error("Need to open transaction");
         }
 
-        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS,
-            FirebirdTransaction._PLACEHOLDER_PATTERN);
+        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
+            FirebirdTransaction.PLACEHOLDER_PATTERN);
         const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql,
             paramsAnalyzer.prepareParams(params));
         return new FirebirdResultSet(this._connect, this._transaction, resultSet);
@@ -114,8 +114,8 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
             throw new Error("Need to open transaction");
         }
 
-        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction._EXCLUDE_PATTERNS,
-            FirebirdTransaction._PLACEHOLDER_PATTERN);
+        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
+            FirebirdTransaction.PLACEHOLDER_PATTERN);
         await this._connect.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
     }
 

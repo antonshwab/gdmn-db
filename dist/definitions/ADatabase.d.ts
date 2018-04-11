@@ -9,6 +9,9 @@ export interface IDBOptions {
     password: string;
     path: string;
 }
+/**
+ * Simplified type of {@link ADatabase}
+ */
 export declare type TDatabase = ADatabase<IDBOptions, TResultSet, TStatement, TTransaction>;
 /**
  * Example:
@@ -56,11 +59,6 @@ export declare abstract class ADatabase<Options extends IDBOptions, RS extends A
      *      });
      * })}
      * </pre>
-     *
-     * @param {TDatabase} database
-     * @param {IDBOptions} options
-     * @param {TExecutor<TDatabase, R>} callback
-     * @returns {Promise<R>}
      */
     static executeConnection<R>(database: TDatabase, options: IDBOptions, callback: TExecutor<TDatabase, R>): Promise<R>;
     /**
@@ -72,17 +70,43 @@ export declare abstract class ADatabase<Options extends IDBOptions, RS extends A
      *      });
      * })}
      * </pre>
-     *
-     * @param {TDatabase} database
-     * @param {ITransactionOptions | null} options
-     * @param {TExecutor<TTransaction, R>} callback
-     * @returns {Promise<R>}
      */
     static executeTransaction<R>(database: TDatabase, options: null | ITransactionOptions, callback: TExecutor<TTransaction, R>): Promise<R>;
+    /**
+     * Create database and connect to them.
+     *
+     * @param {Options} options
+     * the options for creating database and connection to them
+     */
     abstract createDatabase(options: Options): Promise<void>;
+    /** Drop database and disconnect from them. */
     abstract dropDatabase(): Promise<void>;
+    /**
+     * Connect to the database.
+     *
+     * @param {Options} options
+     * the options for opening database connection
+     */
     abstract connect(options: Options): Promise<void>;
+    /** Disconnect from the database. */
     abstract disconnect(): Promise<void>;
+    /**
+     * Create transaction.
+     * @see {@link ATransaction.DEFAULT_OPTIONS}
+     *
+     * @param {ITransactionOptions} [options=DEFAULT_OPTIONS]
+     * the options for transaction; optional
+     * @returns {Promise<T extends ATransaction<RS, S>>}
+     * a Transaction object;
+     * never null
+     */
     abstract createTransaction(options?: ITransactionOptions): Promise<T>;
+    /**
+     * Is the database connected.
+     *
+     * @returns {Promise<boolean>}
+     * true if the database connected;
+     * false if the database was disconnected or not connected yet
+     */
     abstract isConnected(): Promise<boolean>;
 }

@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const AResultSet_1 = require("./AResultSet");
+/**
+ * An object that represents a precompiled SQL statement.
+ * A SQL statement is precompiled and stored in a Statement object.
+ * This object can then be used to efficiently execute this statement multiple times.
+ */
 class AStatement {
     static async executeFromParent(sourceCallback, resultCallback) {
         let statement;
@@ -21,11 +26,6 @@ class AStatement {
      *      return await resultSet.getArrays();
      * })}
      * </pre>
-     *
-     * @param {TStatement} statement
-     * @param {any[]} params
-     * @param {TExecutor<TResultSet, R>} callback
-     * @returns {Promise<any>}
      */
     static async executeResultSet(statement, params, callback) {
         return await AResultSet_1.AResultSet.executeFromParent(() => statement.executeQuery(params), callback);

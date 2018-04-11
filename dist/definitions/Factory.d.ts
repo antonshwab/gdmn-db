@@ -1,9 +1,5 @@
 import { FirebirdDriver } from "./fb/FirebirdDriver";
 export declare abstract class Factory {
-    /**
-     * Firebird driver
-     *
-     * @returns {FirebirdDriver}
-     */
+    /** Firebird driver */
     static readonly FBDriver: FirebirdDriver;
 }
