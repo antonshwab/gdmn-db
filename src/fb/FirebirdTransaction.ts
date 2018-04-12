@@ -109,7 +109,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
         return new FirebirdResultSet(this._connect, this._transaction, resultSet);
     }
 
-    public async execute(sql: string, params?: any[] | INamedParams | null): Promise<void> {
+    public async execute(sql: string, params?: any[] | INamedParams): Promise<void> {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }

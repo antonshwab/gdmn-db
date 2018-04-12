@@ -93,6 +93,21 @@ export abstract class ADatabase<Options extends IDBOptions,
     /**
      * Example:
      * <pre>
+     * const result = await ADatabase.executeTransaction(database, async transaction => {
+     *      return await transaction.executeStatement("some sql", async statement => {
+     *          return ...
+     *      });
+     * })}
+     * </pre>
+     */
+    public static async executeTransaction<R>(
+        database: TDatabase,
+        callback: TExecutor<TTransaction, R>
+    ): Promise<R>;
+
+    /**
+     * Example:
+     * <pre>
      * const result = await ADatabase.executeTransaction(database, {}, async transaction => {
      *      return await transaction.executeStatement("some sql", async statement => {
      *          return ...
@@ -102,11 +117,20 @@ export abstract class ADatabase<Options extends IDBOptions,
      */
     public static async executeTransaction<R>(
         database: TDatabase,
-        options: null | ITransactionOptions,
+        options: ITransactionOptions,
         callback: TExecutor<TTransaction, R>
+    ): Promise<R>;
+
+    public static async executeTransaction<R>(
+        database: TDatabase,
+        options: ITransactionOptions | TExecutor<TTransaction, R>,
+        callback?: TExecutor<TTransaction, R>
     ): Promise<R> {
+        if (!callback) {
+            callback = options as TExecutor<TTransaction, R>;
+        }
         return await ATransaction.executeFromParent(async () => {
-            const transaction = await database.createTransaction(options || undefined);
+            const transaction = await database.createTransaction(options as ITransactionOptions);
             await transaction.start();
             return transaction;
         }, callback);

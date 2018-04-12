@@ -49,16 +49,10 @@ class ATransaction {
     static async executeStatement(transaction, sql, callback) {
         return await AStatement_1.AStatement.executeFromParent(() => transaction.prepare(sql), callback);
     }
-    /**
-     * Example:
-     * <pre>
-     * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2],
-     *      async (resultSet) => {
-     *          return await resultSet.getArrays();
-     *      })
-     * </pre>
-     */
     static async executeResultSet(transaction, sql, params, callback) {
+        if (!callback) {
+            callback = params;
+        }
         return await AResultSet_1.AResultSet.executeFromParent(() => transaction.executeQuery(sql, params), callback);
     }
 }

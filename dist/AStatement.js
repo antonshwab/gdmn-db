@@ -19,15 +19,10 @@ class AStatement {
             }
         }
     }
-    /**
-     * Example:
-     * <pre>
-     * const result = await AStatement.executeResultSet(statement, [param1, param2], async (resultSet) => {
-     *      return await resultSet.getArrays();
-     * })}
-     * </pre>
-     */
     static async executeResultSet(statement, params, callback) {
+        if (!callback) {
+            callback = params;
+        }
         return await AResultSet_1.AResultSet.executeFromParent(() => statement.executeQuery(params), callback);
     }
 }

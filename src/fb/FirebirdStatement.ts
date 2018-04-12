@@ -26,11 +26,11 @@ export class FirebirdStatement extends AStatement<FirebirdResultSet> {
         await this._statement.dispose();
     }
 
-    public async execute(params?: null | any[] | INamedParams): Promise<void> {
+    public async execute(params?: any[] | INamedParams): Promise<void> {
         await this._statement.execute(this._transaction, this._paramsAnalyzer.prepareParams(params));
     }
 
-    public async executeQuery(params?: null | any[] | INamedParams): Promise<FirebirdResultSet> {
+    public async executeQuery(params?: any[] | INamedParams): Promise<FirebirdResultSet> {
         const resultSet = await this._statement.executeQuery(this._transaction,
             this._paramsAnalyzer.prepareParams(params));
         return new FirebirdResultSet(this._connect, this._transaction, resultSet);

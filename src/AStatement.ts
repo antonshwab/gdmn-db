@@ -30,6 +30,19 @@ export abstract class AStatement<RS extends AResultSet> {
     /**
      * Example:
      * <pre>
+     * const result = await AStatement.executeResultSet(statement, async (resultSet) => {
+     *      return await resultSet.getArrays();
+     * })}
+     * </pre>
+     */
+    public static async executeResultSet<R>(
+        statement: TStatement,
+        callback: TExecutor<TResultSet, R>
+    ): Promise<R>;
+
+    /**
+     * Example:
+     * <pre>
      * const result = await AStatement.executeResultSet(statement, [param1, param2], async (resultSet) => {
      *      return await resultSet.getArrays();
      * })}
@@ -37,9 +50,18 @@ export abstract class AStatement<RS extends AResultSet> {
      */
     public static async executeResultSet<R>(
         statement: TStatement,
-        params: null | any[] | INamedParams,
-        callback: TExecutor<TResultSet, R>
+        params: any[] | INamedParams,
+        callback?: TExecutor<TResultSet, R>
+    ): Promise<R>;
+
+    public static async executeResultSet<R>(
+        statement: TStatement,
+        params: any[] | INamedParams,
+        callback?: TExecutor<TResultSet, R>
     ): Promise<R> {
+        if (!callback) {
+            callback = params as TExecutor<TResultSet, R>;
+        }
         return await AResultSet.executeFromParent(() => statement.executeQuery(params), callback);
     }
 
@@ -53,7 +75,7 @@ export abstract class AStatement<RS extends AResultSet> {
      * a ResultSet object that contains the data produced by the given query;
      * never null
      */
-    public abstract async executeQuery(params?: null | any[] | INamedParams): Promise<RS>;
+    public abstract async executeQuery(params?: any[] | INamedParams): Promise<RS>;
 
     /**
      * Executes the SQL query in this Statement object.

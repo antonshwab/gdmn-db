@@ -80,6 +80,21 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
     /**
      * Example:
      * <pre>
+     * const result = await ATransaction.executeResultSet(transaction, "some sql",
+     *      async (resultSet) => {
+     *          return await resultSet.getArrays();
+     *      })
+     * </pre>
+     */
+    public static async executeResultSet<R>(
+        transaction: TTransaction,
+        sql: string,
+        callback: TExecutor<TResultSet, R>
+    ): Promise<R>;
+
+    /**
+     * Example:
+     * <pre>
      * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2],
      *      async (resultSet) => {
      *          return await resultSet.getArrays();
@@ -89,9 +104,19 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
     public static async executeResultSet<R>(
         transaction: TTransaction,
         sql: string,
-        params: null | any[] | INamedParams,
+        params: any[] | INamedParams,
         callback: TExecutor<TResultSet, R>
+    ): Promise<R>;
+
+    public static async executeResultSet<R>(
+        transaction: TTransaction,
+        sql: string,
+        params: any[] | INamedParams,
+        callback?: TExecutor<TResultSet, R>
     ): Promise<R> {
+        if (!callback) {
+            callback = params as TExecutor<TResultSet, R>;
+        }
         return await AResultSet.executeFromParent(() => transaction.executeQuery(sql, params), callback);
     }
 
@@ -135,7 +160,7 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
      * a ResultSet object that contains the data produced by the given query;
      * never null
      */
-    public abstract async executeQuery(sql: string, params?: null | any[] | INamedParams): Promise<RS>;
+    public abstract async executeQuery(sql: string, params?: any[] | INamedParams): Promise<RS>;
 
     /**
      * Executes the given SQL statement.
@@ -145,7 +170,7 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
      * @param {any[] | INamedParams | null} params
      * array of parameters or object containing placeholders as keys and parameters as values; optional
      */
-    public abstract async execute(sql: string, params?: null | any[] | INamedParams): Promise<void>;
+    public abstract async execute(sql: string, params?: any[] | INamedParams): Promise<void>;
 
     public abstract async readDBStructure(): Promise<DBStructure>;
 }

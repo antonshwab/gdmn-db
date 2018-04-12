@@ -64,6 +64,17 @@ export declare abstract class ADatabase<Options extends IDBOptions, RS extends A
     /**
      * Example:
      * <pre>
+     * const result = await ADatabase.executeTransaction(database, async transaction => {
+     *      return await transaction.executeStatement("some sql", async statement => {
+     *          return ...
+     *      });
+     * })}
+     * </pre>
+     */
+    static executeTransaction<R>(database: TDatabase, callback: TExecutor<TTransaction, R>): Promise<R>;
+    /**
+     * Example:
+     * <pre>
      * const result = await ADatabase.executeTransaction(database, {}, async transaction => {
      *      return await transaction.executeStatement("some sql", async statement => {
      *          return ...
@@ -71,7 +82,7 @@ export declare abstract class ADatabase<Options extends IDBOptions, RS extends A
      * })}
      * </pre>
      */
-    static executeTransaction<R>(database: TDatabase, options: null | ITransactionOptions, callback: TExecutor<TTransaction, R>): Promise<R>;
+    static executeTransaction<R>(database: TDatabase, options: ITransactionOptions, callback: TExecutor<TTransaction, R>): Promise<R>;
     /**
      * Create database and connect to them.
      *

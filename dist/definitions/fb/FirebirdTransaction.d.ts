@@ -15,6 +15,6 @@ export declare class FirebirdTransaction extends ATransaction<FirebirdResultSet,
     isActive(): Promise<boolean>;
     prepare(sql: string): Promise<FirebirdStatement>;
     executeQuery(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet>;
-    execute(sql: string, params?: any[] | INamedParams | null): Promise<void>;
+    execute(sql: string, params?: any[] | INamedParams): Promise<void>;
     readDBStructure(): Promise<DBStructure>;
 }

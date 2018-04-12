@@ -28,7 +28,7 @@ export class FirebirdDBStructure {
 
         return await ADatabase.executeConnection(Factory.FBDriver.newDatabase(), source,
             async (database) => {
-                return await ADatabase.executeTransaction(database, null, async (transaction) => {
+                return await ADatabase.executeTransaction(database, async (transaction) => {
                     return await FirebirdDBStructure.read(transaction);
                 });
             });
@@ -41,7 +41,7 @@ export class FirebirdDBStructure {
                 f.RDB$FIELD_TYPE,
                 f.RDB$NULL_FLAG
             FROM RDB$FIELDS f
-        `, null, async (resultSet) => {
+        `, async (resultSet) => {
             const array: IRDB$FIELD[] = [];
             while (await resultSet.next()) {
                 array.push({
@@ -61,7 +61,7 @@ export class FirebirdDBStructure {
                 rf.RDB$NULL_FLAG
             FROM RDB$RELATION_FIELDS rf
             ORDER BY RDB$RELATION_NAME
-        `, null, async (resultSet) => {
+        `, async (resultSet) => {
             const array: IRDB$RELATIONFIELD[] = [];
             while (await resultSet.next()) {
                 array.push({
@@ -88,7 +88,7 @@ export class FirebirdDBStructure {
                 JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = rc.RDB$INDEX_NAME
                 LEFT JOIN RDB$REF_CONSTRAINTS rfc ON rfc.RDB$CONSTRAINT_NAME = rc.RDB$CONSTRAINT_NAME
             ORDER BY rc.RDB$RELATION_NAME, rc.RDB$CONSTRAINT_NAME, s.RDB$FIELD_POSITION
-        `, null, async (resultSet) => {
+        `, async (resultSet) => {
             const array: IRDB$RELATIONCONSTRAINT[] = [];
             while (await resultSet.next()) {
                 array.push({

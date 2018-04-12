@@ -65,19 +65,12 @@ class ADatabase {
             return database;
         }, callback);
     }
-    /**
-     * Example:
-     * <pre>
-     * const result = await ADatabase.executeTransaction(database, {}, async transaction => {
-     *      return await transaction.executeStatement("some sql", async statement => {
-     *          return ...
-     *      });
-     * })}
-     * </pre>
-     */
     static async executeTransaction(database, options, callback) {
+        if (!callback) {
+            callback = options;
+        }
         return await ATransaction_1.ATransaction.executeFromParent(async () => {
-            const transaction = await database.createTransaction(options || undefined);
+            const transaction = await database.createTransaction(options);
             await transaction.start();
             return transaction;
         }, callback);

@@ -45,13 +45,23 @@ export declare abstract class ATransaction<RS extends AResultSet, S extends ASta
     /**
      * Example:
      * <pre>
+     * const result = await ATransaction.executeResultSet(transaction, "some sql",
+     *      async (resultSet) => {
+     *          return await resultSet.getArrays();
+     *      })
+     * </pre>
+     */
+    static executeResultSet<R>(transaction: TTransaction, sql: string, callback: TExecutor<TResultSet, R>): Promise<R>;
+    /**
+     * Example:
+     * <pre>
      * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2],
      *      async (resultSet) => {
      *          return await resultSet.getArrays();
      *      })
      * </pre>
      */
-    static executeResultSet<R>(transaction: TTransaction, sql: string, params: null | any[] | INamedParams, callback: TExecutor<TResultSet, R>): Promise<R>;
+    static executeResultSet<R>(transaction: TTransaction, sql: string, params: any[] | INamedParams, callback: TExecutor<TResultSet, R>): Promise<R>;
     /** Start the transaction. */
     abstract start(): Promise<void>;
     /** Commit the transaction. */
@@ -87,7 +97,7 @@ export declare abstract class ATransaction<RS extends AResultSet, S extends ASta
      * a ResultSet object that contains the data produced by the given query;
      * never null
      */
-    abstract executeQuery(sql: string, params?: null | any[] | INamedParams): Promise<RS>;
+    abstract executeQuery(sql: string, params?: any[] | INamedParams): Promise<RS>;
     /**
      * Executes the given SQL statement.
      *
@@ -96,6 +106,6 @@ export declare abstract class ATransaction<RS extends AResultSet, S extends ASta
      * @param {any[] | INamedParams | null} params
      * array of parameters or object containing placeholders as keys and parameters as values; optional
      */
-    abstract execute(sql: string, params?: null | any[] | INamedParams): Promise<void>;
+    abstract execute(sql: string, params?: any[] | INamedParams): Promise<void>;
     abstract readDBStructure(): Promise<DBStructure>;
 }

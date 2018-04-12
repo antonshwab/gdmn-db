@@ -10,6 +10,6 @@ export declare class FirebirdStatement extends AStatement<FirebirdResultSet> {
     private readonly _paramsAnalyzer;
     constructor(connect: Attachment, transaction: Transaction, statement: Statement, paramsAnalyzer: DefaultParamsAnalyzer);
     dispose(): Promise<void>;
-    execute(params?: null | any[] | INamedParams): Promise<void>;
-    executeQuery(params?: null | any[] | INamedParams): Promise<FirebirdResultSet>;
+    execute(params?: any[] | INamedParams): Promise<void>;
+    executeQuery(params?: any[] | INamedParams): Promise<FirebirdResultSet>;
 }
