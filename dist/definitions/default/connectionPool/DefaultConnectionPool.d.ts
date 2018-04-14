@@ -89,7 +89,7 @@ export interface IDefaultConnectionPoolOptions {
     idleTimeoutMillis?: number;
 }
 export declare type DBCreator<DB> = () => DB;
-export declare class DefaultConnectionPool<DBOptions> extends AConnectionPool<IDefaultConnectionPoolOptions> {
+export declare class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoolOptions> {
     private readonly _databaseCreator;
     private _connectionPool;
     constructor(databaseCreator: DBCreator<ADatabase>);

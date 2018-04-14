@@ -1,5 +1,5 @@
-import { FirebirdDriver } from "./fb/FirebirdDriver";
+import { ADriver } from "./ADriver";
 export declare abstract class Factory {
     /** Firebird driver */
-    static readonly FBDriver: FirebirdDriver;
+    static readonly FBDriver: ADriver;
 }

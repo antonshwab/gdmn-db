@@ -94,7 +94,7 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
 
 export type DBCreator<DB> = () => DB;
 
-export class DefaultConnectionPool<DBOptions> extends AConnectionPool<IDefaultConnectionPoolOptions> {
+export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoolOptions> {
 
     private readonly _databaseCreator: DBCreator<ADatabase>;
     private _connectionPool: null | Pool<ADatabase> = null;

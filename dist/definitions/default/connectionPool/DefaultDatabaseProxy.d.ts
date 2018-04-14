@@ -1,7 +1,7 @@
 import { Pool } from "generic-pool";
 import { ADatabase, IDBOptions } from "../../ADatabase";
 import { ATransaction } from "../../ATransaction";
-export declare class DatabaseProxy<DBOptions> extends ADatabase<IDBOptions> {
+export declare class DatabaseProxy extends ADatabase {
     private readonly _pool;
     private readonly _databaseCreator;
     private _database;
