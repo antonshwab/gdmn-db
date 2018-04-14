@@ -1,14 +1,10 @@
-import { AResultSet, TResultSet } from "./AResultSet";
-import { AStatement, TStatement } from "./AStatement";
+import { AResultSet } from "./AResultSet";
+import { AStatement } from "./AStatement";
 import { DBStructure } from "./DBStructure";
 import { TExecutor } from "./types";
 export interface INamedParams {
     [paramName: string]: any;
 }
-/**
- * Simplified type of {@link ATransaction}
- */
-export declare type TTransaction = ATransaction<TResultSet, TStatement>;
 export declare enum AccessMode {
     READ_WRITE = 0,
     READ_ONLY = 1,
@@ -26,11 +22,11 @@ export interface ITransactionOptions {
 /**
  * The transaction object
  */
-export declare abstract class ATransaction<RS extends AResultSet, S extends AStatement<RS>> {
+export declare abstract class ATransaction<RS extends AResultSet = AResultSet, S extends AStatement<RS> = AStatement<RS>> {
     static DEFAULT_OPTIONS: ITransactionOptions;
     protected _options: ITransactionOptions;
     protected constructor(options?: ITransactionOptions);
-    static executeFromParent<R>(sourceCallback: TExecutor<null, TTransaction>, resultCallback: TExecutor<TTransaction, R>): Promise<R>;
+    static executeFromParent<R>(sourceCallback: TExecutor<null, ATransaction>, resultCallback: TExecutor<ATransaction, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -41,7 +37,7 @@ export declare abstract class ATransaction<RS extends AResultSet, S extends ASta
      * })}
      * </pre>
      */
-    static executeStatement<R>(transaction: TTransaction, sql: string, callback: TExecutor<TStatement, R>): Promise<R>;
+    static executeStatement<R>(transaction: ATransaction, sql: string, callback: TExecutor<AStatement, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -51,7 +47,7 @@ export declare abstract class ATransaction<RS extends AResultSet, S extends ASta
      *      })
      * </pre>
      */
-    static executeResultSet<R>(transaction: TTransaction, sql: string, callback: TExecutor<TResultSet, R>): Promise<R>;
+    static executeResultSet<R>(transaction: ATransaction, sql: string, callback: TExecutor<AResultSet, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -61,7 +57,7 @@ export declare abstract class ATransaction<RS extends AResultSet, S extends ASta
      *      })
      * </pre>
      */
-    static executeResultSet<R>(transaction: TTransaction, sql: string, params: any[] | INamedParams, callback: TExecutor<TResultSet, R>): Promise<R>;
+    static executeResultSet<R>(transaction: ATransaction, sql: string, params: any[] | INamedParams, callback: TExecutor<AResultSet, R>): Promise<R>;
     /** Start the transaction. */
     abstract start(): Promise<void>;
     /** Commit the transaction. */

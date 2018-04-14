@@ -1,9 +1,6 @@
 import {createPool, Pool} from "generic-pool";
 import {AConnectionPool} from "../../AConnectionPool";
-import {IDBOptions, TDatabase} from "../../ADatabase";
-import {AResultSet} from "../../AResultSet";
-import {TStatement} from "../../AStatement";
-import {TTransaction} from "../../ATransaction";
+import {ADatabase, IDBOptions} from "../../ADatabase";
 import {DatabaseProxy} from "./DefaultDatabaseProxy";
 
 export interface IDefaultConnectionPoolOptions {    // from require(generic-pool).Options
@@ -97,13 +94,12 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
 
 export type DBCreator<DB> = () => DB;
 
-export class DefaultConnectionPool<DBOptions> extends AConnectionPool<IDefaultConnectionPoolOptions, IDBOptions,
-    AResultSet, TStatement, TTransaction, TDatabase> {
+export class DefaultConnectionPool<DBOptions> extends AConnectionPool<IDefaultConnectionPoolOptions> {
 
-    private readonly _databaseCreator: DBCreator<TDatabase>;
-    private _connectionPool: null | Pool<TDatabase> = null;
+    private readonly _databaseCreator: DBCreator<ADatabase>;
+    private _connectionPool: null | Pool<ADatabase> = null;
 
-    constructor(databaseCreator: DBCreator<TDatabase>) {
+    constructor(databaseCreator: DBCreator<ADatabase>) {
         super();
         this._databaseCreator = databaseCreator;
     }
@@ -141,7 +137,7 @@ export class DefaultConnectionPool<DBOptions> extends AConnectionPool<IDefaultCo
         this._connectionPool = null;
     }
 
-    public async get(): Promise<TDatabase> {
+    public async get(): Promise<ADatabase> {
         if (!this._connectionPool) {
             throw new Error("Connection pool need created");
         }

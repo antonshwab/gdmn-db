@@ -1,14 +1,14 @@
-import {TConnectionPool} from "./AConnectionPool";
-import {TDatabase} from "./ADatabase";
+import {AConnectionPool} from "./AConnectionPool";
+import {ADatabase} from "./ADatabase";
 import {IDefaultConnectionPoolOptions} from "./default/connectionPool/DefaultConnectionPool";
 
-export abstract class ADriver<PoolOptions> {
+export abstract class ADriver<PoolOptions = any> {
 
     /** Create object for access to the database */
-    public abstract newDatabase(): TDatabase;
+    public abstract newDatabase(): ADatabase;
 
     /** Create object for access to a specific connection pool of driver. */
-    public abstract newConnectionPool(): TConnectionPool<PoolOptions>;
+    public abstract newConnectionPool(): AConnectionPool<PoolOptions>;
 
     /**
      * Create object for access to a default connection pool of driver.
@@ -16,5 +16,5 @@ export abstract class ADriver<PoolOptions> {
      *
      * @see {@link https://github.com/coopernurse/node-pool}
      */
-    public abstract newDefaultConnectionPool(): TConnectionPool<IDefaultConnectionPoolOptions>;
+    public abstract newDefaultConnectionPool(): AConnectionPool<IDefaultConnectionPoolOptions>;
 }

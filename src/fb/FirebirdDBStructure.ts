@@ -1,5 +1,5 @@
 import {ADatabase} from "../ADatabase";
-import {ATransaction, TTransaction} from "../ATransaction";
+import {ATransaction} from "../ATransaction";
 import {DBStructure, IRDB$FIELD, IRDB$RELATIONCONSTRAINT, IRDB$RELATIONFIELD} from "../DBStructure";
 import {Factory} from "../Factory";
 import {FirebirdOptions} from "./FirebirdDatabase";
@@ -34,7 +34,7 @@ export class FirebirdDBStructure {
             });
     }
 
-    private static async read(transaction: TTransaction): Promise<DBStructure> {
+    private static async read(transaction: ATransaction): Promise<DBStructure> {
         const fields = await ATransaction.executeResultSet(transaction, `
             SELECT
                 TRIM(f.RDB$FIELD_NAME),

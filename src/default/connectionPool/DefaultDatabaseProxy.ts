@@ -1,16 +1,14 @@
 import {Pool} from "generic-pool";
-import {ADatabase, IDBOptions, TDatabase} from "../../ADatabase";
-import {AResultSet} from "../../AResultSet";
-import {TStatement} from "../../AStatement";
-import {TTransaction} from "../../ATransaction";
+import {ADatabase, IDBOptions} from "../../ADatabase";
+import {ATransaction} from "../../ATransaction";
 
-export class DatabaseProxy<DBOptions> extends ADatabase<IDBOptions, AResultSet, TStatement, TTransaction> {
+export class DatabaseProxy<DBOptions> extends ADatabase<IDBOptions> {
 
-    private readonly _pool: Pool<TDatabase>;
-    private readonly _databaseCreator: () => TDatabase;
-    private _database: null | TDatabase = null;
+    private readonly _pool: Pool<ADatabase>;
+    private readonly _databaseCreator: () => ADatabase;
+    private _database: null | ADatabase = null;
 
-    constructor(pool: Pool<TDatabase>, databaseCreator: () => TDatabase) {
+    constructor(pool: Pool<ADatabase>, databaseCreator: () => ADatabase) {
         super();
         this._pool = pool;
         this._databaseCreator = databaseCreator;
@@ -45,7 +43,7 @@ export class DatabaseProxy<DBOptions> extends ADatabase<IDBOptions, AResultSet, 
         }
     }
 
-    public async createTransaction(): Promise<TTransaction> {
+    public async createTransaction(): Promise<ATransaction> {
         if (!this._database || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }

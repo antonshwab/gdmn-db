@@ -1,19 +1,11 @@
 import {expect, should} from "chai";
-import {
-    ADatabase,
-    AResultSet,
-    ATransaction,
-    IDefaultConnectionPoolOptions,
-    TConnectionPool,
-    TDatabase,
-    TTransaction
-} from "../../src";
+import {AConnectionPool, ADatabase, AResultSet, ATransaction, IDefaultConnectionPoolOptions} from "../../src";
 
-export function resultSetTest(connectionPool: TConnectionPool<IDefaultConnectionPoolOptions>): void {
+export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
     describe("AResultSet", async () => {
 
-        let globalDatabase: TDatabase;
-        let globalTransaction: TTransaction;
+        let globalDatabase: ADatabase;
+        let globalTransaction: ATransaction;
 
         before(async () => {
             globalDatabase = await connectionPool.get();

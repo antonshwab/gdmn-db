@@ -1,22 +1,17 @@
-import {AResultSet, TResultSet} from "./AResultSet";
+import {AResultSet} from "./AResultSet";
 import {INamedParams} from "./ATransaction";
 import {TExecutor} from "./types";
-
-/**
- * Simplified type of {@link AStatement}
- */
-export type TStatement = AStatement<TResultSet>;
 
 /**
  * An object that represents a precompiled SQL statement.
  * A SQL statement is precompiled and stored in a Statement object.
  * This object can then be used to efficiently execute this statement multiple times.
  */
-export abstract class AStatement<RS extends AResultSet> {
+export abstract class AStatement<RS extends AResultSet = AResultSet> {
 
-    public static async executeFromParent<R>(sourceCallback: TExecutor<null, TStatement>,
-                                             resultCallback: TExecutor<TStatement, R>): Promise<R> {
-        let statement: undefined | TStatement;
+    public static async executeFromParent<R>(sourceCallback: TExecutor<null, AStatement>,
+                                             resultCallback: TExecutor<AStatement, R>): Promise<R> {
+        let statement: undefined | AStatement;
         try {
             statement = await sourceCallback(null);
             return await resultCallback(statement);
@@ -36,8 +31,8 @@ export abstract class AStatement<RS extends AResultSet> {
      * </pre>
      */
     public static async executeResultSet<R>(
-        statement: TStatement,
-        callback: TExecutor<TResultSet, R>
+        statement: AStatement,
+        callback: TExecutor<AResultSet, R>
     ): Promise<R>;
 
     /**
@@ -49,18 +44,18 @@ export abstract class AStatement<RS extends AResultSet> {
      * </pre>
      */
     public static async executeResultSet<R>(
-        statement: TStatement,
+        statement: AStatement,
         params: any[] | INamedParams,
-        callback?: TExecutor<TResultSet, R>
+        callback?: TExecutor<AResultSet, R>
     ): Promise<R>;
 
     public static async executeResultSet<R>(
-        statement: TStatement,
+        statement: AStatement,
         params: any[] | INamedParams,
-        callback?: TExecutor<TResultSet, R>
+        callback?: TExecutor<AResultSet, R>
     ): Promise<R> {
         if (!callback) {
-            callback = params as TExecutor<TResultSet, R>;
+            callback = params as TExecutor<AResultSet, R>;
         }
         return await AResultSet.executeFromParent(() => statement.executeQuery(params), callback);
     }

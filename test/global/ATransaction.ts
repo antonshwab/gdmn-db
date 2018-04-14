@@ -1,10 +1,10 @@
 import {expect, should} from "chai";
-import {ADatabase, IDefaultConnectionPoolOptions, TConnectionPool, TDatabase} from "../../src";
+import {AConnectionPool, ADatabase, IDefaultConnectionPoolOptions} from "../../src";
 
-export function transactionTest(connectionPool: TConnectionPool<IDefaultConnectionPoolOptions>): void {
+export function transactionTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
     describe("ATransaction", async () => {
 
-        let globalDatabase: TDatabase;
+        let globalDatabase: ADatabase;
 
         before(async () => {
             globalDatabase = await connectionPool.get();
@@ -32,7 +32,7 @@ export function transactionTest(connectionPool: TConnectionPool<IDefaultConnecti
         });
 
         it("prepare", async () => {
-            await ADatabase.executeTransaction(globalDatabase, null, async (transaction) => {
+            await ADatabase.executeTransaction(globalDatabase, async (transaction) => {
                 const statement = await transaction.prepare("SELECT FIRST 1 * FROM RDB$FIELDS");
                 should().exist(statement);
 
@@ -41,14 +41,14 @@ export function transactionTest(connectionPool: TConnectionPool<IDefaultConnecti
         });
 
         it("execute", async () => {
-            await ADatabase.executeTransaction(globalDatabase, null, async (transaction) => {
+            await ADatabase.executeTransaction(globalDatabase, async (transaction) => {
                 const result = await transaction.execute("SELECT FIRST 1 * FROM RDB$FIELDS");
                 should().not.exist(result);
             });
         });
 
         it("executeQuery", async () => {
-            await ADatabase.executeTransaction(globalDatabase, null, async (transaction) => {
+            await ADatabase.executeTransaction(globalDatabase, async (transaction) => {
                 const resultSet = await transaction.executeQuery("SELECT FIRST 1 * FROM RDB$FIELDS");
                 should().exist(resultSet);
 

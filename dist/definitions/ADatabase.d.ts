@@ -1,6 +1,6 @@
-import { AResultSet, TResultSet } from "./AResultSet";
-import { AStatement, TStatement } from "./AStatement";
-import { ATransaction, ITransactionOptions, TTransaction } from "./ATransaction";
+import { AResultSet } from "./AResultSet";
+import { AStatement } from "./AStatement";
+import { ATransaction, ITransactionOptions } from "./ATransaction";
 import { TExecutor } from "./types";
 export interface IDBOptions {
     host: string;
@@ -9,10 +9,6 @@ export interface IDBOptions {
     password: string;
     path: string;
 }
-/**
- * Simplified type of {@link ADatabase}
- */
-export declare type TDatabase = ADatabase<IDBOptions, TResultSet, TStatement, TTransaction>;
 /**
  * Example:
  * <pre>
@@ -48,8 +44,8 @@ export declare type TDatabase = ADatabase<IDBOptions, TResultSet, TStatement, TT
  * })()
  * </pre>
  */
-export declare abstract class ADatabase<Options extends IDBOptions, RS extends AResultSet, S extends AStatement<RS>, T extends ATransaction<RS, S>> {
-    static executeFromParent<Opt, R>(sourceCallback: TExecutor<null, TDatabase>, resultCallback: TExecutor<TDatabase, R>): Promise<R>;
+export declare abstract class ADatabase<Options extends IDBOptions = IDBOptions, RS extends AResultSet = AResultSet, S extends AStatement<RS> = AStatement<RS>, T extends ATransaction<RS, S> = ATransaction<RS, S>> {
+    static executeFromParent<Opt, R>(sourceCallback: TExecutor<null, ADatabase>, resultCallback: TExecutor<ADatabase, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -60,7 +56,7 @@ export declare abstract class ADatabase<Options extends IDBOptions, RS extends A
      * })}
      * </pre>
      */
-    static executeConnection<R>(database: TDatabase, options: IDBOptions, callback: TExecutor<TDatabase, R>): Promise<R>;
+    static executeConnection<R>(database: ADatabase, options: IDBOptions, callback: TExecutor<ADatabase, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -71,7 +67,7 @@ export declare abstract class ADatabase<Options extends IDBOptions, RS extends A
      * })}
      * </pre>
      */
-    static executeTransaction<R>(database: TDatabase, callback: TExecutor<TTransaction, R>): Promise<R>;
+    static executeTransaction<R>(database: ADatabase, callback: TExecutor<ATransaction, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -82,7 +78,7 @@ export declare abstract class ADatabase<Options extends IDBOptions, RS extends A
      * })}
      * </pre>
      */
-    static executeTransaction<R>(database: TDatabase, options: ITransactionOptions, callback: TExecutor<TTransaction, R>): Promise<R>;
+    static executeTransaction<R>(database: ADatabase, options: ITransactionOptions, callback: TExecutor<ATransaction, R>): Promise<R>;
     /**
      * Create database and connect to them.
      *

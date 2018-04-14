@@ -1,26 +1,21 @@
-import {ADatabase, IDBOptions, TDatabase} from "./ADatabase";
-import {AResultSet, TResultSet} from "./AResultSet";
-import {AStatement, TStatement} from "./AStatement";
-import {ATransaction, TTransaction} from "./ATransaction";
+import {ADatabase, IDBOptions} from "./ADatabase";
+import {AResultSet} from "./AResultSet";
+import {AStatement} from "./AStatement";
+import {ATransaction} from "./ATransaction";
 import {TExecutor} from "./types";
 
-/**
- * Simplified type of {@link AConnectionPool}
- */
-export type TConnectionPool<Opt> = AConnectionPool<Opt, IDBOptions, TResultSet, TStatement, TTransaction, TDatabase>;
-
 export abstract class AConnectionPool<Options,
-    DBOptions extends IDBOptions,
-    RS extends AResultSet,
-    S extends AStatement<RS>,
-    T extends ATransaction<RS, S>,
-    D extends ADatabase<DBOptions, RS, S, T>> {
+    DBOptions extends IDBOptions = IDBOptions,
+    RS extends AResultSet = AResultSet,
+    S extends AStatement<RS> = AStatement<RS>,
+    T extends ATransaction<RS, S> = ATransaction<RS, S>,
+    D extends ADatabase<DBOptions, RS, S, T> = ADatabase<DBOptions, RS, S, T>> {
 
     public static async executeFromParent<Opt, DBOpt, R>(
-        sourceCallback: TExecutor<null, TConnectionPool<Opt>>,
-        resultCallback: TExecutor<TConnectionPool<Opt>, R>
+        sourceCallback: TExecutor<null, AConnectionPool<Opt>>,
+        resultCallback: TExecutor<AConnectionPool<Opt>, R>
     ): Promise<R> {
-        let connectionPool: undefined | TConnectionPool<Opt>;
+        let connectionPool: undefined | AConnectionPool<Opt>;
         try {
             connectionPool = await sourceCallback(null);
             return await resultCallback(connectionPool);
@@ -43,10 +38,10 @@ export abstract class AConnectionPool<Options,
      * </pre>
      */
     public static async executeConnectionPool<Opt, R>(
-        connectionPool: TConnectionPool<Opt>,
+        connectionPool: AConnectionPool<Opt>,
         dbOptions: IDBOptions,
         options: Opt,
-        callback: TExecutor<TConnectionPool<Opt>, R>
+        callback: TExecutor<AConnectionPool<Opt>, R>
     ): Promise<R> {
         return await AConnectionPool.executeFromParent(async () => {
             await connectionPool.create(dbOptions, options);
@@ -65,8 +60,8 @@ export abstract class AConnectionPool<Options,
      * </pre>
      */
     public static async executeDatabase<Opt, R>(
-        connectionPool: TConnectionPool<Opt>,
-        callback: TExecutor<TDatabase, R>
+        connectionPool: AConnectionPool<Opt>,
+        callback: TExecutor<ADatabase, R>
     ): Promise<R> {
         return await ADatabase.executeFromParent(() => connectionPool.get(), callback);
     }

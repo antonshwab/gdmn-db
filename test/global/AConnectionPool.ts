@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {AConnectionPool, ADriver, IDBOptions} from "../../src";
 
-export function connectionPoolTest(driver: ADriver<any>, dbOptions: IDBOptions): void {
+export function connectionPoolTest(driver: ADriver, dbOptions: IDBOptions): void {
     describe("AConnectionPool", async () => {
 
         it("lifecycle", async () => {

@@ -1,16 +1,11 @@
-import {AResultSet, TResultSet} from "./AResultSet";
-import {AStatement, TStatement} from "./AStatement";
+import {AResultSet} from "./AResultSet";
+import {AStatement} from "./AStatement";
 import {DBStructure} from "./DBStructure";
 import {TExecutor} from "./types";
 
 export interface INamedParams {
     [paramName: string]: any;
 }
-
-/**
- * Simplified type of {@link ATransaction}
- */
-export type TTransaction = ATransaction<TResultSet, TStatement>;
 
 export enum AccessMode {
     READ_WRITE, READ_ONLY
@@ -31,7 +26,8 @@ export interface ITransactionOptions {
 /**
  * The transaction object
  */
-export abstract class ATransaction<RS extends AResultSet, S extends AStatement<RS>> {
+export abstract class ATransaction<RS extends AResultSet = AResultSet,
+    S extends AStatement<RS> = AStatement<RS>> {
 
     public static DEFAULT_OPTIONS: ITransactionOptions = {
         isolation: Isolation.READ_COMMITED,
@@ -43,9 +39,9 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
         this._options = options;
     }
 
-    public static async executeFromParent<R>(sourceCallback: TExecutor<null, TTransaction>,
-                                             resultCallback: TExecutor<TTransaction, R>): Promise<R> {
-        let transaction: undefined | TTransaction;
+    public static async executeFromParent<R>(sourceCallback: TExecutor<null, ATransaction>,
+                                             resultCallback: TExecutor<ATransaction, R>): Promise<R> {
+        let transaction: undefined | ATransaction;
         try {
             transaction = await sourceCallback(null);
             const result = await resultCallback(transaction);
@@ -70,9 +66,9 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
      * </pre>
      */
     public static async executeStatement<R>(
-        transaction: TTransaction,
+        transaction: ATransaction,
         sql: string,
-        callback: TExecutor<TStatement, R>
+        callback: TExecutor<AStatement, R>
     ): Promise<R> {
         return await AStatement.executeFromParent(() => transaction.prepare(sql), callback);
     }
@@ -87,9 +83,9 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
      * </pre>
      */
     public static async executeResultSet<R>(
-        transaction: TTransaction,
+        transaction: ATransaction,
         sql: string,
-        callback: TExecutor<TResultSet, R>
+        callback: TExecutor<AResultSet, R>
     ): Promise<R>;
 
     /**
@@ -102,20 +98,20 @@ export abstract class ATransaction<RS extends AResultSet, S extends AStatement<R
      * </pre>
      */
     public static async executeResultSet<R>(
-        transaction: TTransaction,
+        transaction: ATransaction,
         sql: string,
         params: any[] | INamedParams,
-        callback: TExecutor<TResultSet, R>
+        callback: TExecutor<AResultSet, R>
     ): Promise<R>;
 
     public static async executeResultSet<R>(
-        transaction: TTransaction,
+        transaction: ATransaction,
         sql: string,
         params: any[] | INamedParams,
-        callback?: TExecutor<TResultSet, R>
+        callback?: TExecutor<AResultSet, R>
     ): Promise<R> {
         if (!callback) {
-            callback = params as TExecutor<TResultSet, R>;
+            callback = params as TExecutor<AResultSet, R>;
         }
         return await AResultSet.executeFromParent(() => transaction.executeQuery(sql, params), callback);
     }

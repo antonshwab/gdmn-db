@@ -1,14 +1,10 @@
-import { ADatabase, IDBOptions, TDatabase } from "./ADatabase";
-import { AResultSet, TResultSet } from "./AResultSet";
-import { AStatement, TStatement } from "./AStatement";
-import { ATransaction, TTransaction } from "./ATransaction";
+import { ADatabase, IDBOptions } from "./ADatabase";
+import { AResultSet } from "./AResultSet";
+import { AStatement } from "./AStatement";
+import { ATransaction } from "./ATransaction";
 import { TExecutor } from "./types";
-/**
- * Simplified type of {@link AConnectionPool}
- */
-export declare type TConnectionPool<Opt> = AConnectionPool<Opt, IDBOptions, TResultSet, TStatement, TTransaction, TDatabase>;
-export declare abstract class AConnectionPool<Options, DBOptions extends IDBOptions, RS extends AResultSet, S extends AStatement<RS>, T extends ATransaction<RS, S>, D extends ADatabase<DBOptions, RS, S, T>> {
-    static executeFromParent<Opt, DBOpt, R>(sourceCallback: TExecutor<null, TConnectionPool<Opt>>, resultCallback: TExecutor<TConnectionPool<Opt>, R>): Promise<R>;
+export declare abstract class AConnectionPool<Options, DBOptions extends IDBOptions = IDBOptions, RS extends AResultSet = AResultSet, S extends AStatement<RS> = AStatement<RS>, T extends ATransaction<RS, S> = ATransaction<RS, S>, D extends ADatabase<DBOptions, RS, S, T> = ADatabase<DBOptions, RS, S, T>> {
+    static executeFromParent<Opt, DBOpt, R>(sourceCallback: TExecutor<null, AConnectionPool<Opt>>, resultCallback: TExecutor<AConnectionPool<Opt>, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -20,7 +16,7 @@ export declare abstract class AConnectionPool<Options, DBOptions extends IDBOpti
      *      })}
      * </pre>
      */
-    static executeConnectionPool<Opt, R>(connectionPool: TConnectionPool<Opt>, dbOptions: IDBOptions, options: Opt, callback: TExecutor<TConnectionPool<Opt>, R>): Promise<R>;
+    static executeConnectionPool<Opt, R>(connectionPool: AConnectionPool<Opt>, dbOptions: IDBOptions, options: Opt, callback: TExecutor<AConnectionPool<Opt>, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -31,7 +27,7 @@ export declare abstract class AConnectionPool<Options, DBOptions extends IDBOpti
      * })}
      * </pre>
      */
-    static executeDatabase<Opt, R>(connectionPool: TConnectionPool<Opt>, callback: TExecutor<TDatabase, R>): Promise<R>;
+    static executeDatabase<Opt, R>(connectionPool: AConnectionPool<Opt>, callback: TExecutor<ADatabase, R>): Promise<R>;
     /**
      * Is the connection pool prepared?
      *

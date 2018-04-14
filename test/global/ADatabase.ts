@@ -1,7 +1,7 @@
 import {expect, should} from "chai";
 import {ADatabase, ADriver, IDBOptions} from "../../src";
 
-export function databaseTest(driver: ADriver<any>, dbOptions: IDBOptions): void {
+export function databaseTest(driver: ADriver, dbOptions: IDBOptions): void {
     describe("ADatabase", async () => {
 
         it("lifecycle", async () => {
