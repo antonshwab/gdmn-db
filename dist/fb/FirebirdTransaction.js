@@ -10,7 +10,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
     constructor(connect, options) {
         super(options);
         this._transaction = null;
-        this._connect = connect;
+        this._connection = connect;
     }
     async start() {
         if (this._transaction) {
@@ -46,7 +46,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
             default:
                 options.accessMode = "READ_WRITE";
         }
-        this._transaction = await this._connect.startTransaction(options);
+        this._transaction = await this._connection.startTransaction(options);
     }
     async commit() {
         if (!this._transaction) {
@@ -70,23 +70,23 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
             throw new Error("Need to open transaction");
         }
         const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
-        const statement = await this._connect.prepare(this._transaction, paramsAnalyzer.sql);
-        return new FirebirdStatement_1.FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
+        const statement = await this._connection.prepare(this._transaction, paramsAnalyzer.sql);
+        return new FirebirdStatement_1.FirebirdStatement(this._connection, this._transaction, statement, paramsAnalyzer);
     }
     async executeQuery(sql, params) {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
         const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
-        const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
-        return new FirebirdResultSet_1.FirebirdResultSet(this._connect, this._transaction, resultSet);
+        const resultSet = await this._connection.executeQuery(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
+        return new FirebirdResultSet_1.FirebirdResultSet(this._connection, this._transaction, resultSet);
     }
     async execute(sql, params) {
         if (!this._transaction) {
             throw new Error("Need to open transaction");
         }
         const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
-        await this._connect.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
+        await this._connection.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
     }
     async readDBStructure() {
         if (!this._transaction) {

@@ -8,7 +8,7 @@ enum Status {
 
 export class FirebirdResultSet extends AResultSet {
 
-    private readonly _connect: Attachment;
+    private readonly _connection: Attachment;
     private readonly _transaction: Transaction;
     private readonly _resultSet: ResultSet;
     private _data: any[][] = [];
@@ -17,7 +17,7 @@ export class FirebirdResultSet extends AResultSet {
 
     constructor(connect: Attachment, transaction: Transaction, resultSet: ResultSet) {
         super();
-        this._connect = connect;
+        this._connection = connect;
         this._transaction = transaction;
         this._resultSet = resultSet;
     }
@@ -202,7 +202,7 @@ export class FirebirdResultSet extends AResultSet {
             return null;
         }
         if (value instanceof Blob) {
-            const blobStream = await this._connect.openBlob(this._transaction, value);
+            const blobStream = await this._connection.openBlob(this._transaction, value);
             const length = await blobStream.length;
 
             const buffers: Buffer[] = [];
@@ -228,7 +228,7 @@ export class FirebirdResultSet extends AResultSet {
         }
         const stream = new Readable({read: () => null});
         if (value instanceof Blob) {
-            const blobStream = await this._connect.openBlob(this._transaction, value);
+            const blobStream = await this._connection.openBlob(this._transaction, value);
             const length = await blobStream.length;
 
             const buffers: Buffer[] = [];

@@ -16,12 +16,12 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
     ];
     public static PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
 
-    private readonly _connect: Attachment;
+    private readonly _connection: Attachment;
     private _transaction: null | Transaction = null;
 
     constructor(connect: Attachment, options?: ITransactionOptions) {
         super(options);
-        this._connect = connect;
+        this._connection = connect;
     }
 
     public async start(): Promise<void> {
@@ -61,7 +61,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
                 options.accessMode = "READ_WRITE";
         }
 
-        this._transaction = await this._connect.startTransaction(options);
+        this._transaction = await this._connection.startTransaction(options);
     }
 
     public async commit(): Promise<void> {
@@ -93,8 +93,8 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
 
         const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
             FirebirdTransaction.PLACEHOLDER_PATTERN);
-        const statement = await this._connect.prepare(this._transaction, paramsAnalyzer.sql);
-        return new FirebirdStatement(this._connect, this._transaction, statement, paramsAnalyzer);
+        const statement = await this._connection.prepare(this._transaction, paramsAnalyzer.sql);
+        return new FirebirdStatement(this._connection, this._transaction, statement, paramsAnalyzer);
     }
 
     public async executeQuery(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet> {
@@ -104,9 +104,9 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
 
         const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
             FirebirdTransaction.PLACEHOLDER_PATTERN);
-        const resultSet = await this._connect.executeQuery(this._transaction, paramsAnalyzer.sql,
+        const resultSet = await this._connection.executeQuery(this._transaction, paramsAnalyzer.sql,
             paramsAnalyzer.prepareParams(params));
-        return new FirebirdResultSet(this._connect, this._transaction, resultSet);
+        return new FirebirdResultSet(this._connection, this._transaction, resultSet);
     }
 
     public async execute(sql: string, params?: any[] | INamedParams): Promise<void> {
@@ -116,7 +116,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdResultSet, Firebir
 
         const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
             FirebirdTransaction.PLACEHOLDER_PATTERN);
-        await this._connect.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
+        await this._connection.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
     }
 
     public async readDBStructure(): Promise<DBStructure> {

@@ -1,5 +1,5 @@
-import { ADatabase } from "../ADatabase";
+import { AConnection } from "../AConnection";
 import { ADriver } from "../ADriver";
 export declare class FirebirdDriver extends ADriver {
-    newDatabase(): ADatabase;
+    newConnection(): AConnection;
 }

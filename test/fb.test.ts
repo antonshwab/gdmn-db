@@ -1,14 +1,14 @@
 import {expect} from "chai";
 import {existsSync, unlinkSync} from "fs";
-import {DefaultParamsAnalyzer, Factory, FirebirdTransaction, IDBOptions} from "../src";
+import {DefaultParamsAnalyzer, Factory, FirebirdTransaction, IConnectionOptions} from "../src";
+import {connectionTest} from "./global/AConnection";
 import {connectionPoolTest} from "./global/AConnectionPool";
-import {databaseTest} from "./global/ADatabase";
 import {resultSetTest} from "./global/AResultSet";
 import {statementTest} from "./global/AStatement";
 import {transactionTest} from "./global/ATransaction";
 
 export const path = `${process.cwd()}/TEST.FDB`;
-export const dbOptions: IDBOptions = {
+export const dbOptions: IConnectionOptions = {
     host: "localhost",
     port: 3050,
     username: "SYSDBA",
@@ -25,13 +25,13 @@ describe("Firebird driver tests", async function tests(): Promise<void> {
         if (existsSync(path)) {
             unlinkSync(path);
         }
-        const database = Factory.FBDriver.newDatabase();
+        const connection = Factory.FBDriver.newConnection();
 
-        await database.createDatabase(dbOptions);
-        expect(await database.isConnected()).to.equal(true);
+        await connection.createDatabase(dbOptions);
+        expect(await connection.isConnected()).to.equal(true);
 
-        await database.disconnect();
-        expect(await database.isConnected()).to.equal(false);
+        await connection.disconnect();
+        expect(await connection.isConnected()).to.equal(false);
 
         await globalConnectionPool.create(dbOptions, {min: 1, max: 1});
         expect(await globalConnectionPool.isCreated()).to.equal(true);
@@ -41,20 +41,20 @@ describe("Firebird driver tests", async function tests(): Promise<void> {
         await globalConnectionPool.destroy();
         expect(await globalConnectionPool.isCreated()).to.equal(false);
 
-        const database = Factory.FBDriver.newDatabase();
+        const connection = Factory.FBDriver.newConnection();
 
-        await database.connect(dbOptions);
-        expect(await database.isConnected()).to.equal(true);
+        await connection.connect(dbOptions);
+        expect(await connection.isConnected()).to.equal(true);
 
-        await database.dropDatabase();
-        expect(await database.isConnected()).to.equal(false);
+        await connection.dropDatabase();
+        expect(await connection.isConnected()).to.equal(false);
     });
 
     it(path + " exists", async () => {
         expect(existsSync(path)).to.equal(true);
     });
 
-    databaseTest(Factory.FBDriver, dbOptions);
+    connectionTest(Factory.FBDriver, dbOptions);
     connectionPoolTest(Factory.FBDriver, dbOptions);
 
     transactionTest(globalConnectionPool);

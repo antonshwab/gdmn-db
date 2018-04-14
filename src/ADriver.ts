@@ -1,11 +1,11 @@
+import {AConnection} from "./AConnection";
 import {AConnectionPool} from "./AConnectionPool";
-import {ADatabase} from "./ADatabase";
 import {DefaultConnectionPool, IDefaultConnectionPoolOptions} from "./default/connectionPool/DefaultConnectionPool";
 
 export abstract class ADriver<PoolOptions = any> {
 
     /** Create object for access to the database */
-    public newDatabase(): ADatabase {
+    public newConnection(): AConnection {
         throw new Error("Unsupported yet");
     }
 
@@ -24,6 +24,6 @@ export abstract class ADriver<PoolOptions = any> {
      * @see {@link https://github.com/coopernurse/node-pool}
      */
     public newDefaultConnectionPool(): AConnectionPool<IDefaultConnectionPoolOptions> {
-        return new DefaultConnectionPool(() => this.newDatabase());
+        return new DefaultConnectionPool(() => this.newConnection());
     }
 }

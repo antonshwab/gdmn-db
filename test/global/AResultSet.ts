@@ -1,22 +1,22 @@
 import {expect, should} from "chai";
-import {AConnectionPool, ADatabase, AResultSet, ATransaction, IDefaultConnectionPoolOptions} from "../../src";
+import {AConnection, AConnectionPool, AResultSet, ATransaction, IDefaultConnectionPoolOptions} from "../../src";
 
 export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
     describe("AResultSet", async () => {
 
-        let globalDatabase: ADatabase;
+        let globalConnection: AConnection;
         let globalTransaction: ATransaction;
 
         before(async () => {
-            globalDatabase = await connectionPool.get();
-            globalTransaction = await globalDatabase.createTransaction();
+            globalConnection = await connectionPool.get();
+            globalTransaction = await globalConnection.createTransaction();
             await globalTransaction.start();
 
-            await ADatabase.executeTransaction(globalDatabase, async (transaction) => {
+            await AConnection.executeTransaction(globalConnection, async (transaction) => {
                 await transaction.execute("CREATE TABLE TEST_TABLE(id INT NOT NULL PRIMARY KEY, name VARCHAR(20))");
             });
 
-            await ADatabase.executeTransaction(globalDatabase, async (transaction) => {
+            await AConnection.executeTransaction(globalConnection, async (transaction) => {
                 await ATransaction.executeStatement(transaction,
                     "INSERT INTO TEST_TABLE (id, name) VALUES(:id, :name)", async (statement) => {
                         const data = getData(10);
@@ -30,7 +30,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         after(async () => {
             await globalTransaction.execute("DROP TABLE TEST_TABLE");
             await globalTransaction.commit();
-            await globalDatabase.disconnect();
+            await globalConnection.disconnect();
         });
 
         it("lifecycle", async () => {

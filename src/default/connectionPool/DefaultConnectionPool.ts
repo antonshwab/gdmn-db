@@ -1,7 +1,7 @@
 import {createPool, Pool} from "generic-pool";
+import {AConnection, IConnectionOptions} from "../../AConnection";
 import {AConnectionPool} from "../../AConnectionPool";
-import {ADatabase, IDBOptions} from "../../ADatabase";
-import {DatabaseProxy} from "./DefaultDatabaseProxy";
+import {ConnectionProxy} from "./DefaultConnectionProxy";
 
 export interface IDefaultConnectionPoolOptions {    // from require(generic-pool).Options
     /**
@@ -92,19 +92,19 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
     idleTimeoutMillis?: number;
 }
 
-export type DBCreator<DB> = () => DB;
+export type ConnectionCreator<Connection> = () => Connection;
 
 export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoolOptions> {
 
-    private readonly _databaseCreator: DBCreator<ADatabase>;
-    private _connectionPool: null | Pool<ADatabase> = null;
+    private readonly _connectionCreator: ConnectionCreator<AConnection>;
+    private _connectionPool: null | Pool<AConnection> = null;
 
-    constructor(databaseCreator: DBCreator<ADatabase>) {
+    constructor(connectionCreator: ConnectionCreator<AConnection>) {
         super();
-        this._databaseCreator = databaseCreator;
+        this._connectionCreator = connectionCreator;
     }
 
-    public async create(dbOptions: IDBOptions, options: IDefaultConnectionPoolOptions): Promise<void> {
+    public async create(dbOptions: IConnectionOptions, options: IDefaultConnectionPoolOptions): Promise<void> {
         if (this._connectionPool) {
             throw new Error("Connection pool already created");
         }
@@ -115,7 +115,7 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
                     throw new Error("This error should never been happen");
                 }
 
-                const proxy = new DatabaseProxy(this._connectionPool, this._databaseCreator);
+                const proxy = new ConnectionProxy(this._connectionPool, this._connectionCreator);
                 await proxy.connect(dbOptions);
                 return proxy;
             },
@@ -137,7 +137,7 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
         this._connectionPool = null;
     }
 
-    public async get(): Promise<ADatabase> {
+    public async get(): Promise<AConnection> {
         if (!this._connectionPool) {
             throw new Error("Connection pool need created");
         }

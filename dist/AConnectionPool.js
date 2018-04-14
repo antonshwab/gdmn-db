@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ADatabase_1 = require("./ADatabase");
+const AConnection_1 = require("./AConnection");
 class AConnectionPool {
     static async executeFromParent(sourceCallback, resultCallback) {
         let connectionPool;
@@ -19,30 +19,30 @@ class AConnectionPool {
      * <pre>
      * const result = await AConnectionPool.executeConnectionPool(Factory.XXModule.newDefaultConnectionPool(),
      *      async (connectionPool) => {
-     *          return await AConnectionPool.executeDatabase(connectionPool, async (database) => {
+     *          return await AConnectionPool.executeConnection(connectionPool, async (connection) => {
      *              return ...
      *          });
      *      })}
      * </pre>
      */
-    static async executeConnectionPool(connectionPool, dbOptions, options, callback) {
+    static async executeConnectionPool(connectionPool, connectionOptions, options, callback) {
         return await AConnectionPool.executeFromParent(async () => {
-            await connectionPool.create(dbOptions, options);
+            await connectionPool.create(connectionOptions, options);
             return connectionPool;
         }, callback);
     }
     /**
      * Example:
      * <pre>
-     * const result = await AConnectionPool.executeDatabase(connectionPool, async (database) => {
-     *      return await ADatabase.executeTransaction(transaction, {}, async (transaction) => {
+     * const result = await AConnectionPool.executeConnection(connectionPool, async (connection) => {
+     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
      *          return ...
      *      });
      * })}
      * </pre>
      */
-    static async executeDatabase(connectionPool, callback) {
-        return await ADatabase_1.ADatabase.executeFromParent(() => connectionPool.get(), callback);
+    static async executeConnection(connectionPool, callback) {
+        return await AConnection_1.AConnection.executeFromParent(() => connectionPool.get(), callback);
     }
 }
 exports.AConnectionPool = AConnectionPool;

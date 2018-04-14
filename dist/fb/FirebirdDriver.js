@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const ADriver_1 = require("../ADriver");
-const FirebirdDatabase_1 = require("./FirebirdDatabase");
+const FirebirdConnection_1 = require("./FirebirdConnection");
 class FirebirdDriver extends ADriver_1.ADriver {
-    newDatabase() {
-        return new FirebirdDatabase_1.FirebirdDatabase();
+    newConnection() {
+        return new FirebirdConnection_1.FirebirdConnection();
     }
 }
 exports.FirebirdDriver = FirebirdDriver;

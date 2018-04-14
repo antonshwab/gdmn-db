@@ -1,7 +1,7 @@
 import {expect} from "chai";
-import {AConnectionPool, ADriver, IDBOptions} from "../../src";
+import {AConnectionPool, ADriver, IConnectionOptions} from "../../src";
 
-export function connectionPoolTest(driver: ADriver, dbOptions: IDBOptions): void {
+export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOptions): void {
     describe("AConnectionPool", async () => {
 
         it("lifecycle", async () => {
@@ -13,22 +13,22 @@ export function connectionPoolTest(driver: ADriver, dbOptions: IDBOptions): void
             expect(await connectionPool.isCreated()).to.equal(false);
         });
 
-        it("get database", async () => {
+        it("get connection", async () => {
             await AConnectionPool.executeConnectionPool(
                 driver.newDefaultConnectionPool(), dbOptions, {min: 1, max: 1},
                 async (connectionPool) => {
-                    const db1 = await connectionPool.get();
-                    expect(await db1.isConnected()).to.equal(true);
+                    const con1 = await connectionPool.get();
+                    expect(await con1.isConnected()).to.equal(true);
 
-                    await db1.disconnect();
-                    expect(await db1.isConnected()).to.equal(false);
+                    await con1.disconnect();
+                    expect(await con1.isConnected()).to.equal(false);
 
-                    const db2 = await connectionPool.get();
-                    expect(await db2.isConnected()).to.equal(true);
+                    const con2 = await connectionPool.get();
+                    expect(await con2.isConnected()).to.equal(true);
 
-                    await db2.disconnect();
-                    expect(await db2.isConnected()).to.equal(false);
-                    expect(db1).to.equal(db2);
+                    await con2.disconnect();
+                    expect(await con2.isConnected()).to.equal(false);
+                    expect(con1).to.equal(con2);
                 });
         });
     });

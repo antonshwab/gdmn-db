@@ -5,11 +5,11 @@ const ATransaction_1 = require("./ATransaction");
  * Example:
  * <pre>
  * (async () => {
- *      const database = Factory.XXModule.newDatabase();
+ *      const connection = Factory.XXModule.newConnection();
  *      try {
- *          await database.connect({...});
+ *          await connection.connect({...});
  *
- *          const transaction = await database.createTransaction();
+ *          const transaction = await connection.createTransaction();
  *          try {
  *              await transaction.start();
  *
@@ -28,7 +28,7 @@ const ATransaction_1 = require("./ATransaction");
  *          }
  *      } finally {
  *          try {
- *              await database.disconnect();
+ *              await connection.disconnect();
  *          } catch (err) {
  *              console.warn(err);
  *          }
@@ -36,45 +36,45 @@ const ATransaction_1 = require("./ATransaction");
  * })()
  * </pre>
  */
-class ADatabase {
+class AConnection {
     static async executeFromParent(sourceCallback, resultCallback) {
-        let database;
+        let connection;
         try {
-            database = await sourceCallback(null);
-            return await resultCallback(database);
+            connection = await sourceCallback(null);
+            return await resultCallback(connection);
         }
         finally {
-            if (database) {
-                await database.disconnect();
+            if (connection) {
+                await connection.disconnect();
             }
         }
     }
     /**
      * Example:
      * <pre>
-     * const result = await ADatabase.executeConnection(Factory.XXModule.newDatabase()), {}, async (source) => {
-     *      return await ADatabase.executeTransaction(transaction, {}, async (transaction) => {
+     * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (source) => {
+     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
      *          return ...
      *      });
      * })}
      * </pre>
      */
-    static async executeConnection(database, options, callback) {
-        return await ADatabase.executeFromParent(async () => {
-            await database.connect(options);
-            return database;
+    static async executeConnection(connection, options, callback) {
+        return await AConnection.executeFromParent(async () => {
+            await connection.connect(options);
+            return connection;
         }, callback);
     }
-    static async executeTransaction(database, options, callback) {
+    static async executeTransaction(connection, options, callback) {
         if (!callback) {
             callback = options;
         }
         return await ATransaction_1.ATransaction.executeFromParent(async () => {
-            const transaction = await database.createTransaction(options);
+            const transaction = await connection.createTransaction(options);
             await transaction.start();
             return transaction;
         }, callback);
     }
 }
-exports.ADatabase = ADatabase;
-//# sourceMappingURL=ADatabase.js.map
+exports.AConnection = AConnection;
+//# sourceMappingURL=AConnection.js.map

@@ -1,5 +1,5 @@
+import { AConnection, IConnectionOptions } from "../../AConnection";
 import { AConnectionPool } from "../../AConnectionPool";
-import { ADatabase, IDBOptions } from "../../ADatabase";
 export interface IDefaultConnectionPoolOptions {
     /**
      * Maximum number of resources to create at any given time.
@@ -88,13 +88,13 @@ export interface IDefaultConnectionPoolOptions {
      */
     idleTimeoutMillis?: number;
 }
-export declare type DBCreator<DB> = () => DB;
+export declare type ConnectionCreator<Connection> = () => Connection;
 export declare class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoolOptions> {
-    private readonly _databaseCreator;
+    private readonly _connectionCreator;
     private _connectionPool;
-    constructor(databaseCreator: DBCreator<ADatabase>);
-    create(dbOptions: IDBOptions, options: IDefaultConnectionPoolOptions): Promise<void>;
+    constructor(connectionCreator: ConnectionCreator<AConnection>);
+    create(dbOptions: IConnectionOptions, options: IDefaultConnectionPoolOptions): Promise<void>;
     destroy(): Promise<void>;
-    get(): Promise<ADatabase>;
+    get(): Promise<AConnection>;
     isCreated(): Promise<boolean>;
 }

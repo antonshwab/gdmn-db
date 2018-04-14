@@ -1,21 +1,21 @@
 import {should} from "chai";
-import {AConnectionPool, ADatabase, ATransaction, IDefaultConnectionPoolOptions} from "../../src";
+import {AConnection, AConnectionPool, ATransaction, IDefaultConnectionPoolOptions} from "../../src";
 
 export function statementTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
     describe("AStatement", async () => {
 
-        let globalDatabase: ADatabase;
+        let globalConnection: AConnection;
         let globalTransaction: ATransaction;
 
         before(async () => {
-            globalDatabase = await connectionPool.get();
-            globalTransaction = await globalDatabase.createTransaction();
+            globalConnection = await connectionPool.get();
+            globalTransaction = await globalConnection.createTransaction();
             await globalTransaction.start();
         });
 
         after(async () => {
             await globalTransaction.commit();
-            await globalDatabase.disconnect();
+            await globalConnection.disconnect();
         });
 
         it("lifecycle", async () => {

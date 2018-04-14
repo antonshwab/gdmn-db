@@ -1,8 +1,8 @@
-import {ADatabase} from "../ADatabase";
+import {AConnection} from "../AConnection";
 import {ATransaction} from "../ATransaction";
 import {DBStructure, IRDB$FIELD, IRDB$RELATIONCONSTRAINT, IRDB$RELATIONFIELD} from "../DBStructure";
 import {Factory} from "../Factory";
-import {FirebirdOptions} from "./FirebirdDatabase";
+import {FirebirdOptions} from "./FirebirdConnection";
 import {FirebirdTransaction} from "./FirebirdTransaction";
 
 export class FirebirdDBStructure {
@@ -26,9 +26,9 @@ export class FirebirdDBStructure {
             return await FirebirdDBStructure.read(source);
         }
 
-        return await ADatabase.executeConnection(Factory.FBDriver.newDatabase(), source,
-            async (database) => {
-                return await ADatabase.executeTransaction(database, async (transaction) => {
+        return await AConnection.executeConnection(Factory.FBDriver.newConnection(), source,
+            async (connection) => {
+                return await AConnection.executeTransaction(connection, async (transaction) => {
                     return await FirebirdDBStructure.read(transaction);
                 });
             });

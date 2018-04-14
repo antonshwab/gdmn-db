@@ -1,10 +1,10 @@
-import {ADatabase} from "../ADatabase";
+import {AConnection} from "../AConnection";
 import {ADriver} from "../ADriver";
-import {FirebirdDatabase} from "./FirebirdDatabase";
+import {FirebirdConnection} from "./FirebirdConnection";
 
 export class FirebirdDriver extends ADriver {
 
-    public newDatabase(): ADatabase {
-        return new FirebirdDatabase();
+    public newConnection(): AConnection {
+        return new FirebirdConnection();
     }
 }

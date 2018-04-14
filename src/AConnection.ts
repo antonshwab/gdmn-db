@@ -3,7 +3,7 @@ import {AStatement} from "./AStatement";
 import {ATransaction, ITransactionOptions} from "./ATransaction";
 import {TExecutor} from "./types";
 
-export interface IDBOptions {
+export interface IConnectionOptions {
     host: string;
     port: number;
     username: string;
@@ -15,11 +15,11 @@ export interface IDBOptions {
  * Example:
  * <pre>
  * (async () => {
- *      const database = Factory.XXModule.newDatabase();
+ *      const connection = Factory.XXModule.newConnection();
  *      try {
- *          await database.connect({...});
+ *          await connection.connect({...});
  *
- *          const transaction = await database.createTransaction();
+ *          const transaction = await connection.createTransaction();
  *          try {
  *              await transaction.start();
  *
@@ -38,7 +38,7 @@ export interface IDBOptions {
  *          }
  *      } finally {
  *          try {
- *              await database.disconnect();
+ *              await connection.disconnect();
  *          } catch (err) {
  *              console.warn(err);
  *          }
@@ -46,20 +46,20 @@ export interface IDBOptions {
  * })()
  * </pre>
  */
-export abstract class ADatabase<Options extends IDBOptions = IDBOptions,
+export abstract class AConnection<Options extends IConnectionOptions = IConnectionOptions,
     RS extends AResultSet = AResultSet,
     S extends AStatement<RS> = AStatement<RS>,
     T extends ATransaction<RS, S> = ATransaction<RS, S>> {
 
-    public static async executeFromParent<Opt, R>(sourceCallback: TExecutor<null, ADatabase>,
-                                                  resultCallback: TExecutor<ADatabase, R>): Promise<R> {
-        let database: undefined | ADatabase;
+    public static async executeFromParent<Opt, R>(sourceCallback: TExecutor<null, AConnection>,
+                                                  resultCallback: TExecutor<AConnection, R>): Promise<R> {
+        let connection: undefined | AConnection;
         try {
-            database = await sourceCallback(null);
-            return await resultCallback(database);
+            connection = await sourceCallback(null);
+            return await resultCallback(connection);
         } finally {
-            if (database) {
-                await database.disconnect();
+            if (connection) {
+                await connection.disconnect();
             }
         }
     }
@@ -67,28 +67,28 @@ export abstract class ADatabase<Options extends IDBOptions = IDBOptions,
     /**
      * Example:
      * <pre>
-     * const result = await ADatabase.executeConnection(Factory.XXModule.newDatabase()), {}, async (source) => {
-     *      return await ADatabase.executeTransaction(transaction, {}, async (transaction) => {
+     * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (source) => {
+     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
      *          return ...
      *      });
      * })}
      * </pre>
      */
     public static async executeConnection<R>(
-        database: ADatabase,
-        options: IDBOptions,
-        callback: TExecutor<ADatabase, R>
+        connection: AConnection,
+        options: IConnectionOptions,
+        callback: TExecutor<AConnection, R>
     ): Promise<R> {
-        return await ADatabase.executeFromParent(async () => {
-            await database.connect(options);
-            return database;
+        return await AConnection.executeFromParent(async () => {
+            await connection.connect(options);
+            return connection;
         }, callback);
     }
 
     /**
      * Example:
      * <pre>
-     * const result = await ADatabase.executeTransaction(database, async transaction => {
+     * const result = await AConnection.executeTransaction(connection, async transaction => {
      *      return await transaction.executeStatement("some sql", async statement => {
      *          return ...
      *      });
@@ -96,14 +96,14 @@ export abstract class ADatabase<Options extends IDBOptions = IDBOptions,
      * </pre>
      */
     public static async executeTransaction<R>(
-        database: ADatabase,
+        connection: AConnection,
         callback: TExecutor<ATransaction, R>
     ): Promise<R>;
 
     /**
      * Example:
      * <pre>
-     * const result = await ADatabase.executeTransaction(database, {}, async transaction => {
+     * const result = await AConnection.executeTransaction(connection, {}, async transaction => {
      *      return await transaction.executeStatement("some sql", async statement => {
      *          return ...
      *      });
@@ -111,13 +111,13 @@ export abstract class ADatabase<Options extends IDBOptions = IDBOptions,
      * </pre>
      */
     public static async executeTransaction<R>(
-        database: ADatabase,
+        connection: AConnection,
         options: ITransactionOptions,
         callback: TExecutor<ATransaction, R>
     ): Promise<R>;
 
     public static async executeTransaction<R>(
-        database: ADatabase,
+        connection: AConnection,
         options: ITransactionOptions | TExecutor<ATransaction, R>,
         callback?: TExecutor<ATransaction, R>
     ): Promise<R> {
@@ -125,7 +125,7 @@ export abstract class ADatabase<Options extends IDBOptions = IDBOptions,
             callback = options as TExecutor<ATransaction, R>;
         }
         return await ATransaction.executeFromParent(async () => {
-            const transaction = await database.createTransaction(options as ITransactionOptions);
+            const transaction = await connection.createTransaction(options as ITransactionOptions);
             await transaction.start();
             return transaction;
         }, callback);

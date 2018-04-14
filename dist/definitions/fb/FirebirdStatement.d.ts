@@ -4,7 +4,7 @@ import { INamedParams } from "../ATransaction";
 import { DefaultParamsAnalyzer } from "../default/DefaultParamsAnalyzer";
 import { FirebirdResultSet } from "./FirebirdResultSet";
 export declare class FirebirdStatement extends AStatement<FirebirdResultSet> {
-    private readonly _connect;
+    private readonly _connection;
     private readonly _transaction;
     private readonly _statement;
     private readonly _paramsAnalyzer;

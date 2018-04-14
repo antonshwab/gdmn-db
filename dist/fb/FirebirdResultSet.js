@@ -15,7 +15,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         this._data = [];
         this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
         this._status = Status.UNFINISHED;
-        this._connect = connect;
+        this._connection = connect;
         this._transaction = transaction;
         this._resultSet = resultSet;
     }
@@ -159,7 +159,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             return null;
         }
         if (value instanceof node_firebird_driver_native_1.Blob) {
-            const blobStream = await this._connect.openBlob(this._transaction, value);
+            const blobStream = await this._connection.openBlob(this._transaction, value);
             const length = await blobStream.length;
             const buffers = [];
             let i = 0;
@@ -181,7 +181,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
         const stream = new stream_1.Readable({ read: () => null });
         if (value instanceof node_firebird_driver_native_1.Blob) {
-            const blobStream = await this._connect.openBlob(this._transaction, value);
+            const blobStream = await this._connection.openBlob(this._transaction, value);
             const length = await blobStream.length;
             const buffers = [];
             let i = 0;

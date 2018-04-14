@@ -1,17 +1,17 @@
-import {ADatabase, IDBOptions} from "./ADatabase";
+import {AConnection, IConnectionOptions} from "./AConnection";
 import {AResultSet} from "./AResultSet";
 import {AStatement} from "./AStatement";
 import {ATransaction} from "./ATransaction";
 import {TExecutor} from "./types";
 
 export abstract class AConnectionPool<Options,
-    DBOptions extends IDBOptions = IDBOptions,
+    ConOptions extends IConnectionOptions = IConnectionOptions,
     RS extends AResultSet = AResultSet,
     S extends AStatement<RS> = AStatement<RS>,
     T extends ATransaction<RS, S> = ATransaction<RS, S>,
-    D extends ADatabase<DBOptions, RS, S, T> = ADatabase<DBOptions, RS, S, T>> {
+    C extends AConnection<ConOptions, RS, S, T> = AConnection<ConOptions, RS, S, T>> {
 
-    public static async executeFromParent<Opt, DBOpt, R>(
+    public static async executeFromParent<Opt, ConOpt, R>(
         sourceCallback: TExecutor<null, AConnectionPool<Opt>>,
         resultCallback: TExecutor<AConnectionPool<Opt>, R>
     ): Promise<R> {
@@ -31,7 +31,7 @@ export abstract class AConnectionPool<Options,
      * <pre>
      * const result = await AConnectionPool.executeConnectionPool(Factory.XXModule.newDefaultConnectionPool(),
      *      async (connectionPool) => {
-     *          return await AConnectionPool.executeDatabase(connectionPool, async (database) => {
+     *          return await AConnectionPool.executeConnection(connectionPool, async (connection) => {
      *              return ...
      *          });
      *      })}
@@ -39,12 +39,12 @@ export abstract class AConnectionPool<Options,
      */
     public static async executeConnectionPool<Opt, R>(
         connectionPool: AConnectionPool<Opt>,
-        dbOptions: IDBOptions,
+        connectionOptions: IConnectionOptions,
         options: Opt,
         callback: TExecutor<AConnectionPool<Opt>, R>
     ): Promise<R> {
         return await AConnectionPool.executeFromParent(async () => {
-            await connectionPool.create(dbOptions, options);
+            await connectionPool.create(connectionOptions, options);
             return connectionPool;
         }, callback);
     }
@@ -52,18 +52,18 @@ export abstract class AConnectionPool<Options,
     /**
      * Example:
      * <pre>
-     * const result = await AConnectionPool.executeDatabase(connectionPool, async (database) => {
-     *      return await ADatabase.executeTransaction(transaction, {}, async (transaction) => {
+     * const result = await AConnectionPool.executeConnection(connectionPool, async (connection) => {
+     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
      *          return ...
      *      });
      * })}
      * </pre>
      */
-    public static async executeDatabase<Opt, R>(
+    public static async executeConnection<Opt, R>(
         connectionPool: AConnectionPool<Opt>,
-        callback: TExecutor<ADatabase, R>
+        callback: TExecutor<AConnection, R>
     ): Promise<R> {
-        return await ADatabase.executeFromParent(() => connectionPool.get(), callback);
+        return await AConnection.executeFromParent(() => connectionPool.get(), callback);
     }
 
     /**
@@ -79,12 +79,12 @@ export abstract class AConnectionPool<Options,
      * Prepare the connection pool for use with some database.
      * After work you need to call {@link AConnectionPool.destroy()} method.
      *
-     * @param {DBOptions} dbOptions
+     * @param {ConOptions} connectionOptions
      * the options for opening database connection
      * @param {Options} options
      * the options for creating connection pool
      */
-    public abstract create(dbOptions: DBOptions, options: Options): Promise<void>;
+    public abstract create(connectionOptions: ConOptions, options: Options): Promise<void>;
 
     /** Release resources occupied by the connection pool. */
     public abstract destroy(): Promise<void>;
@@ -93,8 +93,7 @@ export abstract class AConnectionPool<Options,
      * Get free database connection. With this connection you
      * need to work as usual. i.e close it is also necessary
      *
-     * @returns {Promise<D extends ADatabase<DBOptions, RS, S, T>>}
-     * the database connection
+     * @returns {Promise<C extends AConnection<ConOptions, RS, S, T>>}
      */
-    public abstract get(): Promise<D>;
+    public abstract get(): Promise<C>;
 }

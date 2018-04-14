@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const DefaultConnectionPool_1 = require("./default/connectionPool/DefaultConnectionPool");
 class ADriver {
     /** Create object for access to the database */
-    newDatabase() {
+    newConnection() {
         throw new Error("Unsupported yet");
     }
     /**
@@ -20,7 +20,7 @@ class ADriver {
      * @see {@link https://github.com/coopernurse/node-pool}
      */
     newDefaultConnectionPool() {
-        return new DefaultConnectionPool_1.DefaultConnectionPool(() => this.newDatabase());
+        return new DefaultConnectionPool_1.DefaultConnectionPool(() => this.newConnection());
     }
 }
 exports.ADriver = ADriver;

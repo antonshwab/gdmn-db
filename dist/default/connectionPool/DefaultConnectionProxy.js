@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ADatabase_1 = require("../../ADatabase");
-class DatabaseProxy extends ADatabase_1.ADatabase {
-    constructor(pool, databaseCreator) {
+const AConnection_1 = require("../../AConnection");
+class ConnectionProxy extends AConnection_1.AConnection {
+    constructor(pool, connectionCreator) {
         super();
-        this._database = null;
+        this._connection = null;
         this._pool = pool;
-        this._databaseCreator = databaseCreator;
+        this._connectionCreator = connectionCreator;
     }
     async createDatabase(options) {
         throw new Error("Invalid operation for connection from the pool");
@@ -15,38 +15,38 @@ class DatabaseProxy extends ADatabase_1.ADatabase {
         throw new Error("Invalid operation for connection from the pool");
     }
     async connect(options) {
-        if (this._database) {
+        if (this._connection) {
             throw new Error("Invalid operation for connection from the pool");
         }
-        this._database = this._databaseCreator();
-        await this._database.connect(options);
+        this._connection = this._connectionCreator();
+        await this._connection.connect(options);
     }
     async disconnect() {
-        if (!this._database) {
+        if (!this._connection) {
             throw new Error("Need database connection");
         }
         if (this.isBorrowed()) {
             this._pool.release(this);
         }
         else {
-            await this._database.disconnect();
+            await this._connection.disconnect();
         }
     }
     async createTransaction() {
-        if (!this._database || !this.isBorrowed()) {
+        if (!this._connection || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }
-        return this._database.createTransaction();
+        return this._connection.createTransaction();
     }
     async isConnected() {
-        if (!this._database || !this.isBorrowed()) {
+        if (!this._connection || !this.isBorrowed()) {
             return false;
         }
-        return this._database.isConnected();
+        return this._connection.isConnected();
     }
     isBorrowed() {
         return this._pool.isBorrowedResource(this); // there is no method in the file in .d.ts
     }
 }
-exports.DatabaseProxy = DatabaseProxy;
-//# sourceMappingURL=DefaultDatabaseProxy.js.map
+exports.ConnectionProxy = ConnectionProxy;
+//# sourceMappingURL=DefaultConnectionProxy.js.map

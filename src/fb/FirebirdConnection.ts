@@ -1,17 +1,17 @@
 import {Attachment, Client, createNativeClient, getDefaultLibraryFilename} from "node-firebird-driver-native";
-import {ADatabase, IDBOptions} from "../ADatabase";
+import {AConnection, IConnectionOptions} from "../AConnection";
 import {ITransactionOptions} from "../ATransaction";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";
 import {FirebirdTransaction} from "./FirebirdTransaction";
 
-export type FirebirdOptions = IDBOptions;
+export type FirebirdOptions = IConnectionOptions;
 
-export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdStatement,
+export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdResultSet, FirebirdStatement,
     FirebirdTransaction> {
 
     private _client: null | Client = null;
-    private _connect: null | Attachment = null;
+    private _connection: null | Attachment = null;
 
     constructor() {
         super();
@@ -33,63 +33,63 @@ export class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultS
     }
 
     public async createDatabase(options: FirebirdOptions): Promise<void> {
-        if (this._connect) {
+        if (this._connection) {
             throw new Error("Database already connected");
         }
 
         this._client = createNativeClient(getDefaultLibraryFilename());
-        this._connect = await this._client.createDatabase(FirebirdDatabase._optionsToUri(options), {
+        this._connection = await this._client.createDatabase(FirebirdConnection._optionsToUri(options), {
             username: options.username,
             password: options.password
         });
     }
 
     public async dropDatabase(): Promise<void> {
-        if (!this._connect || !this._client) {
+        if (!this._connection || !this._client) {
             throw new Error("Need database connection");
         }
 
-        await this._connect.dropDatabase();
+        await this._connection.dropDatabase();
         await this._client.dispose();
         this._clearVariables();
     }
 
     public async connect(options: FirebirdOptions): Promise<void> {
-        if (this._connect) {
+        if (this._connection) {
             throw new Error("Database already connected");
         }
 
         this._client = createNativeClient(getDefaultLibraryFilename());
-        this._connect = await this._client.connect(FirebirdDatabase._optionsToUri(options), {
+        this._connection = await this._client.connect(FirebirdConnection._optionsToUri(options), {
             username: options.username,
             password: options.password
         });
     }
 
     public async createTransaction(options?: ITransactionOptions): Promise<FirebirdTransaction> {
-        if (!this._connect) {
+        if (!this._connection) {
             throw new Error("Need database connection");
         }
 
-        return new FirebirdTransaction(this._connect, options);
+        return new FirebirdTransaction(this._connection, options);
     }
 
     public async disconnect(): Promise<void> {
-        if (!this._connect || !this._client) {
+        if (!this._connection || !this._client) {
             throw new Error("Need database connection");
         }
 
-        await this._connect.disconnect();
+        await this._connection.disconnect();
         await this._client.dispose();
         this._clearVariables();
     }
 
     public async isConnected(): Promise<boolean> {
-        return Boolean(this._connect);
+        return Boolean(this._connection);
     }
 
     private _clearVariables(): void {
-        this._connect = null;
+        this._connection = null;
         this._client = null;
     }
 }

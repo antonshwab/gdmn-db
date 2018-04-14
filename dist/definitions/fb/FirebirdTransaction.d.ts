@@ -6,7 +6,7 @@ import { FirebirdStatement } from "./FirebirdStatement";
 export declare class FirebirdTransaction extends ATransaction<FirebirdResultSet, FirebirdStatement> {
     static EXCLUDE_PATTERNS: RegExp[];
     static PLACEHOLDER_PATTERN: RegExp;
-    private readonly _connect;
+    private readonly _connection;
     private _transaction;
     constructor(connect: Attachment, options?: ITransactionOptions);
     start(): Promise<void>;

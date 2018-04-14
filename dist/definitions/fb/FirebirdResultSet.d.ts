@@ -2,7 +2,7 @@
 import { Attachment, ResultSet, Transaction } from "node-firebird-driver-native";
 import { AResultSet, IRow } from "../AResultSet";
 export declare class FirebirdResultSet extends AResultSet {
-    private readonly _connect;
+    private readonly _connection;
     private readonly _transaction;
     private readonly _resultSet;
     private _data;

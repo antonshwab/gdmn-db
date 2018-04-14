@@ -1,12 +1,12 @@
-import { ADatabase, IDBOptions } from "../ADatabase";
+import { AConnection, IConnectionOptions } from "../AConnection";
 import { ITransactionOptions } from "../ATransaction";
 import { FirebirdResultSet } from "./FirebirdResultSet";
 import { FirebirdStatement } from "./FirebirdStatement";
 import { FirebirdTransaction } from "./FirebirdTransaction";
-export declare type FirebirdOptions = IDBOptions;
-export declare class FirebirdDatabase extends ADatabase<FirebirdOptions, FirebirdResultSet, FirebirdStatement, FirebirdTransaction> {
+export declare type FirebirdOptions = IConnectionOptions;
+export declare class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdResultSet, FirebirdStatement, FirebirdTransaction> {
     private _client;
-    private _connect;
+    private _connection;
     constructor();
     private static _optionsToUri(options);
     createDatabase(options: FirebirdOptions): Promise<void>;

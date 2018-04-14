@@ -6,7 +6,7 @@ import {FirebirdResultSet} from "./FirebirdResultSet";
 
 export class FirebirdStatement extends AStatement<FirebirdResultSet> {
 
-    private readonly _connect: Attachment;
+    private readonly _connection: Attachment;
     private readonly _transaction: Transaction;
     private readonly _statement: Statement;
     private readonly _paramsAnalyzer: DefaultParamsAnalyzer;
@@ -16,7 +16,7 @@ export class FirebirdStatement extends AStatement<FirebirdResultSet> {
                 statement: Statement,
                 paramsAnalyzer: DefaultParamsAnalyzer) {
         super();
-        this._connect = connect;
+        this._connection = connect;
         this._transaction = transaction;
         this._statement = statement;
         this._paramsAnalyzer = paramsAnalyzer;
@@ -33,6 +33,6 @@ export class FirebirdStatement extends AStatement<FirebirdResultSet> {
     public async executeQuery(params?: any[] | INamedParams): Promise<FirebirdResultSet> {
         const resultSet = await this._statement.executeQuery(this._transaction,
             this._paramsAnalyzer.prepareParams(params));
-        return new FirebirdResultSet(this._connect, this._transaction, resultSet);
+        return new FirebirdResultSet(this._connection, this._transaction, resultSet);
     }
 }

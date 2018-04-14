@@ -1,9 +1,9 @@
+import { AConnection } from "./AConnection";
 import { AConnectionPool } from "./AConnectionPool";
-import { ADatabase } from "./ADatabase";
 import { IDefaultConnectionPoolOptions } from "./default/connectionPool/DefaultConnectionPool";
 export declare abstract class ADriver<PoolOptions = any> {
     /** Create object for access to the database */
-    newDatabase(): ADatabase;
+    newConnection(): AConnection;
     /**
      * Create object for access to a specific connection pool of driver.
      * May not be available for the current driver.

@@ -2,7 +2,7 @@ import { AResultSet } from "./AResultSet";
 import { AStatement } from "./AStatement";
 import { ATransaction, ITransactionOptions } from "./ATransaction";
 import { TExecutor } from "./types";
-export interface IDBOptions {
+export interface IConnectionOptions {
     host: string;
     port: number;
     username: string;
@@ -13,11 +13,11 @@ export interface IDBOptions {
  * Example:
  * <pre>
  * (async () => {
- *      const database = Factory.XXModule.newDatabase();
+ *      const connection = Factory.XXModule.newConnection();
  *      try {
- *          await database.connect({...});
+ *          await connection.connect({...});
  *
- *          const transaction = await database.createTransaction();
+ *          const transaction = await connection.createTransaction();
  *          try {
  *              await transaction.start();
  *
@@ -36,7 +36,7 @@ export interface IDBOptions {
  *          }
  *      } finally {
  *          try {
- *              await database.disconnect();
+ *              await connection.disconnect();
  *          } catch (err) {
  *              console.warn(err);
  *          }
@@ -44,41 +44,41 @@ export interface IDBOptions {
  * })()
  * </pre>
  */
-export declare abstract class ADatabase<Options extends IDBOptions = IDBOptions, RS extends AResultSet = AResultSet, S extends AStatement<RS> = AStatement<RS>, T extends ATransaction<RS, S> = ATransaction<RS, S>> {
-    static executeFromParent<Opt, R>(sourceCallback: TExecutor<null, ADatabase>, resultCallback: TExecutor<ADatabase, R>): Promise<R>;
+export declare abstract class AConnection<Options extends IConnectionOptions = IConnectionOptions, RS extends AResultSet = AResultSet, S extends AStatement<RS> = AStatement<RS>, T extends ATransaction<RS, S> = ATransaction<RS, S>> {
+    static executeFromParent<Opt, R>(sourceCallback: TExecutor<null, AConnection>, resultCallback: TExecutor<AConnection, R>): Promise<R>;
     /**
      * Example:
      * <pre>
-     * const result = await ADatabase.executeConnection(Factory.XXModule.newDatabase()), {}, async (source) => {
-     *      return await ADatabase.executeTransaction(transaction, {}, async (transaction) => {
+     * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (source) => {
+     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
      *          return ...
      *      });
      * })}
      * </pre>
      */
-    static executeConnection<R>(database: ADatabase, options: IDBOptions, callback: TExecutor<ADatabase, R>): Promise<R>;
+    static executeConnection<R>(connection: AConnection, options: IConnectionOptions, callback: TExecutor<AConnection, R>): Promise<R>;
     /**
      * Example:
      * <pre>
-     * const result = await ADatabase.executeTransaction(database, async transaction => {
+     * const result = await AConnection.executeTransaction(connection, async transaction => {
      *      return await transaction.executeStatement("some sql", async statement => {
      *          return ...
      *      });
      * })}
      * </pre>
      */
-    static executeTransaction<R>(database: ADatabase, callback: TExecutor<ATransaction, R>): Promise<R>;
+    static executeTransaction<R>(connection: AConnection, callback: TExecutor<ATransaction, R>): Promise<R>;
     /**
      * Example:
      * <pre>
-     * const result = await ADatabase.executeTransaction(database, {}, async transaction => {
+     * const result = await AConnection.executeTransaction(connection, {}, async transaction => {
      *      return await transaction.executeStatement("some sql", async statement => {
      *          return ...
      *      });
      * })}
      * </pre>
      */
-    static executeTransaction<R>(database: ADatabase, options: ITransactionOptions, callback: TExecutor<ATransaction, R>): Promise<R>;
+    static executeTransaction<R>(connection: AConnection, options: ITransactionOptions, callback: TExecutor<ATransaction, R>): Promise<R>;
     /**
      * Create database and connect to them.
      *
