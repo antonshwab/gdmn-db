@@ -11,6 +11,9 @@ class Relation {
         this._foreignKeys = {};
         this._unique = {};
     }
+    get relationFields() {
+        return this._relationFields;
+    }
     get primaryKey() {
         return this._primaryKey;
     }

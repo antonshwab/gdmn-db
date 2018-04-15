@@ -18,6 +18,7 @@ export declare class Relation {
     private _foreignKeys;
     private _unique;
     constructor(name: string);
+    readonly relationFields: IRelationFields;
     readonly primaryKey: RelationConstraint | null;
     readonly foreignKeys: IRefConstraints;
     readonly unique: IUqConstraints;

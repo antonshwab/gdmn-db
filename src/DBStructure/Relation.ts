@@ -25,6 +25,10 @@ export class Relation {
     constructor(public readonly name: string) {
     }
 
+    get relationFields(): IRelationFields {
+        return this._relationFields;
+    }
+
     get primaryKey(): RelationConstraint | null {
         return this._primaryKey;
     }
