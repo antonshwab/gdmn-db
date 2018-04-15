@@ -21,7 +21,8 @@ class FirebirdDBStructure {
             SELECT
                 TRIM(f.RDB$FIELD_NAME),
                 f.RDB$FIELD_TYPE,
-                f.RDB$NULL_FLAG
+                f.RDB$NULL_FLAG,
+                f.RDB$DEFAULT_VALUE
             FROM RDB$FIELDS f
         `, async (resultSet) => {
             const array = [];
@@ -29,7 +30,8 @@ class FirebirdDBStructure {
                 array.push({
                     RDB$FIELD_NAME: resultSet.getAny(0),
                     RDB$FIELD_TYPE: resultSet.getAny(1),
-                    RDB$NULL_FLAG: resultSet.getAny(2)
+                    RDB$NULL_FLAG: resultSet.getAny(2),
+                    RDB$DEFAULT_VALUE: resultSet.getAny(3)
                 });
             }
             return array;
@@ -39,7 +41,8 @@ class FirebirdDBStructure {
                 TRIM(rf.RDB$RELATION_NAME),
                 TRIM(rf.RDB$FIELD_NAME),
                 TRIM(rf.RDB$FIELD_SOURCE),
-                rf.RDB$NULL_FLAG
+                rf.RDB$NULL_FLAG,
+                rf.RDB$DEFAULT_VALUE
             FROM RDB$RELATION_FIELDS rf
             ORDER BY RDB$RELATION_NAME
         `, async (resultSet) => {
@@ -49,7 +52,8 @@ class FirebirdDBStructure {
                     RDB$RELATION_NAME: resultSet.getAny(0),
                     RDB$FIELD_NAME: resultSet.getAny(1),
                     RDB$FIELD_SOURCE: resultSet.getAny(2),
-                    RDB$NULL_FLAG: resultSet.getAny(3)
+                    RDB$NULL_FLAG: resultSet.getAny(3),
+                    RDB$DEFAULT_VALUE: resultSet.getAny(4)
                 });
             }
             return array;

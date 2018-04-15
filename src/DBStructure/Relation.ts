@@ -43,7 +43,7 @@ export class Relation {
 
     public loadField(field: IRDB$RELATIONFIELD): void {
         this._relationFields[field.RDB$FIELD_NAME] = new RelationField(field.RDB$FIELD_NAME, field.RDB$FIELD_SOURCE,
-            !!field.RDB$NULL_FLAG);
+            !!field.RDB$NULL_FLAG, field.RDB$DEFAULT_VALUE);
     }
 
     public loadConstraintField(constraint: IRDB$RELATIONCONSTRAINT): void {

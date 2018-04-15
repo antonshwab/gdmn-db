@@ -24,6 +24,7 @@ export interface IRDB$FIELD {
     RDB$FIELD_NAME: string;
     RDB$FIELD_TYPE: FieldType;
     RDB$NULL_FLAG: NullFlag;
+    RDB$DEFAULT_VALUE: string | null;
 }
 
 export interface IRDB$RELATIONFIELD {
@@ -31,6 +32,7 @@ export interface IRDB$RELATIONFIELD {
     RDB$FIELD_NAME: string;
     RDB$FIELD_SOURCE: string;
     RDB$NULL_FLAG: NullFlag;
+    RDB$DEFAULT_VALUE: string | null;
 }
 
 export interface IRDB$RELATIONCONSTRAINT {
