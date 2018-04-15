@@ -82,7 +82,7 @@ class DBStructure {
     }
     loadFields(fields) {
         this._fields = fields.reduce((loadedFields, item) => {
-            loadedFields[item.RDB$FIELD_NAME] = new Field_1.Field(item.RDB$FIELD_TYPE, !!item.RDB$NULL_FLAG);
+            loadedFields[item.RDB$FIELD_NAME] = new Field_1.Field(item.RDB$FIELD_TYPE, !!item.RDB$NULL_FLAG, item.RDB$DEFAULT_VALUE);
             return loadedFields;
         }, {});
     }
