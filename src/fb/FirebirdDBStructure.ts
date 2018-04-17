@@ -56,7 +56,7 @@ export class FirebirdDBStructure {
                     RDB$DEFAULT_VALUE: resultSet.getAny(3),
                     RDB$FIELD_LENGTH: resultSet.getAny(4),
                     RDB$FIELD_SCALE: resultSet.getAny(5),
-                    RDB$VALIDATION_SOURCE: resultSet.getAny(6),
+                    RDB$VALIDATION_SOURCE: resultSet.getString(6),
                     RDB$FIELD_SUB_TYPE: resultSet.getAny(7)
                 });
             }
