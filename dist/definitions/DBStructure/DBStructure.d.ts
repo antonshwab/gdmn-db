@@ -22,6 +22,9 @@ export interface IRDB$FIELD {
     RDB$FIELD_TYPE: FieldType;
     RDB$NULL_FLAG: NullFlag;
     RDB$DEFAULT_VALUE: string | null;
+    RDB$FIELD_LENGTH: number;
+    RDB$FIELD_SCALE: number;
+    RDB$VALIDATION_SOURCE: string | null;
 }
 export interface IRDB$RELATIONFIELD {
     RDB$RELATION_NAME: string;

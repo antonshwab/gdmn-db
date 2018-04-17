@@ -24,6 +24,8 @@
       "property-declaration",
       "object-destructuring",
       "array-destructuring"
-    ]
+    ],
+    "align": false,
+    "one-line": false
   }
 }
