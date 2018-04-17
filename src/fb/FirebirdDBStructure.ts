@@ -43,7 +43,7 @@ export class FirebirdDBStructure {
                 f.RDB$DEFAULT_VALUE,
                 f.RDB$FIELD_LENGTH,
                 f.RDB$FIELD_SCALE,
-                TRIM(CAST(f.RDB$VALIDATION_SOURCE AS VARCHAR(8192)),
+                TRIM(CAST(f.RDB$VALIDATION_SOURCE AS VARCHAR(8192))),
                 f.RDB$FIELD_SUB_TYPE
             FROM RDB$FIELDS f
         `, async (resultSet) => {
