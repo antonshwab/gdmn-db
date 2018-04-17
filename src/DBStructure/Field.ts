@@ -8,9 +8,11 @@ export class Field {
     public readonly fieldLength: number;
     public readonly fieldScale: number;
     public readonly validationSource: string | null;
+    public readonly fieldSubType: number | null;
 
     constructor(fieldType: FieldType, notNull: boolean, defaultValue: string | null,
-      fieldLength: number, fieldScale: number, validationSource: string | null)
+      fieldLength: number, fieldScale: number, validationSource: string | null,
+      fieldSubType: number | null)
     {
         this.fieldType = fieldType;
         this.notNull = notNull;
@@ -18,5 +20,6 @@ export class Field {
         this.fieldLength = fieldLength;
         this.fieldScale = fieldScale;
         this.validationSource = validationSource;
+        this.fieldSubType = fieldSubType;
     }
 }

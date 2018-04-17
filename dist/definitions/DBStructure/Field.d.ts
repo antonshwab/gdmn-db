@@ -6,5 +6,6 @@ export declare class Field {
     readonly fieldLength: number;
     readonly fieldScale: number;
     readonly validationSource: string | null;
-    constructor(fieldType: FieldType, notNull: boolean, defaultValue: string | null, fieldLength: number, fieldScale: number, validationSource: string | null);
+    readonly fieldSubType: number | null;
+    constructor(fieldType: FieldType, notNull: boolean, defaultValue: string | null, fieldLength: number, fieldScale: number, validationSource: string | null, fieldSubType: number | null);
 }

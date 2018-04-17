@@ -25,6 +25,7 @@ export interface IRDB$FIELD {
     RDB$FIELD_LENGTH: number;
     RDB$FIELD_SCALE: number;
     RDB$VALIDATION_SOURCE: string | null;
+    RDB$FIELD_SUB_TYPE: number | null;
 }
 export interface IRDB$RELATIONFIELD {
     RDB$RELATION_NAME: string;

@@ -25,7 +25,8 @@ class FirebirdDBStructure {
                 f.RDB$DEFAULT_VALUE,
                 f.RDB$FIELD_LENGTH,
                 f.RDB$FIELD_SCALE,
-                f.RDB$VALIDATION_SOURCE
+                TRIM(f.RDB$VALIDATION_SOURCE),
+                f.RDB$FIELD_SUB_TYPE
             FROM RDB$FIELDS f
         `, async (resultSet) => {
             const array = [];
@@ -37,7 +38,8 @@ class FirebirdDBStructure {
                     RDB$DEFAULT_VALUE: resultSet.getAny(3),
                     RDB$FIELD_LENGTH: resultSet.getAny(4),
                     RDB$FIELD_SCALE: resultSet.getAny(5),
-                    RDB$VALIDATION_SOURCE: resultSet.getAny(6)
+                    RDB$VALIDATION_SOURCE: resultSet.getAny(6),
+                    RDB$FIELD_SUB_TYPE: resultSet.getAny(7)
                 });
             }
             return array;
