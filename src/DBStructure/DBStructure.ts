@@ -29,6 +29,7 @@ export interface IRDB$FIELD {
     RDB$FIELD_SCALE: number;
     RDB$VALIDATION_SOURCE: string | null;
     RDB$FIELD_SUB_TYPE: number | null;
+    RDB$FIELD_PRECISION: number | null;
 }
 
 export interface IRDB$RELATIONFIELD {
@@ -133,7 +134,7 @@ export class DBStructure {
             loadedFields[item.RDB$FIELD_NAME] = new Field(
               item.RDB$FIELD_TYPE, !!item.RDB$NULL_FLAG, item.RDB$DEFAULT_VALUE,
               item.RDB$FIELD_LENGTH, item.RDB$FIELD_SCALE, item.RDB$VALIDATION_SOURCE,
-              item.RDB$FIELD_SUB_TYPE
+              item.RDB$FIELD_SUB_TYPE, item.RDB$FIELD_PRECISION
             );
             return loadedFields;
         }, {} as IFields);

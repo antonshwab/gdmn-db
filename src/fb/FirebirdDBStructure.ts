@@ -45,7 +45,8 @@ export class FirebirdDBStructure {
                 f.RDB$FIELD_LENGTH,
                 f.RDB$FIELD_SCALE,
                 f.RDB$VALIDATION_SOURCE,
-                f.RDB$FIELD_SUB_TYPE
+                f.RDB$FIELD_SUB_TYPE,
+                f.RDB$FIELD_PRECISION
             FROM RDB$FIELDS f
         `, async (resultSet) => {
             const array: IRDB$FIELD[] = [];
@@ -58,7 +59,8 @@ export class FirebirdDBStructure {
                     RDB$FIELD_LENGTH: await resultSet.getNumber(4),
                     RDB$FIELD_SCALE: await resultSet.getNumber(5),
                     RDB$VALIDATION_SOURCE: await resultSet.isNull(6) ? null : await resultSet.getString(6),
-                    RDB$FIELD_SUB_TYPE: await resultSet.isNull(7) ? null : await resultSet.getNumber(7)
+                    RDB$FIELD_SUB_TYPE: await resultSet.isNull(7) ? null : await resultSet.getNumber(7),
+                    RDB$FIELD_PRECISION: await resultSet.isNull(8) ? null : await resultSet.getNumber(8)
                 });
             }
             return array;
