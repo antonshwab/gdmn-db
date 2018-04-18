@@ -159,7 +159,7 @@ export declare abstract class AResultSet {
      * Node Buffer; if the value is SQL NULL, the value returned is null
      */
     abstract getBlobBuffer(name: string): Promise<null | Buffer>;
-    abstract getBlobBuffer(field: number | string): Promise<null | Buffer>;
+    abstract getBlobBuffer(field: any): Promise<null | Buffer>;
     /**
      * Retrieves the value of the designated column in the
      * current row of this ResultSet object as a stream
@@ -182,17 +182,17 @@ export declare abstract class AResultSet {
      * Node Stream; if the value is SQL NULL, the value returned is null
      */
     abstract getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
-    abstract getBlobStream(field: number | string): Promise<null | NodeJS.ReadableStream>;
+    abstract getBlobStream(field: any): Promise<null | NodeJS.ReadableStream>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a string
      *
      * @param {number} i
      * the first column is 0, the second is 1, ...
-     * @returns {string | null}
-     * the column value; if the value is SQL NULL, the value returned is null
+     * @returns {Promise<string>}
+     * the column value; if the value is SQL NULL, the value returned is empty string
      */
-    abstract getString(i: number): null | string;
+    abstract getString(i: number): Promise<string>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a string
@@ -201,21 +201,21 @@ export declare abstract class AResultSet {
      * the label for the column specified with the SQL AS clause.
      * If the SQL AS clause was not specified, then the label is
      * the name of the column
-     * @returns {string | null}
-     * the column value; if the value is SQL NULL, the value returned is null
+     * @returns {Promise<string>}
+     * the column value; if the value is SQL NULL, the value returned is empty string
      */
-    abstract getString(name: string): null | string;
-    abstract getString(field: number | string): null | string;
+    abstract getString(name: string): Promise<string>;
+    abstract getString(field: any): Promise<string>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a number
      *
      * @param {number} i
      * the first column is 0, the second is 1, ...
-     * @returns {number | null}
-     * the column value; if the value is SQL NULL, the value returned is null
+     * @returns {Promise<number>}
+     * the column value; if the value is SQL NULL, the value returned is 0
      */
-    abstract getNumber(i: number): null | number;
+    abstract getNumber(i: number): Promise<number>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a number
@@ -224,21 +224,21 @@ export declare abstract class AResultSet {
      * the label for the column specified with the SQL AS clause.
      * If the SQL AS clause was not specified, then the label is
      * the name of the column
-     * @returns {number | null}
-     * the column value; if the value is SQL NULL, the value returned is null
+     * @returns {Promise<number>}
+     * the column value; if the value is SQL NULL, the value returned is 0
      */
-    abstract getNumber(name: string): null | number;
-    abstract getNumber(field: number | string): null | number;
+    abstract getNumber(name: string): Promise<number>;
+    abstract getNumber(field: any): Promise<number>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a boolean
      *
      * @param {number} i
      * the first column is 0, the second is 1, ...
-     * @returns {boolean | null}
-     * the column value; if the value is SQL NULL, the value returned is null
+     * @returns {Promise<boolean>}
+     * the column value; if the value is SQL NULL, the value returned is false
      */
-    abstract getBoolean(i: number): null | boolean;
+    abstract getBoolean(i: number): Promise<boolean>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a boolean
@@ -247,21 +247,21 @@ export declare abstract class AResultSet {
      * the label for the column specified with the SQL AS clause.
      * If the SQL AS clause was not specified, then the label is
      * the name of the column
-     * @returns {boolean | null}
-     * the column value; if the value is SQL NULL, the value returned is null
+     * @returns {Promise<boolean>}
+     * the column value; if the value is SQL NULL, the value returned is false
      */
-    abstract getBoolean(name: string): null | boolean;
-    abstract getBoolean(field: number | string): null | boolean;
+    abstract getBoolean(name: string): Promise<boolean>;
+    abstract getBoolean(field: any): Promise<boolean>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a Date object
      *
      * @param {number} i
      * the first column is 0, the second is 1, ...
-     * @returns {Date | null}
+     * @returns {Promise<null | Date>}
      * the column value; if the value is SQL NULL, the value returned is null
      */
-    abstract getDate(i: number): null | Date;
+    abstract getDate(i: number): Promise<null | Date>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a Date object
@@ -270,21 +270,21 @@ export declare abstract class AResultSet {
      * the label for the column specified with the SQL AS clause.
      * If the SQL AS clause was not specified, then the label is
      * the name of the column
-     * @returns {Date | null}
+     * @returns {Promise<null | Date>}
      * the column value; if the value is SQL NULL, the value returned is null
      */
-    abstract getDate(name: string): null | Date;
-    abstract getDate(field: number | string): null | Date;
+    abstract getDate(name: string): Promise<null | Date>;
+    abstract getDate(field: any): Promise<null | Date>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a any type
      *
      * @param {number} i
      * the first column is 0, the second is 1, ...
-     * @returns {any}
+     * @returns {Promise<any>}
      * the column value
      */
-    abstract getAny(i: number): any;
+    abstract getAny(i: number): Promise<any>;
     /**
      * Retrieves the value of the designated column in the current
      * row of this ResultSet object as a any type
@@ -293,25 +293,48 @@ export declare abstract class AResultSet {
      * the label for the column specified with the SQL AS clause.
      * If the SQL AS clause was not specified, then the label is
      * the name of the column
-     * @returns {any}
+     * @returns {Promise<any>}
      * the column value
      */
-    abstract getAny(name: string): any;
-    abstract getAny(field: number | string): any;
+    abstract getAny(name: string): Promise<any>;
+    abstract getAny(field: any): Promise<any>;
+    /**
+     * Testing a column for null value.
+     *
+     * @param {number} i
+     * the first column is 0, the second is 1, ...
+     * @returns {Promise<boolean>}
+     * true, if value is null;
+     * false, if value is not null
+     */
+    abstract isNull(i: number): Promise<boolean>;
+    /**
+     * Testing a column for null value.
+     *
+     * @param {string} name
+     * the label for the column specified with the SQL AS clause.
+     * If the SQL AS clause was not specified, then the label is
+     * the name of the column
+     * @returns {Promise<boolean>}
+     * true, if value is null;
+     * false, if value is not null
+     */
+    abstract isNull(name: string): Promise<boolean>;
+    abstract isNull(field: any): Promise<boolean>;
     /**
      * Retrieves the current row as IRow object
      *
-     * @returns {IRow}
+     * @returns {Promise<IRow>}
      * the row as object
      */
-    abstract getObject(): IRow;
+    abstract getObject(): Promise<IRow>;
     /**
      * Retrieves the current row as array
      *
-     * @returns {any[]}
+     * @returns {Promise<any[]>}
      * the row as array
      */
-    abstract getArray(): any[];
+    abstract getArray(): Promise<any[]>;
     /**
      * Retrieves the all row as array of IRow objects
      *

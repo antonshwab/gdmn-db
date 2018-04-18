@@ -13,7 +13,7 @@ export declare enum FieldType {
     VARCHAR = 37,
     BLOB = 261,
 }
-export declare type NullFlag = null | 0 | 1;
+export declare type NullFlag = 0 | 1;
 export declare type ConstraintType = "PRIMARY KEY" | "FOREIGN KEY" | "UNIQUE";
 export declare type UpdateRule = "CASCADE" | "RESTRICT" | "SET NULL" | "NO ACTION" | "SET DEFAULT";
 export declare type DeleteRule = UpdateRule;

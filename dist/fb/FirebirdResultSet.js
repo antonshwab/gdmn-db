@@ -154,10 +154,10 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
     }
     async getBlobBuffer(field) {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
+        if (await this.isNull(field)) {
             return null;
         }
+        const value = this._getValue(field);
         if (value instanceof node_firebird_driver_native_1.Blob) {
             const blobStream = await this._connection.openBlob(this._transaction, value);
             const length = await blobStream.length;
@@ -175,10 +175,10 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return null;
     }
     async getBlobStream(field) {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
+        if (await this.isNull(field)) {
             return null;
         }
+        const value = this._getValue(field);
         const stream = new stream_1.Readable({ read: () => null });
         if (value instanceof node_firebird_driver_native_1.Blob) {
             const blobStream = await this._connection.openBlob(this._transaction, value);
@@ -198,44 +198,73 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
         return stream;
     }
-    getBoolean(field) {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
+    async getBoolean(field) {
+        if (await this.isNull(field)) {
+            return false;
+        }
+        let value = this._getValue(field);
+        if (value instanceof node_firebird_driver_native_1.Blob) {
+            const blobBuffer = await this.getBlobBuffer(field);
+            if (blobBuffer) {
+                value = blobBuffer.toString("utf-8");
+            }
+        }
+        return Boolean(value);
+    }
+    async getDate(field) {
+        if (await this.isNull(field)) {
             return null;
         }
-        return Boolean(this._getValue(field));
-    }
-    getDate(field) {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
-            return null;
+        let value = this._getValue(field);
+        if (value instanceof node_firebird_driver_native_1.Blob) {
+            const blobBuffer = await this.getBlobBuffer(field);
+            if (blobBuffer) {
+                value = blobBuffer.toString("utf-8");
+            }
         }
         return new Date(value);
     }
-    getNumber(field) {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
-            return null;
+    async getNumber(field) {
+        if (await this.isNull(field)) {
+            return 0;
+        }
+        let value = this._getValue(field);
+        if (value instanceof node_firebird_driver_native_1.Blob) {
+            const blobBuffer = await this.getBlobBuffer(field);
+            if (blobBuffer) {
+                value = blobBuffer.toString("utf-8");
+            }
         }
         return Number.parseFloat(value);
     }
-    getString(field) {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
-            return null;
+    async getString(field) {
+        if (await this.isNull(field)) {
+            return "";
+        }
+        let value = this._getValue(field);
+        if (value instanceof node_firebird_driver_native_1.Blob) {
+            const blobBuffer = await this.getBlobBuffer(field);
+            if (blobBuffer) {
+                value = blobBuffer.toString("utf-8");
+            }
         }
         return String(value);
     }
-    getAny(field) {
+    async getAny(field) {
         return this._getValue(field);
     }
-    getObject() {
-        return this.getArray().reduce((object, item, index) => {
+    async isNull(field) {
+        const value = this._getValue(field);
+        return value === null || value === undefined;
+    }
+    async getObject() {
+        const array = await this.getArray();
+        return array.reduce((object, item, index) => {
             object[index] = item;
             return object;
         }, {});
     }
-    getArray() {
+    async getArray() {
         this._checkClosed();
         return this._data[this._currentIndex];
     }

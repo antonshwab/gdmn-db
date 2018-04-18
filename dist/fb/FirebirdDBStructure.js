@@ -25,21 +25,21 @@ class FirebirdDBStructure {
                 f.RDB$DEFAULT_VALUE,
                 f.RDB$FIELD_LENGTH,
                 f.RDB$FIELD_SCALE,
-                TRIM(CAST(f.RDB$VALIDATION_SOURCE AS VARCHAR(8192))),
+                f.RDB$VALIDATION_SOURCE,
                 f.RDB$FIELD_SUB_TYPE
             FROM RDB$FIELDS f
         `, async (resultSet) => {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
-                    RDB$FIELD_NAME: resultSet.getAny(0),
-                    RDB$FIELD_TYPE: resultSet.getAny(1),
-                    RDB$NULL_FLAG: resultSet.getAny(2),
-                    RDB$DEFAULT_VALUE: resultSet.getAny(3),
-                    RDB$FIELD_LENGTH: resultSet.getAny(4),
-                    RDB$FIELD_SCALE: resultSet.getAny(5),
-                    RDB$VALIDATION_SOURCE: resultSet.getString(6),
-                    RDB$FIELD_SUB_TYPE: resultSet.getAny(7)
+                    RDB$FIELD_NAME: await resultSet.getString(0),
+                    RDB$FIELD_TYPE: await resultSet.getNumber(1),
+                    RDB$NULL_FLAG: await resultSet.getNumber(2),
+                    RDB$DEFAULT_VALUE: await resultSet.isNull(3) ? null : await resultSet.getString(3),
+                    RDB$FIELD_LENGTH: await resultSet.getNumber(4),
+                    RDB$FIELD_SCALE: await resultSet.getNumber(5),
+                    RDB$VALIDATION_SOURCE: await resultSet.isNull(6) ? null : await resultSet.getString(6),
+                    RDB$FIELD_SUB_TYPE: await resultSet.isNull(7) ? null : await resultSet.getNumber(7)
                 });
             }
             return array;
@@ -57,11 +57,11 @@ class FirebirdDBStructure {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
-                    RDB$RELATION_NAME: resultSet.getAny(0),
-                    RDB$FIELD_NAME: resultSet.getAny(1),
-                    RDB$FIELD_SOURCE: resultSet.getAny(2),
-                    RDB$NULL_FLAG: resultSet.getAny(3),
-                    RDB$DEFAULT_VALUE: resultSet.getAny(4)
+                    RDB$RELATION_NAME: await resultSet.getString(0),
+                    RDB$FIELD_NAME: await resultSet.getString(1),
+                    RDB$FIELD_SOURCE: await resultSet.getString(2),
+                    RDB$NULL_FLAG: await resultSet.getNumber(3),
+                    RDB$DEFAULT_VALUE: await resultSet.isNull(4) ? null : await resultSet.getString(4)
                 });
             }
             return array;
@@ -70,12 +70,12 @@ class FirebirdDBStructure {
             SELECT
                 TRIM(rc.RDB$RELATION_NAME),
                 TRIM(rc.RDB$CONSTRAINT_NAME),
-                TRIM(CAST(rc.RDB$CONSTRAINT_TYPE AS CHAR(11))),
+                rc.RDB$CONSTRAINT_TYPE,
                 TRIM(s.RDB$INDEX_NAME),
                 TRIM(s.RDB$FIELD_NAME),
                 TRIM(rfc.RDB$CONST_NAME_UQ),
-                TRIM(CAST(rfc.RDB$UPDATE_RULE AS CHAR(11))),
-                TRIM(CAST(rfc.RDB$DELETE_RULE AS CHAR(11)))
+                rfc.RDB$UPDATE_RULE,
+                rfc.RDB$DELETE_RULE
             FROM RDB$RELATION_CONSTRAINTS rc
                 JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = rc.RDB$INDEX_NAME
                 LEFT JOIN RDB$REF_CONSTRAINTS rfc ON rfc.RDB$CONSTRAINT_NAME = rc.RDB$CONSTRAINT_NAME
@@ -83,15 +83,16 @@ class FirebirdDBStructure {
         `, async (resultSet) => {
             const array = [];
             while (await resultSet.next()) {
+                console.log(await resultSet.getString(2));
                 array.push({
-                    RDB$RELATION_NAME: resultSet.getAny(0),
-                    RDB$CONSTRAINT_NAME: resultSet.getAny(1),
-                    RDB$CONSTRAINT_TYPE: resultSet.getAny(2),
-                    RDB$INDEX_NAME: resultSet.getAny(3),
-                    RDB$FIELD_NAME: resultSet.getAny(4),
-                    RDB$CONST_NAME_UQ: resultSet.getAny(5),
-                    RDB$UPDATE_RULE: resultSet.getAny(6),
-                    RDB$DELETE_RULE: resultSet.getAny(7)
+                    RDB$RELATION_NAME: await resultSet.getString(0),
+                    RDB$CONSTRAINT_NAME: await resultSet.getString(1),
+                    RDB$CONSTRAINT_TYPE: await resultSet.getString(2),
+                    RDB$INDEX_NAME: await resultSet.getString(3),
+                    RDB$FIELD_NAME: await resultSet.getString(4),
+                    RDB$CONST_NAME_UQ: await resultSet.getString(5),
+                    RDB$UPDATE_RULE: await resultSet.getString(6),
+                    RDB$DELETE_RULE: await resultSet.getString(7)
                 });
             }
             return array;

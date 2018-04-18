@@ -15,7 +15,7 @@ export enum FieldType {
     BLOB = 261
 }
 
-export type NullFlag = null | 0 | 1;
+export type NullFlag = 0 | 1;
 export type ConstraintType = "PRIMARY KEY" | "FOREIGN KEY" | "UNIQUE";
 export type UpdateRule = "CASCADE" | "RESTRICT" | "SET NULL" | "NO ACTION" | "SET DEFAULT";
 export type DeleteRule = UpdateRule;

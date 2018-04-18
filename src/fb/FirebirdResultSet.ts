@@ -196,11 +196,11 @@ export class FirebirdResultSet extends AResultSet {
 
     public async getBlobBuffer(i: number): Promise<null | Buffer>;
     public async getBlobBuffer(name: string): Promise<null | Buffer>;
-    public async getBlobBuffer(field: number | string): Promise<null | Buffer> {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
+    public async getBlobBuffer(field: any): Promise<null | Buffer> {
+        if (await this.isNull(field)) {
             return null;
         }
+        const value = this._getValue(field);
         if (value instanceof Blob) {
             const blobStream = await this._connection.openBlob(this._transaction, value);
             const length = await blobStream.length;
@@ -221,11 +221,11 @@ export class FirebirdResultSet extends AResultSet {
 
     public async getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
     public async getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
-    public async getBlobStream(field: number | string): Promise<null | NodeJS.ReadableStream> {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
+    public async getBlobStream(field: any): Promise<null | NodeJS.ReadableStream> {
+        if (await this.isNull(field)) {
             return null;
         }
+        const value = this._getValue(field);
         const stream = new Readable({read: () => null});
         if (value instanceof Blob) {
             const blobStream = await this._connection.openBlob(this._transaction, value);
@@ -247,60 +247,92 @@ export class FirebirdResultSet extends AResultSet {
         return stream;
     }
 
-    public getBoolean(i: number): null | boolean;
-    public getBoolean(name: string): null | boolean;
-    public getBoolean(field: number | string): null | boolean {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
-            return null;
+    public async getBoolean(i: number): Promise<boolean>;
+    public async getBoolean(name: string): Promise<boolean>;
+    public async getBoolean(field: any): Promise<boolean> {
+        if (await this.isNull(field)) {
+            return false;
         }
-        return Boolean(this._getValue(field));
+        let value = this._getValue(field);
+        if (value instanceof Blob) {
+            const blobBuffer = await this.getBlobBuffer(field);
+            if (blobBuffer) {
+                value = blobBuffer.toString("utf-8");
+            }
+        }
+        return Boolean(value);
     }
 
-    public getDate(i: number): null | Date;
-    public getDate(name: string): null | Date;
-    public getDate(field: number | string): null | Date {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
+    public async getDate(i: number): Promise<null | Date>;
+    public async getDate(name: string): Promise<null | Date>;
+    public async getDate(field: any): Promise<null | Date> {
+        if (await this.isNull(field)) {
             return null;
+        }
+        let value = this._getValue(field);
+        if (value instanceof Blob) {
+            const blobBuffer = await this.getBlobBuffer(field);
+            if (blobBuffer) {
+                value = blobBuffer.toString("utf-8");
+            }
         }
         return new Date(value);
     }
 
-    public getNumber(i: number): null | number;
-    public getNumber(name: string): null | number;
-    public getNumber(field: number | string): null | number {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
-            return null;
+    public async getNumber(i: number): Promise<number>;
+    public async getNumber(name: string): Promise<number>;
+    public async getNumber(field: any): Promise<number> {
+        if (await this.isNull(field)) {
+            return 0;
+        }
+        let value = this._getValue(field);
+        if (value instanceof Blob) {
+            const blobBuffer = await this.getBlobBuffer(field);
+            if (blobBuffer) {
+                value = blobBuffer.toString("utf-8");
+            }
         }
         return Number.parseFloat(value);
     }
 
-    public getString(i: number): null | string;
-    public getString(name: string): null | string;
-    public getString(field: number | string): null | string {
-        const value = this._getValue(field);
-        if (value === null || value === undefined) {
-            return null;
+    public async getString(i: number): Promise<string>;
+    public async getString(name: string): Promise<string>;
+    public async getString(field: any): Promise<string> {
+        if (await this.isNull(field)) {
+            return "";
+        }
+        let value = this._getValue(field);
+        if (value instanceof Blob) {
+            const blobBuffer = await this.getBlobBuffer(field);
+            if (blobBuffer) {
+                value = blobBuffer.toString("utf-8");
+            }
         }
         return String(value);
     }
 
-    public getAny(i: number): any;
-    public getAny(name: string): any;
-    public getAny(field: number | string): any {
+    public async getAny(i: number): Promise<any>;
+    public async getAny(name: string): Promise<any>;
+    public async getAny(field: any): Promise<any> {
         return this._getValue(field);
     }
 
-    public getObject(): IRow {
-        return this.getArray().reduce((object, item, index) => {
+    public async isNull(i: number): Promise<boolean>;
+    public async isNull(name: string): Promise<boolean>;
+    public async isNull(field: any): Promise<boolean> {
+        const value = this._getValue(field);
+        return value === null || value === undefined;
+    }
+
+    public async getObject(): Promise<IRow> {
+        const array = await this.getArray();
+        return array.reduce((object, item, index) => {
             object[index] = item;
             return object;
         }, {});
     }
 
-    public getArray(): any[] {
+    public async getArray(): Promise<any[]> {
         this._checkClosed();
 
         return this._data[this._currentIndex];
