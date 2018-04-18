@@ -9,11 +9,11 @@ export class Field {
     public readonly fieldScale: number;
     public readonly validationSource: string | null;
     public readonly fieldSubType: number | null;
-    public readonly fieldPrecision: number | null;
+    public readonly fieldPrecision: number;
 
     constructor(fieldType: FieldType, notNull: boolean, defaultValue: string | null,
       fieldLength: number, fieldScale: number, validationSource: string | null,
-      fieldSubType: number | null, fieldPrecision: number | null)
+      fieldSubType: number | null, fieldPrecision: number)
     {
         this.fieldType = fieldType;
         this.notNull = notNull;

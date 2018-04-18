@@ -41,7 +41,7 @@ class FirebirdDBStructure {
                     RDB$FIELD_SCALE: await resultSet.getNumber(5),
                     RDB$VALIDATION_SOURCE: await resultSet.isNull(6) ? null : await resultSet.getString(6),
                     RDB$FIELD_SUB_TYPE: await resultSet.isNull(7) ? null : await resultSet.getNumber(7),
-                    RDB$FIELD_PRECISION: await resultSet.isNull(8) ? null : await resultSet.getNumber(8)
+                    RDB$FIELD_PRECISION: await resultSet.getNumber(8)
                 });
             }
             return array;

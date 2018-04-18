@@ -26,7 +26,7 @@ export interface IRDB$FIELD {
     RDB$FIELD_SCALE: number;
     RDB$VALIDATION_SOURCE: string | null;
     RDB$FIELD_SUB_TYPE: number | null;
-    RDB$FIELD_PRECISION: number | null;
+    RDB$FIELD_PRECISION: number;
 }
 export interface IRDB$RELATIONFIELD {
     RDB$RELATION_NAME: string;
