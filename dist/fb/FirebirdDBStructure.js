@@ -36,7 +36,7 @@ class FirebirdDBStructure {
                     RDB$FIELD_NAME: resultSet.getString(0),
                     RDB$FIELD_TYPE: resultSet.getNumber(1),
                     RDB$NULL_FLAG: resultSet.getNumber(2),
-                    RDB$DEFAULT_VALUE: resultSet.isNull(3) ? null : await resultSet.getBlob(3).toString(),
+                    RDB$DEFAULT_VALUE: resultSet.isNull(3) ? null : await resultSet.getBlob(3).getString(),
                     RDB$FIELD_LENGTH: resultSet.getNumber(4),
                     RDB$FIELD_SCALE: resultSet.getNumber(5),
                     RDB$VALIDATION_SOURCE: resultSet.isNull(6) ? null : await resultSet.getBlob(6).getString(),
