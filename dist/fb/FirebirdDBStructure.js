@@ -33,15 +33,15 @@ class FirebirdDBStructure {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
-                    RDB$FIELD_NAME: await resultSet.getString(0),
-                    RDB$FIELD_TYPE: await resultSet.getNumber(1),
-                    RDB$NULL_FLAG: await resultSet.getNumber(2),
-                    RDB$DEFAULT_VALUE: await resultSet.isNull(3) ? null : await resultSet.getString(3),
-                    RDB$FIELD_LENGTH: await resultSet.getNumber(4),
-                    RDB$FIELD_SCALE: await resultSet.getNumber(5),
-                    RDB$VALIDATION_SOURCE: await resultSet.isNull(6) ? null : await resultSet.getString(6),
-                    RDB$FIELD_SUB_TYPE: await resultSet.isNull(7) ? null : await resultSet.getNumber(7),
-                    RDB$FIELD_PRECISION: await resultSet.getNumber(8)
+                    RDB$FIELD_NAME: resultSet.getString(0),
+                    RDB$FIELD_TYPE: resultSet.getNumber(1),
+                    RDB$NULL_FLAG: resultSet.getNumber(2),
+                    RDB$DEFAULT_VALUE: resultSet.isNull(3) ? null : resultSet.getString(3),
+                    RDB$FIELD_LENGTH: resultSet.getNumber(4),
+                    RDB$FIELD_SCALE: resultSet.getNumber(5),
+                    RDB$VALIDATION_SOURCE: resultSet.isNull(6) ? null : await resultSet.getBlob(6).getString(),
+                    RDB$FIELD_SUB_TYPE: resultSet.isNull(7) ? null : resultSet.getNumber(7),
+                    RDB$FIELD_PRECISION: resultSet.getNumber(8)
                 });
             }
             return array;
@@ -59,11 +59,11 @@ class FirebirdDBStructure {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
-                    RDB$RELATION_NAME: await resultSet.getString(0),
-                    RDB$FIELD_NAME: await resultSet.getString(1),
-                    RDB$FIELD_SOURCE: await resultSet.getString(2),
-                    RDB$NULL_FLAG: await resultSet.getNumber(3),
-                    RDB$DEFAULT_VALUE: await resultSet.isNull(4) ? null : await resultSet.getString(4)
+                    RDB$RELATION_NAME: resultSet.getString(0),
+                    RDB$FIELD_NAME: resultSet.getString(1),
+                    RDB$FIELD_SOURCE: resultSet.getString(2),
+                    RDB$NULL_FLAG: resultSet.getNumber(3),
+                    RDB$DEFAULT_VALUE: resultSet.isNull(4) ? null : resultSet.getString(4)
                 });
             }
             return array;
@@ -86,14 +86,14 @@ class FirebirdDBStructure {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
-                    RDB$RELATION_NAME: await resultSet.getString(0),
-                    RDB$CONSTRAINT_NAME: await resultSet.getString(1),
-                    RDB$CONSTRAINT_TYPE: await resultSet.getString(2),
-                    RDB$INDEX_NAME: await resultSet.getString(3),
-                    RDB$FIELD_NAME: await resultSet.getString(4),
-                    RDB$CONST_NAME_UQ: await resultSet.getString(5),
-                    RDB$UPDATE_RULE: await resultSet.getString(6),
-                    RDB$DELETE_RULE: await resultSet.getString(7)
+                    RDB$RELATION_NAME: resultSet.getString(0),
+                    RDB$CONSTRAINT_NAME: resultSet.getString(1),
+                    RDB$CONSTRAINT_TYPE: await resultSet.getBlob(2).getString(),
+                    RDB$INDEX_NAME: resultSet.getString(3),
+                    RDB$FIELD_NAME: resultSet.getString(4),
+                    RDB$CONST_NAME_UQ: resultSet.getString(5),
+                    RDB$UPDATE_RULE: await resultSet.getBlob(6).getString(),
+                    RDB$DELETE_RULE: await resultSet.getBlob(7).getString()
                 });
             }
             return array;

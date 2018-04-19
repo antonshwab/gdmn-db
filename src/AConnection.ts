@@ -1,3 +1,4 @@
+import {ABlob} from "./ABlob";
 import {AResultSet} from "./AResultSet";
 import {AStatement} from "./AStatement";
 import {ATransaction, ITransactionOptions} from "./ATransaction";
@@ -47,9 +48,10 @@ export interface IConnectionOptions {
  * </pre>
  */
 export abstract class AConnection<Options extends IConnectionOptions = IConnectionOptions,
-    RS extends AResultSet = AResultSet,
-    S extends AStatement<RS> = AStatement<RS>,
-    T extends ATransaction<RS, S> = ATransaction<RS, S>> {
+    B extends ABlob = ABlob,
+    RS extends AResultSet<B> = AResultSet<B>,
+    S extends AStatement<B, RS> = AStatement<B, RS>,
+    T extends ATransaction<B, RS, S> = ATransaction<B, RS, S>> {
 
     public static async executeFromParent<Opt, R>(sourceCallback: TExecutor<null, AConnection>,
                                                   resultCallback: TExecutor<AConnection, R>): Promise<R> {

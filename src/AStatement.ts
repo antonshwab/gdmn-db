@@ -1,3 +1,4 @@
+import {ABlob} from "./ABlob";
 import {AResultSet} from "./AResultSet";
 import {INamedParams} from "./ATransaction";
 import {TExecutor} from "./types";
@@ -7,7 +8,8 @@ import {TExecutor} from "./types";
  * A SQL statement is precompiled and stored in a Statement object.
  * This object can then be used to efficiently execute this statement multiple times.
  */
-export abstract class AStatement<RS extends AResultSet = AResultSet> {
+export abstract class AStatement<B extends ABlob = ABlob,
+    RS extends AResultSet<B> = AResultSet<B>> {
 
     public static async executeFromParent<R>(sourceCallback: TExecutor<null, AStatement>,
                                              resultCallback: TExecutor<AStatement, R>): Promise<R> {

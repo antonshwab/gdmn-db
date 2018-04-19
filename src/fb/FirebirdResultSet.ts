@@ -1,12 +1,12 @@
 import {Attachment, Blob, ResultSet, Transaction} from "node-firebird-driver-native";
-import {Readable} from "stream";
 import {AResultSet, IRow} from "../AResultSet";
+import {FirebirdBlob} from "./FirebirdBlob";
 
 enum Status {
     UNFINISHED, FINISHED, CLOSED
 }
 
-export class FirebirdResultSet extends AResultSet {
+export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
 
     private readonly _connection: Attachment;
     private readonly _transaction: Transaction;
@@ -194,145 +194,78 @@ export class FirebirdResultSet extends AResultSet {
         this._currentIndex = AResultSet.NO_INDEX;
     }
 
-    public async getBlobBuffer(i: number): Promise<null | Buffer>;
-    public async getBlobBuffer(name: string): Promise<null | Buffer>;
-    public async getBlobBuffer(field: any): Promise<null | Buffer> {
-        if (await this.isNull(field)) {
-            return null;
-        }
-        const value = this._getValue(field);
-        if (value instanceof Blob) {
-            const blobStream = await this._connection.openBlob(this._transaction, value);
-            const length = await blobStream.length;
-
-            const buffers: Buffer[] = [];
-            let i = 0;
-            while (i < length) {
-                const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
-                i += size;
-                const buffer = Buffer.alloc(size);
-                buffers.push(buffer);
-                await blobStream.read(buffer);
-            }
-            return Buffer.concat(buffers, length);
-        }
-        return null;
+    public getBlob(i: number): FirebirdBlob;
+    public getBlob(name: string): FirebirdBlob;
+    public getBlob(field: any): FirebirdBlob {
+        return new FirebirdBlob(this._connection, this._transaction, this._getValue(field));
     }
 
-    public async getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
-    public async getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
-    public async getBlobStream(field: any): Promise<null | NodeJS.ReadableStream> {
-        if (await this.isNull(field)) {
-            return null;
-        }
-        const value = this._getValue(field);
-        const stream = new Readable({read: () => null});
-        if (value instanceof Blob) {
-            const blobStream = await this._connection.openBlob(this._transaction, value);
-            const length = await blobStream.length;
+    public getBoolean(i: number): boolean;
+    public getBoolean(name: string): boolean;
+    public getBoolean(field: any): boolean {
+        this._throwIfBlob(field);
 
-            const buffers: Buffer[] = [];
-            let i = 0;
-            while (i < length) {
-                const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
-                i += size;
-                buffers.push(Buffer.alloc(size));
-            }
-            const promises = buffers.map(async (buffer) => {
-                await blobStream.read(buffer);
-                stream.push(buffer);
-            });
-            Promise.all(promises).then(() => stream.push(null)).catch(console.warn);
-        }
-        return stream;
-    }
-
-    public async getBoolean(i: number): Promise<boolean>;
-    public async getBoolean(name: string): Promise<boolean>;
-    public async getBoolean(field: any): Promise<boolean> {
-        if (await this.isNull(field)) {
+        if (this.isNull(field)) {
             return false;
         }
-        let value = this._getValue(field);
-        if (value instanceof Blob) {
-            const blobBuffer = await this.getBlobBuffer(field);
-            if (blobBuffer) {
-                value = blobBuffer.toString("utf-8");
-            }
-        }
-        return Boolean(value);
+        return Boolean(this._getValue(field));
     }
 
-    public async getDate(i: number): Promise<null | Date>;
-    public async getDate(name: string): Promise<null | Date>;
-    public async getDate(field: any): Promise<null | Date> {
-        if (await this.isNull(field)) {
+    public getDate(i: number): null | Date;
+    public getDate(name: string): null | Date;
+    public getDate(field: any): null | Date {
+        this._throwIfBlob(field);
+
+        if (this.isNull(field)) {
             return null;
         }
-        let value = this._getValue(field);
-        if (value instanceof Blob) {
-            const blobBuffer = await this.getBlobBuffer(field);
-            if (blobBuffer) {
-                value = blobBuffer.toString("utf-8");
-            }
-        }
-        return new Date(value);
+        return new Date(this._getValue(field));
     }
 
-    public async getNumber(i: number): Promise<number>;
-    public async getNumber(name: string): Promise<number>;
-    public async getNumber(field: any): Promise<number> {
-        if (await this.isNull(field)) {
+    public getNumber(i: number): number;
+    public getNumber(name: string): number;
+    public getNumber(field: any): number {
+        this._throwIfBlob(field);
+
+        if (this.isNull(field)) {
             return 0;
         }
-        let value = this._getValue(field);
-        if (value instanceof Blob) {
-            const blobBuffer = await this.getBlobBuffer(field);
-            if (blobBuffer) {
-                value = blobBuffer.toString("utf-8");
-            }
-        }
-        return Number.parseFloat(value);
+        return Number.parseFloat(this._getValue(field));
     }
 
-    public async getString(i: number): Promise<string>;
-    public async getString(name: string): Promise<string>;
-    public async getString(field: any): Promise<string> {
-        if (await this.isNull(field)) {
+    public getString(i: number): string;
+    public getString(name: string): string;
+    public getString(field: any): string {
+        this._throwIfBlob(field);
+
+        if (this.isNull(field)) {
             return "";
         }
-        let value = this._getValue(field);
-        if (value instanceof Blob) {
-            const blobBuffer = await this.getBlobBuffer(field);
-            if (blobBuffer) {
-                value = blobBuffer.toString("utf-8");
-            }
-        }
-        return String(value);
+        return String(this._getValue(field));
     }
 
-    public async getAny(i: number): Promise<any>;
-    public async getAny(name: string): Promise<any>;
-    public async getAny(field: any): Promise<any> {
+    public getAny(i: number): any;
+    public getAny(name: string): any;
+    public getAny(field: any): any {
         return this._getValue(field);
     }
 
-    public async isNull(i: number): Promise<boolean>;
-    public async isNull(name: string): Promise<boolean>;
-    public async isNull(field: any): Promise<boolean> {
+    public isNull(i: number): boolean;
+    public isNull(name: string): boolean;
+    public isNull(field: any): boolean {
         const value = this._getValue(field);
         return value === null || value === undefined;
     }
 
-    public async getObject(): Promise<IRow> {
-        const array = await this.getArray();
+    public getObject(): IRow {
+        const array = this.getArray();
         return array.reduce((object, item, index) => {
             object[index] = item;
             return object;
         }, {});
     }
 
-    public async getArray(): Promise<any[]> {
+    public getArray(): any[] {
         this._checkClosed();
 
         return this._data[this._currentIndex];
@@ -372,6 +305,12 @@ export class FirebirdResultSet extends AResultSet {
     private _checkClosed(): void {
         if (this._status === Status.CLOSED) {
             throw new Error("ResultSet is closed");
+        }
+    }
+
+    private _throwIfBlob(field: number | string): void {
+        if (this._getValue(field) instanceof Blob) {
+            throw new Error("Invalid typecasting");
         }
     }
 }

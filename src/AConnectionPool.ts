@@ -1,3 +1,4 @@
+import {ABlob} from "./ABlob";
 import {AConnection, IConnectionOptions} from "./AConnection";
 import {AResultSet} from "./AResultSet";
 import {AStatement} from "./AStatement";
@@ -6,10 +7,11 @@ import {TExecutor} from "./types";
 
 export abstract class AConnectionPool<Options,
     ConOptions extends IConnectionOptions = IConnectionOptions,
-    RS extends AResultSet = AResultSet,
-    S extends AStatement<RS> = AStatement<RS>,
-    T extends ATransaction<RS, S> = ATransaction<RS, S>,
-    C extends AConnection<ConOptions, RS, S, T> = AConnection<ConOptions, RS, S, T>> {
+    B extends ABlob = ABlob,
+    RS extends AResultSet<B> = AResultSet<B>,
+    S extends AStatement<B, RS> = AStatement<B, RS>,
+    T extends ATransaction<B, RS, S> = ATransaction<B, RS, S>,
+    C extends AConnection<ConOptions, B, RS, S, T> = AConnection<ConOptions, B, RS, S, T>> {
 
     public static async executeFromParent<Opt, ConOpt, R>(
         sourceCallback: TExecutor<null, AConnectionPool<Opt>>,

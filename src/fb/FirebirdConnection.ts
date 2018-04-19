@@ -1,13 +1,14 @@
 import {Attachment, Client, createNativeClient, getDefaultLibraryFilename} from "node-firebird-driver-native";
 import {AConnection, IConnectionOptions} from "../AConnection";
 import {ITransactionOptions} from "../ATransaction";
+import {FirebirdBlob} from "./FirebirdBlob";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";
 import {FirebirdTransaction} from "./FirebirdTransaction";
 
 export type FirebirdOptions = IConnectionOptions;
 
-export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdResultSet, FirebirdStatement,
+export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlob, FirebirdResultSet, FirebirdStatement,
     FirebirdTransaction> {
 
     private _client: null | Client = null;

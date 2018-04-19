@@ -8,6 +8,7 @@ __export(require("./AConnection"));
 __export(require("./ATransaction"));
 __export(require("./AStatement"));
 __export(require("./AResultSet"));
+__export(require("./ABlob"));
 __export(require("./ADriver"));
 __export(require("./Factory"));
 __export(require("./default/connectionPool/DefaultConnectionPool"));
@@ -17,6 +18,7 @@ __export(require("./fb/FirebirdConnection"));
 __export(require("./fb/FirebirdTransaction"));
 __export(require("./fb/FirebirdStatement"));
 __export(require("./fb/FirebirdResultSet"));
+__export(require("./fb/FirebirdBlob"));
 __export(require("./fb/FirebirdDBStructure"));
 __export(require("./fb/FirebirdDriver"));
 //# sourceMappingURL=index.js.map

@@ -2,9 +2,10 @@ import {Attachment, Statement, Transaction} from "node-firebird-driver-native";
 import {AStatement} from "../AStatement";
 import {INamedParams} from "../ATransaction";
 import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
+import {FirebirdBlob} from "./FirebirdBlob";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 
-export class FirebirdStatement extends AStatement<FirebirdResultSet> {
+export class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSet> {
 
     private readonly _connection: Attachment;
     private readonly _transaction: Transaction;

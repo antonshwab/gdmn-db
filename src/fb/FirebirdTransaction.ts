@@ -2,11 +2,12 @@ import {Attachment, Transaction, TransactionIsolation, TransactionOptions} from 
 import {AccessMode, ATransaction, INamedParams, Isolation, ITransactionOptions} from "../ATransaction";
 import {DBStructure} from "../DBStructure";
 import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
+import {FirebirdBlob} from "./FirebirdBlob";
 import {FirebirdDBStructure} from "./FirebirdDBStructure";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";
 
-export class FirebirdTransaction extends ATransaction<FirebirdResultSet, FirebirdStatement> {
+export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResultSet, FirebirdStatement> {
 
     public static EXCLUDE_PATTERNS = [
         /-{2}.*/g,                  // in-line comments

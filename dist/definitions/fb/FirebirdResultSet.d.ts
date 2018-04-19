@@ -1,7 +1,7 @@
-/// <reference types="node" />
 import { Attachment, ResultSet, Transaction } from "node-firebird-driver-native";
 import { AResultSet, IRow } from "../AResultSet";
-export declare class FirebirdResultSet extends AResultSet {
+import { FirebirdBlob } from "./FirebirdBlob";
+export declare class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     private readonly _connection;
     private readonly _transaction;
     private readonly _resultSet;
@@ -23,26 +23,25 @@ export declare class FirebirdResultSet extends AResultSet {
     isLast(): Promise<boolean>;
     isClosed(): Promise<boolean>;
     close(): Promise<void>;
-    getBlobBuffer(i: number): Promise<null | Buffer>;
-    getBlobBuffer(name: string): Promise<null | Buffer>;
-    getBlobStream(i: number): Promise<null | NodeJS.ReadableStream>;
-    getBlobStream(name: string): Promise<null | NodeJS.ReadableStream>;
-    getBoolean(i: number): Promise<boolean>;
-    getBoolean(name: string): Promise<boolean>;
-    getDate(i: number): Promise<null | Date>;
-    getDate(name: string): Promise<null | Date>;
-    getNumber(i: number): Promise<number>;
-    getNumber(name: string): Promise<number>;
-    getString(i: number): Promise<string>;
-    getString(name: string): Promise<string>;
-    getAny(i: number): Promise<any>;
-    getAny(name: string): Promise<any>;
-    isNull(i: number): Promise<boolean>;
-    isNull(name: string): Promise<boolean>;
-    getObject(): Promise<IRow>;
-    getArray(): Promise<any[]>;
+    getBlob(i: number): FirebirdBlob;
+    getBlob(name: string): FirebirdBlob;
+    getBoolean(i: number): boolean;
+    getBoolean(name: string): boolean;
+    getDate(i: number): null | Date;
+    getDate(name: string): null | Date;
+    getNumber(i: number): number;
+    getNumber(name: string): number;
+    getString(i: number): string;
+    getString(name: string): string;
+    getAny(i: number): any;
+    getAny(name: string): any;
+    isNull(i: number): boolean;
+    isNull(name: string): boolean;
+    getObject(): IRow;
+    getArray(): any[];
     getObjects(): Promise<IRow[]>;
     getArrays(): Promise<any[][]>;
     private _getValue(field);
     private _checkClosed();
+    private _throwIfBlob(field);
 }

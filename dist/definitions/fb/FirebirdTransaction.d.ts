@@ -1,9 +1,10 @@
 import { Attachment } from "node-firebird-driver-native";
 import { ATransaction, INamedParams, ITransactionOptions } from "../ATransaction";
 import { DBStructure } from "../DBStructure";
+import { FirebirdBlob } from "./FirebirdBlob";
 import { FirebirdResultSet } from "./FirebirdResultSet";
 import { FirebirdStatement } from "./FirebirdStatement";
-export declare class FirebirdTransaction extends ATransaction<FirebirdResultSet, FirebirdStatement> {
+export declare class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResultSet, FirebirdStatement> {
     static EXCLUDE_PATTERNS: RegExp[];
     static PLACEHOLDER_PATTERN: RegExp;
     private readonly _connection;

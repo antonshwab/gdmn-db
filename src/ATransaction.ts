@@ -1,3 +1,4 @@
+import {ABlob} from "./ABlob";
 import {AResultSet} from "./AResultSet";
 import {AStatement} from "./AStatement";
 import {DBStructure} from "./DBStructure";
@@ -26,8 +27,9 @@ export interface ITransactionOptions {
 /**
  * The transaction object
  */
-export abstract class ATransaction<RS extends AResultSet = AResultSet,
-    S extends AStatement<RS> = AStatement<RS>> {
+export abstract class ATransaction<B extends ABlob = ABlob,
+    RS extends AResultSet<B> = AResultSet<B>,
+    S extends AStatement<B, RS> = AStatement<B, RS>> {
 
     public static DEFAULT_OPTIONS: ITransactionOptions = {
         isolation: Isolation.READ_COMMITED,

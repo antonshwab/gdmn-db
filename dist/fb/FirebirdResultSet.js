@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_driver_native_1 = require("node-firebird-driver-native");
-const stream_1 = require("stream");
 const AResultSet_1 = require("../AResultSet");
+const FirebirdBlob_1 = require("./FirebirdBlob");
 var Status;
 (function (Status) {
     Status[Status["UNFINISHED"] = 0] = "UNFINISHED";
@@ -153,118 +153,52 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         this._data = [];
         this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
     }
-    async getBlobBuffer(field) {
-        if (await this.isNull(field)) {
-            return null;
-        }
-        const value = this._getValue(field);
-        if (value instanceof node_firebird_driver_native_1.Blob) {
-            const blobStream = await this._connection.openBlob(this._transaction, value);
-            const length = await blobStream.length;
-            const buffers = [];
-            let i = 0;
-            while (i < length) {
-                const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
-                i += size;
-                const buffer = Buffer.alloc(size);
-                buffers.push(buffer);
-                await blobStream.read(buffer);
-            }
-            return Buffer.concat(buffers, length);
-        }
-        return null;
+    getBlob(field) {
+        return new FirebirdBlob_1.FirebirdBlob(this._connection, this._transaction, this._getValue(field));
     }
-    async getBlobStream(field) {
-        if (await this.isNull(field)) {
-            return null;
-        }
-        const value = this._getValue(field);
-        const stream = new stream_1.Readable({ read: () => null });
-        if (value instanceof node_firebird_driver_native_1.Blob) {
-            const blobStream = await this._connection.openBlob(this._transaction, value);
-            const length = await blobStream.length;
-            const buffers = [];
-            let i = 0;
-            while (i < length) {
-                const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
-                i += size;
-                buffers.push(Buffer.alloc(size));
-            }
-            const promises = buffers.map(async (buffer) => {
-                await blobStream.read(buffer);
-                stream.push(buffer);
-            });
-            Promise.all(promises).then(() => stream.push(null)).catch(console.warn);
-        }
-        return stream;
-    }
-    async getBoolean(field) {
-        if (await this.isNull(field)) {
+    getBoolean(field) {
+        this._throwIfBlob(field);
+        if (this.isNull(field)) {
             return false;
         }
-        let value = this._getValue(field);
-        if (value instanceof node_firebird_driver_native_1.Blob) {
-            const blobBuffer = await this.getBlobBuffer(field);
-            if (blobBuffer) {
-                value = blobBuffer.toString("utf-8");
-            }
-        }
-        return Boolean(value);
+        return Boolean(this._getValue(field));
     }
-    async getDate(field) {
-        if (await this.isNull(field)) {
+    getDate(field) {
+        this._throwIfBlob(field);
+        if (this.isNull(field)) {
             return null;
         }
-        let value = this._getValue(field);
-        if (value instanceof node_firebird_driver_native_1.Blob) {
-            const blobBuffer = await this.getBlobBuffer(field);
-            if (blobBuffer) {
-                value = blobBuffer.toString("utf-8");
-            }
-        }
-        return new Date(value);
+        return new Date(this._getValue(field));
     }
-    async getNumber(field) {
-        if (await this.isNull(field)) {
+    getNumber(field) {
+        this._throwIfBlob(field);
+        if (this.isNull(field)) {
             return 0;
         }
-        let value = this._getValue(field);
-        if (value instanceof node_firebird_driver_native_1.Blob) {
-            const blobBuffer = await this.getBlobBuffer(field);
-            if (blobBuffer) {
-                value = blobBuffer.toString("utf-8");
-            }
-        }
-        return Number.parseFloat(value);
+        return Number.parseFloat(this._getValue(field));
     }
-    async getString(field) {
-        if (await this.isNull(field)) {
+    getString(field) {
+        this._throwIfBlob(field);
+        if (this.isNull(field)) {
             return "";
         }
-        let value = this._getValue(field);
-        if (value instanceof node_firebird_driver_native_1.Blob) {
-            const blobBuffer = await this.getBlobBuffer(field);
-            if (blobBuffer) {
-                value = blobBuffer.toString("utf-8");
-            }
-        }
-        return String(value);
+        return String(this._getValue(field));
     }
-    async getAny(field) {
+    getAny(field) {
         return this._getValue(field);
     }
-    async isNull(field) {
+    isNull(field) {
         const value = this._getValue(field);
         return value === null || value === undefined;
     }
-    async getObject() {
-        const array = await this.getArray();
+    getObject() {
+        const array = this.getArray();
         return array.reduce((object, item, index) => {
             object[index] = item;
             return object;
         }, {});
     }
-    async getArray() {
+    getArray() {
         this._checkClosed();
         return this._data[this._currentIndex];
     }
@@ -298,6 +232,11 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
     _checkClosed() {
         if (this._status === Status.CLOSED) {
             throw new Error("ResultSet is closed");
+        }
+    }
+    _throwIfBlob(field) {
+        if (this._getValue(field) instanceof node_firebird_driver_native_1.Blob) {
+            throw new Error("Invalid typecasting");
         }
     }
 }
