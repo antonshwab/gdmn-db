@@ -1,9 +1,7 @@
 import {Attachment, Transaction, TransactionIsolation, TransactionOptions} from "node-firebird-driver-native";
 import {AccessMode, ATransaction, INamedParams, Isolation, ITransactionOptions} from "../ATransaction";
-import {DBStructure} from "../DBStructure";
 import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
 import {FirebirdBlob} from "./FirebirdBlob";
-import {FirebirdDBStructure} from "./FirebirdDBStructure";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";
 
@@ -118,13 +116,5 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
         const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
             FirebirdTransaction.PLACEHOLDER_PATTERN);
         await this._connection.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
-    }
-
-    public async readDBStructure(): Promise<DBStructure> {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
-        }
-
-        return await FirebirdDBStructure.readStructure(this);
     }
 }

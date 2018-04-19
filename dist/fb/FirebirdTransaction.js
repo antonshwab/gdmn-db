@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_driver_native_1 = require("node-firebird-driver-native");
 const ATransaction_1 = require("../ATransaction");
 const DefaultParamsAnalyzer_1 = require("../default/DefaultParamsAnalyzer");
-const FirebirdDBStructure_1 = require("./FirebirdDBStructure");
 const FirebirdResultSet_1 = require("./FirebirdResultSet");
 const FirebirdStatement_1 = require("./FirebirdStatement");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
@@ -87,12 +86,6 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         }
         const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
         await this._connection.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
-    }
-    async readDBStructure() {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
-        }
-        return await FirebirdDBStructure_1.FirebirdDBStructure.readStructure(this);
     }
 }
 FirebirdTransaction.EXCLUDE_PATTERNS = [

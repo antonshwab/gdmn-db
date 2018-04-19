@@ -1,7 +1,6 @@
 import {ABlob} from "./ABlob";
 import {AResultSet} from "./AResultSet";
 import {AStatement} from "./AStatement";
-import {DBStructure} from "./DBStructure";
 import {TExecutor} from "./types";
 
 export interface INamedParams {
@@ -169,6 +168,4 @@ export abstract class ATransaction<B extends ABlob = ABlob,
      * array of parameters or object containing placeholders as keys and parameters as values; optional
      */
     public abstract async execute(sql: string, params?: any[] | INamedParams): Promise<void>;
-
-    public abstract async readDBStructure(): Promise<DBStructure>;
 }

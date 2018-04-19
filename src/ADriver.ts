@@ -1,8 +1,15 @@
 import {AConnection} from "./AConnection";
 import {AConnectionPool} from "./AConnectionPool";
+import {ATransaction} from "./ATransaction";
+import {DBStructure} from "./DBStructure";
 import {DefaultConnectionPool, IDefaultConnectionPoolOptions} from "./default/connectionPool/DefaultConnectionPool";
 
 export abstract class ADriver<PoolOptions = any> {
+
+    /** Reade database structure as DBStructure object */
+    public async readDBStructure(transaction: ATransaction): Promise<DBStructure> {
+        throw new Error("Unsupported yet");
+    }
 
     /** Create object for access to the database */
     public newConnection(): AConnection {

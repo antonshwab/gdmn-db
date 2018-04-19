@@ -2,6 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const DefaultConnectionPool_1 = require("./default/connectionPool/DefaultConnectionPool");
 class ADriver {
+    /** Reade database structure as DBStructure object */
+    async readDBStructure(transaction) {
+        throw new Error("Unsupported yet");
+    }
     /** Create object for access to the database */
     newConnection() {
         throw new Error("Unsupported yet");
