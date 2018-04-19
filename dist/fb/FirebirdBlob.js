@@ -10,7 +10,7 @@ class FirebirdBlob extends ABlob_1.ABlob {
         this._transaction = transaction;
         this._blob = blob;
     }
-    async getBuffer() {
+    async asBuffer() {
         if (this._blob && this._blob instanceof node_firebird_driver_native_1.Blob) {
             const blobStream = await this._connection.openBlob(this._transaction, this._blob);
             const length = await blobStream.length;
@@ -27,7 +27,7 @@ class FirebirdBlob extends ABlob_1.ABlob {
         }
         return null;
     }
-    async getStream() {
+    async asStream() {
         if (this._blob && this._blob instanceof node_firebird_driver_native_1.Blob) {
             const stream = new stream_1.Readable({ read: () => null });
             const blobStream = await this._connection.openBlob(this._transaction, this._blob);
@@ -48,8 +48,8 @@ class FirebirdBlob extends ABlob_1.ABlob {
         }
         return null;
     }
-    async getString() {
-        const buffer = await this.getBuffer();
+    async asString() {
+        const buffer = await this.asBuffer();
         if (buffer) {
             return buffer.toString();
         }

@@ -6,7 +6,7 @@ export declare class FirebirdBlob extends ABlob {
     private readonly _transaction;
     private readonly _blob;
     constructor(connection: Attachment, transaction: Transaction, blob: Blob);
-    getBuffer(): Promise<null | Buffer>;
-    getStream(): Promise<null | NodeJS.ReadableStream>;
-    getString(): Promise<string>;
+    asBuffer(): Promise<null | Buffer>;
+    asStream(): Promise<null | NodeJS.ReadableStream>;
+    asString(): Promise<string>;
 }

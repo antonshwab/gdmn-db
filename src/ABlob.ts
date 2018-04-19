@@ -6,7 +6,7 @@ export abstract class ABlob {
      * @returns {Promise<null | Buffer>}
      * the column value; if the blob value is SQL NULL, the value returned is null
      */
-    public abstract async getBuffer(): Promise<null | Buffer>;
+    public abstract async asBuffer(): Promise<null | Buffer>;
 
     /**
      * Retrieves the blob value as a stream
@@ -14,7 +14,7 @@ export abstract class ABlob {
      * @returns {Promise<null | NodeJS.ReadableStream>}
      * the column value; if the blob value is SQL NULL, the value returned is null
      */
-    public abstract async getStream(): Promise<null | NodeJS.ReadableStream>;
+    public abstract async asStream(): Promise<null | NodeJS.ReadableStream>;
 
     /**
      * Retrieves the blob value as a string
@@ -22,5 +22,5 @@ export abstract class ABlob {
      * @returns {string}
      * the column value; if the blob value is SQL NULL, the value returned is empty string
      */
-    public abstract async getString(): Promise<string>;
+    public abstract async asString(): Promise<string>;
 }

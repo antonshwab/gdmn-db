@@ -16,7 +16,7 @@ export class FirebirdBlob extends ABlob {
         this._blob = blob;
     }
 
-    public async getBuffer(): Promise<null | Buffer> {
+    public async asBuffer(): Promise<null | Buffer> {
         if (this._blob && this._blob instanceof Blob) {
             const blobStream = await this._connection.openBlob(this._transaction, this._blob);
             const length = await blobStream.length;
@@ -35,7 +35,7 @@ export class FirebirdBlob extends ABlob {
         return null;
     }
 
-    public async getStream(): Promise<null | NodeJS.ReadableStream> {
+    public async asStream(): Promise<null | NodeJS.ReadableStream> {
         if (this._blob && this._blob instanceof Blob) {
             const stream = new Readable({read: () => null});
             const blobStream = await this._connection.openBlob(this._transaction, this._blob);
@@ -59,8 +59,8 @@ export class FirebirdBlob extends ABlob {
         return null;
     }
 
-    public async getString(): Promise<string> {
-        const buffer = await this.getBuffer();
+    public async asString(): Promise<string> {
+        const buffer = await this.asBuffer();
         if (buffer) {
             return buffer.toString();
         }

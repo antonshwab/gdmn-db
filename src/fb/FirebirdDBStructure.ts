@@ -55,10 +55,10 @@ export class FirebirdDBStructure {
                     RDB$FIELD_NAME: resultSet.getString(0),
                     RDB$FIELD_TYPE: resultSet.getNumber(1),
                     RDB$NULL_FLAG: resultSet.getNumber(2) as NullFlag,
-                    RDB$DEFAULT_VALUE: resultSet.isNull(3) ? null : await resultSet.getBlob(3).getString(),
+                    RDB$DEFAULT_VALUE: resultSet.isNull(3) ? null : await resultSet.getBlob(3).asString(),
                     RDB$FIELD_LENGTH: resultSet.getNumber(4),
                     RDB$FIELD_SCALE: resultSet.getNumber(5),
-                    RDB$VALIDATION_SOURCE: resultSet.isNull(6) ? null : await resultSet.getBlob(6).getString(),
+                    RDB$VALIDATION_SOURCE: resultSet.isNull(6) ? null : await resultSet.getBlob(6).asString(),
                     RDB$FIELD_SUB_TYPE: resultSet.isNull(7) ? null : resultSet.getNumber(7),
                     RDB$FIELD_PRECISION: resultSet.getNumber(8)
                 });
@@ -83,7 +83,7 @@ export class FirebirdDBStructure {
                     RDB$FIELD_NAME: resultSet.getString(1),
                     RDB$FIELD_SOURCE: resultSet.getString(2),
                     RDB$NULL_FLAG: resultSet.getNumber(3) as NullFlag,
-                    RDB$DEFAULT_VALUE: resultSet.isNull(4) ? null : await resultSet.getBlob(4).getString()
+                    RDB$DEFAULT_VALUE: resultSet.isNull(4) ? null : await resultSet.getBlob(4).asString()
                 });
             }
             return array;
@@ -109,12 +109,12 @@ export class FirebirdDBStructure {
                 array.push({
                     RDB$RELATION_NAME: resultSet.getString(0),
                     RDB$CONSTRAINT_NAME: resultSet.getString(1),
-                    RDB$CONSTRAINT_TYPE: await resultSet.getBlob(2).getString() as ConstraintType,
+                    RDB$CONSTRAINT_TYPE: await resultSet.getBlob(2).asString() as ConstraintType,
                     RDB$INDEX_NAME: resultSet.getString(3),
                     RDB$FIELD_NAME: resultSet.getString(4),
                     RDB$CONST_NAME_UQ: resultSet.getString(5),
-                    RDB$UPDATE_RULE: await resultSet.getBlob(6).getString() as UpdateRule,
-                    RDB$DELETE_RULE: await resultSet.getBlob(7).getString() as DeleteRule
+                    RDB$UPDATE_RULE: await resultSet.getBlob(6).asString() as UpdateRule,
+                    RDB$DELETE_RULE: await resultSet.getBlob(7).asString() as DeleteRule
                 });
             }
             return array;
