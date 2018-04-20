@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// import {Attachment, Statement, Transaction} from "node-firebird-driver-native";
 const AStatement_1 = require("../AStatement");
 const FirebirdResultSet_1 = require("./FirebirdResultSet");
 class FirebirdStatement extends AStatement_1.AStatement {

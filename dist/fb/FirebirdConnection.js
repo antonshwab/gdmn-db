@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const node_firebird_driver_native_1 = require("node-firebird-driver-native");
+// import {Attachment, Client, createNativeClient, getDefaultLibraryFilename} from "node-firebird-driver-native";
 const AConnection_1 = require("../AConnection");
+const client_1 = require("./api/client");
 const FirebirdTransaction_1 = require("./FirebirdTransaction");
 class FirebirdConnection extends AConnection_1.AConnection {
     constructor() {
@@ -27,7 +28,7 @@ class FirebirdConnection extends AConnection_1.AConnection {
         if (this._connection) {
             throw new Error("Database already connected");
         }
-        this._client = node_firebird_driver_native_1.createNativeClient(node_firebird_driver_native_1.getDefaultLibraryFilename());
+        this._client = client_1.createNativeClient(client_1.getDefaultLibraryFilename());
         this._connection = await this._client.createDatabase(FirebirdConnection._optionsToUri(options), {
             username: options.username,
             password: options.password
@@ -45,7 +46,7 @@ class FirebirdConnection extends AConnection_1.AConnection {
         if (this._connection) {
             throw new Error("Database already connected");
         }
-        this._client = node_firebird_driver_native_1.createNativeClient(node_firebird_driver_native_1.getDefaultLibraryFilename());
+        this._client = client_1.createNativeClient(client_1.getDefaultLibraryFilename());
         this._connection = await this._client.connect(FirebirdConnection._optionsToUri(options), {
             username: options.username,
             password: options.password

@@ -1,5 +1,5 @@
-import { Attachment } from "node-firebird-driver-native";
 import { ATransaction, INamedParams, ITransactionOptions } from "../ATransaction";
+import { Attachment } from "./api/attachment";
 import { FirebirdBlob } from "./FirebirdBlob";
 import { FirebirdResultSet } from "./FirebirdResultSet";
 import { FirebirdStatement } from "./FirebirdStatement";

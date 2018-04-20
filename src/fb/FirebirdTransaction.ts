@@ -1,6 +1,8 @@
-import {Attachment, Transaction, TransactionIsolation, TransactionOptions} from "node-firebird-driver-native";
 import {AccessMode, ATransaction, INamedParams, Isolation, ITransactionOptions} from "../ATransaction";
 import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
+import {Attachment} from "./api/attachment";
+import {Transaction} from "./api/transaction";
+import {TransactionIsolation, TransactionOptions} from "./api/types";
 import {FirebirdBlob} from "./FirebirdBlob";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";

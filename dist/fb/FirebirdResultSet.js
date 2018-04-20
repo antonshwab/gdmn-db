@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const node_firebird_driver_native_1 = require("node-firebird-driver-native");
+// import {Attachment, Blob, ResultSet, Transaction} from "node-firebird-driver-native";
 const AResultSet_1 = require("../AResultSet");
 const FirebirdBlob_1 = require("./FirebirdBlob");
 var Status;
@@ -235,7 +235,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
     }
     _throwIfBlob(field) {
-        if (this._getValue(field) instanceof node_firebird_driver_native_1.Blob) {
+        if (this._getValue(field) instanceof Blob) {
             throw new Error("Invalid typecasting");
         }
     }

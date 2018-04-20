@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const node_firebird_driver_native_1 = require("node-firebird-driver-native");
+// import {Attachment, Blob, Transaction} from "node-firebird-driver-native";
 const stream_1 = require("stream");
 const ABlob_1 = require("../ABlob");
+const blobObj_1 = require("./api/blobObj");
 class FirebirdBlob extends ABlob_1.ABlob {
     constructor(connection, transaction, blob) {
         super();
@@ -11,7 +12,7 @@ class FirebirdBlob extends ABlob_1.ABlob {
         this._blob = blob;
     }
     async asBuffer() {
-        if (this._blob && this._blob instanceof node_firebird_driver_native_1.Blob) {
+        if (this._blob && this._blob instanceof blobObj_1.BlobObj) {
             const blobStream = await this._connection.openBlob(this._transaction, this._blob);
             const length = await blobStream.length;
             const buffers = [];
@@ -28,7 +29,7 @@ class FirebirdBlob extends ABlob_1.ABlob {
         return null;
     }
     async asStream() {
-        if (this._blob && this._blob instanceof node_firebird_driver_native_1.Blob) {
+        if (this._blob && this._blob instanceof blobObj_1.BlobObj) {
             const stream = new stream_1.Readable({ read: () => null });
             const blobStream = await this._connection.openBlob(this._transaction, this._blob);
             const length = await blobStream.length;

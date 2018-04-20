@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const node_firebird_driver_native_1 = require("node-firebird-driver-native");
+// import {Attachment, Transaction, TransactionIsolation, TransactionOptions} from "node-firebird-driver-native";
 const ATransaction_1 = require("../ATransaction");
 const DefaultParamsAnalyzer_1 = require("../default/DefaultParamsAnalyzer");
+const types_1 = require("./api/types");
 const FirebirdResultSet_1 = require("./FirebirdResultSet");
 const FirebirdStatement_1 = require("./FirebirdStatement");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
@@ -18,21 +19,21 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         const options = {};
         switch (this._options.isolation) {
             case ATransaction_1.Isolation.SERIALIZABLE:
-                options.isolation = node_firebird_driver_native_1.TransactionIsolation.CONSISTENCY;
+                options.isolation = types_1.TransactionIsolation.CONSISTENCY;
                 options.waitMode = "NO_WAIT";
                 break;
             case ATransaction_1.Isolation.REPEATABLE_READ:
-                options.isolation = node_firebird_driver_native_1.TransactionIsolation.SNAPSHOT;
+                options.isolation = types_1.TransactionIsolation.SNAPSHOT;
                 options.waitMode = "NO_WAIT";
                 break;
             case ATransaction_1.Isolation.READ_UNCOMMITED:
-                options.isolation = node_firebird_driver_native_1.TransactionIsolation.READ_COMMITTED;
+                options.isolation = types_1.TransactionIsolation.READ_COMMITTED;
                 options.readCommittedMode = "NO_RECORD_VERSION";
                 options.waitMode = "NO_WAIT";
                 break;
             case ATransaction_1.Isolation.READ_COMMITED:
             default:
-                options.isolation = node_firebird_driver_native_1.TransactionIsolation.READ_COMMITTED;
+                options.isolation = types_1.TransactionIsolation.READ_COMMITTED;
                 options.readCommittedMode = "RECORD_VERSION";
                 options.waitMode = "NO_WAIT";
                 break;

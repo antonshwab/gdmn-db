@@ -1,6 +1,8 @@
-import {Attachment, Blob, Transaction} from "node-firebird-driver-native";
 import {Readable} from "stream";
 import {ABlob} from "../ABlob";
+import {Attachment} from "./api/attachment";
+import {BlobObj as Blob} from "./api/blobObj";
+import {Transaction} from "./api/transaction";
 
 export class FirebirdBlob extends ABlob {
 

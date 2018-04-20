@@ -1,5 +1,7 @@
-import {Attachment, Blob, ResultSet, Transaction} from "node-firebird-driver-native";
 import {AResultSet, IRow} from "../AResultSet";
+import {Attachment} from "./api/attachment";
+import {ResultSet} from "./api/resultSet";
+import {Transaction} from "./api/transaction";
 import {FirebirdBlob} from "./FirebirdBlob";
 
 enum Status {

@@ -1,6 +1,7 @@
-import {Attachment, Client, createNativeClient, getDefaultLibraryFilename} from "node-firebird-driver-native";
 import {AConnection, IConnectionOptions} from "../AConnection";
 import {ITransactionOptions} from "../ATransaction";
+import {Attachment} from "./api/attachment";
+import {Client, createNativeClient, getDefaultLibraryFilename} from "./api/client";
 import {FirebirdBlob} from "./FirebirdBlob";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";
@@ -11,8 +12,8 @@ export type FirebirdOptions = IConnectionOptions;
 export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlob, FirebirdResultSet, FirebirdStatement,
     FirebirdTransaction> {
 
-    private _client: null | Client = null;
-    private _connection: null | Attachment = null;
+    private _client?: Client;
+    private _connection?: Attachment;
 
     constructor() {
         super();
@@ -90,7 +91,7 @@ export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlo
     }
 
     private _clearVariables(): void {
-        this._connection = null;
-        this._client = null;
+        this._connection = undefined;
+        this._client = undefined;
     }
 }

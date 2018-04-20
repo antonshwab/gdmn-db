@@ -139,7 +139,7 @@ export declare abstract class AResultSet<B extends ABlob = ABlob> {
     abstract close(): Promise<void>;
     /**
      * Retrieves the value of the designated column in the current
-     * row of this ResultSet object as a Blob object
+     * row of this ResultSet object as a BlobObj object
      *
      * @param {number} i
      * the first column is 0, the second is 1, ...
