@@ -93,12 +93,12 @@ export class FirebirdDBStructure {
             SELECT
                 TRIM(rc.RDB$RELATION_NAME),
                 TRIM(rc.RDB$CONSTRAINT_NAME),
-                rc.RDB$CONSTRAINT_TYPE,
+                TRIM(rc.RDB$CONSTRAINT_TYPE),
                 TRIM(s.RDB$INDEX_NAME),
                 TRIM(s.RDB$FIELD_NAME),
                 TRIM(rfc.RDB$CONST_NAME_UQ),
-                rfc.RDB$UPDATE_RULE,
-                rfc.RDB$DELETE_RULE
+                TRIM(rfc.RDB$UPDATE_RULE),
+                TRIM(rfc.RDB$DELETE_RULE)
             FROM RDB$RELATION_CONSTRAINTS rc
                 JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = rc.RDB$INDEX_NAME
                 LEFT JOIN RDB$REF_CONSTRAINTS rfc ON rfc.RDB$CONSTRAINT_NAME = rc.RDB$CONSTRAINT_NAME
@@ -109,12 +109,12 @@ export class FirebirdDBStructure {
                 array.push({
                     RDB$RELATION_NAME: resultSet.getString(0),
                     RDB$CONSTRAINT_NAME: resultSet.getString(1),
-                    RDB$CONSTRAINT_TYPE: await resultSet.getBlob(2).asString() as ConstraintType,
+                    RDB$CONSTRAINT_TYPE: resultSet.getString(2) as ConstraintType,
                     RDB$INDEX_NAME: resultSet.getString(3),
                     RDB$FIELD_NAME: resultSet.getString(4),
                     RDB$CONST_NAME_UQ: resultSet.getString(5),
-                    RDB$UPDATE_RULE: await resultSet.getBlob(6).asString() as UpdateRule,
-                    RDB$DELETE_RULE: await resultSet.getBlob(7).asString() as DeleteRule
+                    RDB$UPDATE_RULE: resultSet.getString(6) as UpdateRule,
+                    RDB$DELETE_RULE: resultSet.getString(7) as DeleteRule
                 });
             }
             return array;
