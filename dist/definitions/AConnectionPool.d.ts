@@ -5,7 +5,7 @@ import { AStatement } from "./AStatement";
 import { ATransaction } from "./ATransaction";
 import { TExecutor } from "./types";
 export declare abstract class AConnectionPool<Options, ConOptions extends IConnectionOptions = IConnectionOptions, B extends ABlob = ABlob, RS extends AResultSet<B> = AResultSet<B>, S extends AStatement<B, RS> = AStatement<B, RS>, T extends ATransaction<B, RS, S> = ATransaction<B, RS, S>, C extends AConnection<ConOptions, B, RS, S, T> = AConnection<ConOptions, B, RS, S, T>> {
-    static executeFromParent<Opt, ConOpt, R>(sourceCallback: TExecutor<null, AConnectionPool<Opt>>, resultCallback: TExecutor<AConnectionPool<Opt>, R>): Promise<R>;
+    static executeSelf<Opt, ConOpt, R>(selfReceiver: TExecutor<null, AConnectionPool<Opt>>, callback: TExecutor<AConnectionPool<Opt>, R>): Promise<R>;
     /**
      * Example:
      * <pre>

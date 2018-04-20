@@ -37,15 +37,15 @@ const ATransaction_1 = require("./ATransaction");
  * </pre>
  */
 class AConnection {
-    static async executeFromParent(sourceCallback, resultCallback) {
-        let connection;
+    static async executeSelf(selfReceiver, callback) {
+        let self;
         try {
-            connection = await sourceCallback(null);
-            return await resultCallback(connection);
+            self = await selfReceiver(null);
+            return await callback(self);
         }
         finally {
-            if (connection) {
-                await connection.disconnect();
+            if (self) {
+                await self.disconnect();
             }
         }
     }
@@ -60,7 +60,7 @@ class AConnection {
      * </pre>
      */
     static async executeConnection(connection, options, callback) {
-        return await AConnection.executeFromParent(async () => {
+        return await AConnection.executeSelf(async () => {
             await connection.connect(options);
             return connection;
         }, callback);
@@ -69,7 +69,7 @@ class AConnection {
         if (!callback) {
             callback = options;
         }
-        return await ATransaction_1.ATransaction.executeFromParent(async () => {
+        return await ATransaction_1.ATransaction.executeSelf(async () => {
             const transaction = await connection.createTransaction(options);
             await transaction.start();
             return transaction;

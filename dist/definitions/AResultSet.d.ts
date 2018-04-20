@@ -17,7 +17,7 @@ export declare abstract class AResultSet<B extends ABlob = ABlob> {
     static NO_INDEX: number;
     /** Current row index */
     readonly abstract position: number;
-    static executeFromParent<R>(sourceCallback: TExecutor<null, AResultSet>, resultCallback: TExecutor<AResultSet, R>): Promise<R>;
+    static executeSelf<R>(selfReceiver: TExecutor<null, AResultSet>, callback: TExecutor<AResultSet, R>): Promise<R>;
     /**
      * Moves the cursor froward one row from its current position.
      * A ResultSet cursor is initially positioned before the first

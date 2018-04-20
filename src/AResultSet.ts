@@ -22,15 +22,15 @@ export abstract class AResultSet<B extends ABlob = ABlob> {
     /** Current row index */
     abstract get position(): number;
 
-    public static async executeFromParent<R>(sourceCallback: TExecutor<null, AResultSet>,
-                                             resultCallback: TExecutor<AResultSet, R>): Promise<R> {
-        let resultSet: undefined | AResultSet;
+    public static async executeSelf<R>(selfReceiver: TExecutor<null, AResultSet>,
+                                       callback: TExecutor<AResultSet, R>): Promise<R> {
+        let self: undefined | AResultSet;
         try {
-            resultSet = await sourceCallback(null);
-            return await resultCallback(resultSet);
+            self = await selfReceiver(null);
+            return await callback(self);
         } finally {
-            if (resultSet) {
-                await resultSet.close();
+            if (self) {
+                await self.close();
             }
         }
     }

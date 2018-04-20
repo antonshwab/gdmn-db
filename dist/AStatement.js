@@ -7,23 +7,23 @@ const AResultSet_1 = require("./AResultSet");
  * This object can then be used to efficiently execute this statement multiple times.
  */
 class AStatement {
-    static async executeFromParent(sourceCallback, resultCallback) {
-        let statement;
+    static async executeSelf(selfReceiver, callback) {
+        let self;
         try {
-            statement = await sourceCallback(null);
-            return await resultCallback(statement);
+            self = await selfReceiver(null);
+            return await callback(self);
         }
         finally {
-            if (statement) {
-                await statement.dispose();
+            if (self) {
+                await self.dispose();
             }
         }
     }
-    static async executeResultSet(statement, params, callback) {
+    static async executeQueryResultSet(statement, params, callback) {
         if (!callback) {
             callback = params;
         }
-        return await AResultSet_1.AResultSet.executeFromParent(() => statement.executeQuery(params), callback);
+        return await AResultSet_1.AResultSet.executeSelf(() => statement.executeQuery(params), callback);
     }
 }
 exports.AStatement = AStatement;

@@ -24,7 +24,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("execute", async () => {
-            await ATransaction.executeStatement(globalTransaction, "SELECT FIRST 1 * FROM RDB$FIELDS",
+            await ATransaction.executePrepareStatement(globalTransaction, "SELECT FIRST 1 * FROM RDB$FIELDS",
                 async (statement) => {
                     const result = await statement.execute();
                     should().not.exist(result);
@@ -32,7 +32,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("executeQuery", async () => {
-            await ATransaction.executeStatement(globalTransaction, "SELECT FIRST 1 * FROM RDB$FIELDS",
+            await ATransaction.executePrepareStatement(globalTransaction, "SELECT FIRST 1 * FROM RDB$FIELDS",
                 async (statement) => {
                     const resultSet = await statement.executeQuery();
                     should().exist(resultSet);

@@ -46,7 +46,7 @@ export interface IConnectionOptions {
  * </pre>
  */
 export declare abstract class AConnection<Options extends IConnectionOptions = IConnectionOptions, B extends ABlob = ABlob, RS extends AResultSet<B> = AResultSet<B>, S extends AStatement<B, RS> = AStatement<B, RS>, T extends ATransaction<B, RS, S> = ATransaction<B, RS, S>> {
-    static executeFromParent<Opt, R>(sourceCallback: TExecutor<null, AConnection>, resultCallback: TExecutor<AConnection, R>): Promise<R>;
+    static executeSelf<Opt, R>(selfReceiver: TExecutor<null, AConnection>, callback: TExecutor<AConnection, R>): Promise<R>;
     /**
      * Example:
      * <pre>
@@ -62,7 +62,7 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
      * Example:
      * <pre>
      * const result = await AConnection.executeTransaction(connection, async transaction => {
-     *      return await transaction.executeStatement("some sql", async statement => {
+     *      return await transaction.executePrepareStatement("some sql", async statement => {
      *          return ...
      *      });
      * })}
@@ -73,7 +73,7 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
      * Example:
      * <pre>
      * const result = await AConnection.executeTransaction(connection, {}, async transaction => {
-     *      return await transaction.executeStatement("some sql", async statement => {
+     *      return await transaction.executePrepareStatement("some sql", async statement => {
      *          return ...
      *      });
      * })}

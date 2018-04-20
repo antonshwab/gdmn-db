@@ -11,15 +11,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * A ResultSet object is not updatable and has a cursor that moves forward and back.
  */
 class AResultSet {
-    static async executeFromParent(sourceCallback, resultCallback) {
-        let resultSet;
+    static async executeSelf(selfReceiver, callback) {
+        let self;
         try {
-            resultSet = await sourceCallback(null);
-            return await resultCallback(resultSet);
+            self = await selfReceiver(null);
+            return await callback(self);
         }
         finally {
-            if (resultSet) {
-                await resultSet.close();
+            if (self) {
+                await self.close();
             }
         }
     }

@@ -40,17 +40,17 @@ export abstract class ATransaction<B extends ABlob = ABlob,
         this._options = options;
     }
 
-    public static async executeFromParent<R>(sourceCallback: TExecutor<null, ATransaction>,
-                                             resultCallback: TExecutor<ATransaction, R>): Promise<R> {
-        let transaction: undefined | ATransaction;
+    public static async executeSelf<R>(selfReceiver: TExecutor<null, ATransaction>,
+                                       callback: TExecutor<ATransaction, R>): Promise<R> {
+        let self: undefined | ATransaction;
         try {
-            transaction = await sourceCallback(null);
-            const result = await resultCallback(transaction);
-            await transaction.commit();
+            self = await selfReceiver(null);
+            const result = await callback(self);
+            await self.commit();
             return result;
         } catch (error) {
-            if (transaction) {
-                await transaction.rollback();
+            if (self) {
+                await self.rollback();
             }
             throw error;
         }
@@ -59,31 +59,32 @@ export abstract class ATransaction<B extends ABlob = ABlob,
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeStatement(transaction, "some sql with params", async (statement) => {
-     *      await statement.execute([param1, param2]);
-     *      await statement.execute([param3, param4]);
-     *      return "some value";
-     * })}
+     * const result = await ATransaction.executePrepareStatement(transaction, "some sql with params",
+     *      async (statement) => {
+     *          await statement.execute([param1, param2]);
+     *          await statement.execute([param3, param4]);
+     *          return "some value";
+     *      })}
      * </pre>
      */
-    public static async executeStatement<R>(
+    public static async executePrepareStatement<R>(
         transaction: ATransaction,
         sql: string,
         callback: TExecutor<AStatement, R>
     ): Promise<R> {
-        return await AStatement.executeFromParent(() => transaction.prepare(sql), callback);
+        return await AStatement.executeSelf(() => transaction.prepare(sql), callback);
     }
 
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeResultSet(transaction, "some sql",
+     * const result = await ATransaction.executeQueryResultSet(transaction, "some sql",
      *      async (resultSet) => {
      *          return await resultSet.getArrays();
      *      })
      * </pre>
      */
-    public static async executeResultSet<R>(
+    public static async executeQueryResultSet<R>(
         transaction: ATransaction,
         sql: string,
         callback: TExecutor<AResultSet, R>
@@ -92,20 +93,20 @@ export abstract class ATransaction<B extends ABlob = ABlob,
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2],
+     * const result = await ATransaction.executeQueryResultSet(transaction, "some sql", [param1, param2],
      *      async (resultSet) => {
      *          return await resultSet.getArrays();
      *      })
      * </pre>
      */
-    public static async executeResultSet<R>(
+    public static async executeQueryResultSet<R>(
         transaction: ATransaction,
         sql: string,
         params: any[] | INamedParams,
         callback: TExecutor<AResultSet, R>
     ): Promise<R>;
 
-    public static async executeResultSet<R>(
+    public static async executeQueryResultSet<R>(
         transaction: ATransaction,
         sql: string,
         params: any[] | INamedParams,
@@ -114,7 +115,7 @@ export abstract class ATransaction<B extends ABlob = ABlob,
         if (!callback) {
             callback = params as TExecutor<AResultSet, R>;
         }
-        return await AResultSet.executeFromParent(() => transaction.executeQuery(sql, params), callback);
+        return await AResultSet.executeSelf(() => transaction.executeQuery(sql, params), callback);
     }
 
     /** Start the transaction. */

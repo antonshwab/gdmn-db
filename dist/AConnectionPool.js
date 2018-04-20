@@ -2,15 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const AConnection_1 = require("./AConnection");
 class AConnectionPool {
-    static async executeFromParent(sourceCallback, resultCallback) {
-        let connectionPool;
+    static async executeSelf(selfReceiver, callback) {
+        let self;
         try {
-            connectionPool = await sourceCallback(null);
-            return await resultCallback(connectionPool);
+            self = await selfReceiver(null);
+            return await callback(self);
         }
         finally {
-            if (connectionPool) {
-                await connectionPool.destroy();
+            if (self) {
+                await self.destroy();
             }
         }
     }
@@ -26,7 +26,7 @@ class AConnectionPool {
      * </pre>
      */
     static async executeConnectionPool(connectionPool, connectionOptions, options, callback) {
-        return await AConnectionPool.executeFromParent(async () => {
+        return await AConnectionPool.executeSelf(async () => {
             await connectionPool.create(connectionOptions, options);
             return connectionPool;
         }, callback);
@@ -42,7 +42,7 @@ class AConnectionPool {
      * </pre>
      */
     static async executeConnection(connectionPool, callback) {
-        return await AConnection_1.AConnection.executeFromParent(() => connectionPool.get(), callback);
+        return await AConnection_1.AConnection.executeSelf(() => connectionPool.get(), callback);
     }
 }
 exports.AConnectionPool = AConnectionPool;

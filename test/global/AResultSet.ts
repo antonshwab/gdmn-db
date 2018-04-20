@@ -17,7 +17,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
             });
 
             await AConnection.executeTransaction(globalConnection, async (transaction) => {
-                await ATransaction.executeStatement(transaction,
+                await ATransaction.executePrepareStatement(transaction,
                     "INSERT INTO TEST_TABLE (id, name) VALUES(:id, :name)", async (statement) => {
                         const data = getData(10);
                         for (const item of data) {
@@ -45,7 +45,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("'isXXX' methods should not change the position (empty dataSet)", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -65,7 +65,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("'isXXX' methods should not change the position (non empty dataSet)", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -93,7 +93,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("navigate (next/previous) an empty dataSet", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -118,7 +118,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("navigate (to) an empty dataSet", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -136,7 +136,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("navigate (first/last) an empty dataSet", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -161,7 +161,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("navigate (beforeFirst/afterLast) an empty dataSet", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 0 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -186,7 +186,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("navigate (next/previous) an non empty dataSet", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -225,7 +225,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("navigate (to) an non empty dataSet", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -250,7 +250,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("navigate (first/last) an non empty dataSet", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -282,7 +282,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("navigate (beforeFirst/afterLast) an non empty dataSet", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE",
                 async (resultSet) => {
                     expect(resultSet.position).to.equal(AResultSet.NO_INDEX);
                     expect(await resultSet.isFirst()).to.equal(false);
@@ -307,7 +307,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("read data", async () => {
-            await ATransaction.executeResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
                 async (resultSet) => {
                     const result = await resultSet.getArrays();
                     expect(result.map((array) => ({id: array[0], name: array[1]}))).to.deep.equal(getData(10));

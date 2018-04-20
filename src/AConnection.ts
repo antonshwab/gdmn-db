@@ -53,15 +53,15 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
     S extends AStatement<B, RS> = AStatement<B, RS>,
     T extends ATransaction<B, RS, S> = ATransaction<B, RS, S>> {
 
-    public static async executeFromParent<Opt, R>(sourceCallback: TExecutor<null, AConnection>,
-                                                  resultCallback: TExecutor<AConnection, R>): Promise<R> {
-        let connection: undefined | AConnection;
+    public static async executeSelf<Opt, R>(selfReceiver: TExecutor<null, AConnection>,
+                                            callback: TExecutor<AConnection, R>): Promise<R> {
+        let self: undefined | AConnection;
         try {
-            connection = await sourceCallback(null);
-            return await resultCallback(connection);
+            self = await selfReceiver(null);
+            return await callback(self);
         } finally {
-            if (connection) {
-                await connection.disconnect();
+            if (self) {
+                await self.disconnect();
             }
         }
     }
@@ -81,7 +81,7 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
         options: IConnectionOptions,
         callback: TExecutor<AConnection, R>
     ): Promise<R> {
-        return await AConnection.executeFromParent(async () => {
+        return await AConnection.executeSelf(async () => {
             await connection.connect(options);
             return connection;
         }, callback);
@@ -91,7 +91,7 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
      * Example:
      * <pre>
      * const result = await AConnection.executeTransaction(connection, async transaction => {
-     *      return await transaction.executeStatement("some sql", async statement => {
+     *      return await transaction.executePrepareStatement("some sql", async statement => {
      *          return ...
      *      });
      * })}
@@ -106,7 +106,7 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
      * Example:
      * <pre>
      * const result = await AConnection.executeTransaction(connection, {}, async transaction => {
-     *      return await transaction.executeStatement("some sql", async statement => {
+     *      return await transaction.executePrepareStatement("some sql", async statement => {
      *          return ...
      *      });
      * })}
@@ -126,7 +126,7 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
         if (!callback) {
             callback = options as TExecutor<ATransaction, R>;
         }
-        return await ATransaction.executeFromParent(async () => {
+        return await ATransaction.executeSelf(async () => {
             const transaction = await connection.createTransaction(options as ITransactionOptions);
             await transaction.start();
             return transaction;

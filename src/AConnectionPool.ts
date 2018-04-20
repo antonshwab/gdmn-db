@@ -13,17 +13,15 @@ export abstract class AConnectionPool<Options,
     T extends ATransaction<B, RS, S> = ATransaction<B, RS, S>,
     C extends AConnection<ConOptions, B, RS, S, T> = AConnection<ConOptions, B, RS, S, T>> {
 
-    public static async executeFromParent<Opt, ConOpt, R>(
-        sourceCallback: TExecutor<null, AConnectionPool<Opt>>,
-        resultCallback: TExecutor<AConnectionPool<Opt>, R>
-    ): Promise<R> {
-        let connectionPool: undefined | AConnectionPool<Opt>;
+    public static async executeSelf<Opt, ConOpt, R>(selfReceiver: TExecutor<null, AConnectionPool<Opt>>,
+                                                    callback: TExecutor<AConnectionPool<Opt>, R>): Promise<R> {
+        let self: undefined | AConnectionPool<Opt>;
         try {
-            connectionPool = await sourceCallback(null);
-            return await resultCallback(connectionPool);
+            self = await selfReceiver(null);
+            return await callback(self);
         } finally {
-            if (connectionPool) {
-                await connectionPool.destroy();
+            if (self) {
+                await self.destroy();
             }
         }
     }
@@ -45,7 +43,7 @@ export abstract class AConnectionPool<Options,
         options: Opt,
         callback: TExecutor<AConnectionPool<Opt>, R>
     ): Promise<R> {
-        return await AConnectionPool.executeFromParent(async () => {
+        return await AConnectionPool.executeSelf(async () => {
             await connectionPool.create(connectionOptions, options);
             return connectionPool;
         }, callback);
@@ -65,7 +63,7 @@ export abstract class AConnectionPool<Options,
         connectionPool: AConnectionPool<Opt>,
         callback: TExecutor<AConnection, R>
     ): Promise<R> {
-        return await AConnection.executeFromParent(() => connectionPool.get(), callback);
+        return await AConnection.executeSelf(() => connectionPool.get(), callback);
     }
 
     /**

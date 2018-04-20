@@ -11,15 +11,15 @@ import {TExecutor} from "./types";
 export abstract class AStatement<B extends ABlob = ABlob,
     RS extends AResultSet<B> = AResultSet<B>> {
 
-    public static async executeFromParent<R>(sourceCallback: TExecutor<null, AStatement>,
-                                             resultCallback: TExecutor<AStatement, R>): Promise<R> {
-        let statement: undefined | AStatement;
+    public static async executeSelf<R>(selfReceiver: TExecutor<null, AStatement>,
+                                       callback: TExecutor<AStatement, R>): Promise<R> {
+        let self: undefined | AStatement;
         try {
-            statement = await sourceCallback(null);
-            return await resultCallback(statement);
+            self = await selfReceiver(null);
+            return await callback(self);
         } finally {
-            if (statement) {
-                await statement.dispose();
+            if (self) {
+                await self.dispose();
             }
         }
     }
@@ -27,12 +27,12 @@ export abstract class AStatement<B extends ABlob = ABlob,
     /**
      * Example:
      * <pre>
-     * const result = await AStatement.executeResultSet(statement, async (resultSet) => {
+     * const result = await AStatement.executeQueryResultSet(statement, async (resultSet) => {
      *      return await resultSet.getArrays();
      * })}
      * </pre>
      */
-    public static async executeResultSet<R>(
+    public static async executeQueryResultSet<R>(
         statement: AStatement,
         callback: TExecutor<AResultSet, R>
     ): Promise<R>;
@@ -40,18 +40,18 @@ export abstract class AStatement<B extends ABlob = ABlob,
     /**
      * Example:
      * <pre>
-     * const result = await AStatement.executeResultSet(statement, [param1, param2], async (resultSet) => {
+     * const result = await AStatement.executeQueryResultSet(statement, [param1, param2], async (resultSet) => {
      *      return await resultSet.getArrays();
      * })}
      * </pre>
      */
-    public static async executeResultSet<R>(
+    public static async executeQueryResultSet<R>(
         statement: AStatement,
         params: any[] | INamedParams,
         callback?: TExecutor<AResultSet, R>
     ): Promise<R>;
 
-    public static async executeResultSet<R>(
+    public static async executeQueryResultSet<R>(
         statement: AStatement,
         params: any[] | INamedParams,
         callback?: TExecutor<AResultSet, R>
@@ -59,7 +59,7 @@ export abstract class AStatement<B extends ABlob = ABlob,
         if (!callback) {
             callback = params as TExecutor<AResultSet, R>;
         }
-        return await AResultSet.executeFromParent(() => statement.executeQuery(params), callback);
+        return await AResultSet.executeSelf(() => statement.executeQuery(params), callback);
     }
 
     /**

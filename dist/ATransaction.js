@@ -21,17 +21,17 @@ class ATransaction {
     constructor(options = ATransaction.DEFAULT_OPTIONS) {
         this._options = options;
     }
-    static async executeFromParent(sourceCallback, resultCallback) {
-        let transaction;
+    static async executeSelf(selfReceiver, callback) {
+        let self;
         try {
-            transaction = await sourceCallback(null);
-            const result = await resultCallback(transaction);
-            await transaction.commit();
+            self = await selfReceiver(null);
+            const result = await callback(self);
+            await self.commit();
             return result;
         }
         catch (error) {
-            if (transaction) {
-                await transaction.rollback();
+            if (self) {
+                await self.rollback();
             }
             throw error;
         }
@@ -39,21 +39,22 @@ class ATransaction {
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeStatement(transaction, "some sql with params", async (statement) => {
-     *      await statement.execute([param1, param2]);
-     *      await statement.execute([param3, param4]);
-     *      return "some value";
-     * })}
+     * const result = await ATransaction.executePrepareStatement(transaction, "some sql with params",
+     *      async (statement) => {
+     *          await statement.execute([param1, param2]);
+     *          await statement.execute([param3, param4]);
+     *          return "some value";
+     *      })}
      * </pre>
      */
-    static async executeStatement(transaction, sql, callback) {
-        return await AStatement_1.AStatement.executeFromParent(() => transaction.prepare(sql), callback);
+    static async executePrepareStatement(transaction, sql, callback) {
+        return await AStatement_1.AStatement.executeSelf(() => transaction.prepare(sql), callback);
     }
-    static async executeResultSet(transaction, sql, params, callback) {
+    static async executeQueryResultSet(transaction, sql, params, callback) {
         if (!callback) {
             callback = params;
         }
-        return await AResultSet_1.AResultSet.executeFromParent(() => transaction.executeQuery(sql, params), callback);
+        return await AResultSet_1.AResultSet.executeSelf(() => transaction.executeQuery(sql, params), callback);
     }
 }
 ATransaction.DEFAULT_OPTIONS = {

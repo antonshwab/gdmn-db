@@ -26,38 +26,39 @@ export declare abstract class ATransaction<B extends ABlob = ABlob, RS extends A
     static DEFAULT_OPTIONS: ITransactionOptions;
     protected _options: ITransactionOptions;
     protected constructor(options?: ITransactionOptions);
-    static executeFromParent<R>(sourceCallback: TExecutor<null, ATransaction>, resultCallback: TExecutor<ATransaction, R>): Promise<R>;
+    static executeSelf<R>(selfReceiver: TExecutor<null, ATransaction>, callback: TExecutor<ATransaction, R>): Promise<R>;
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeStatement(transaction, "some sql with params", async (statement) => {
-     *      await statement.execute([param1, param2]);
-     *      await statement.execute([param3, param4]);
-     *      return "some value";
-     * })}
+     * const result = await ATransaction.executePrepareStatement(transaction, "some sql with params",
+     *      async (statement) => {
+     *          await statement.execute([param1, param2]);
+     *          await statement.execute([param3, param4]);
+     *          return "some value";
+     *      })}
      * </pre>
      */
-    static executeStatement<R>(transaction: ATransaction, sql: string, callback: TExecutor<AStatement, R>): Promise<R>;
+    static executePrepareStatement<R>(transaction: ATransaction, sql: string, callback: TExecutor<AStatement, R>): Promise<R>;
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeResultSet(transaction, "some sql",
+     * const result = await ATransaction.executeQueryResultSet(transaction, "some sql",
      *      async (resultSet) => {
      *          return await resultSet.getArrays();
      *      })
      * </pre>
      */
-    static executeResultSet<R>(transaction: ATransaction, sql: string, callback: TExecutor<AResultSet, R>): Promise<R>;
+    static executeQueryResultSet<R>(transaction: ATransaction, sql: string, callback: TExecutor<AResultSet, R>): Promise<R>;
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executeResultSet(transaction, "some sql", [param1, param2],
+     * const result = await ATransaction.executeQueryResultSet(transaction, "some sql", [param1, param2],
      *      async (resultSet) => {
      *          return await resultSet.getArrays();
      *      })
      * </pre>
      */
-    static executeResultSet<R>(transaction: ATransaction, sql: string, params: any[] | INamedParams, callback: TExecutor<AResultSet, R>): Promise<R>;
+    static executeQueryResultSet<R>(transaction: ATransaction, sql: string, params: any[] | INamedParams, callback: TExecutor<AResultSet, R>): Promise<R>;
     /** Start the transaction. */
     abstract start(): Promise<void>;
     /** Commit the transaction. */

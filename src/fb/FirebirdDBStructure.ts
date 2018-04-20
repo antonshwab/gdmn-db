@@ -36,7 +36,7 @@ export class FirebirdDBStructure {
     }
 
     private static async read(transaction: ATransaction): Promise<DBStructure> {
-        const fields = await ATransaction.executeResultSet(transaction, `
+        const fields = await ATransaction.executeQueryResultSet(transaction, `
             SELECT
                 TRIM(f.RDB$FIELD_NAME),
                 f.RDB$FIELD_TYPE,
@@ -66,7 +66,7 @@ export class FirebirdDBStructure {
             return array;
         });
 
-        const relationFields = await ATransaction.executeResultSet(transaction, `
+        const relationFields = await ATransaction.executeQueryResultSet(transaction, `
             SELECT
                 TRIM(rf.RDB$RELATION_NAME),
                 TRIM(rf.RDB$FIELD_NAME),
@@ -89,7 +89,7 @@ export class FirebirdDBStructure {
             return array;
         });
 
-        const constraints = await ATransaction.executeResultSet(transaction, `
+        const constraints = await ATransaction.executeQueryResultSet(transaction, `
             SELECT
                 TRIM(rc.RDB$RELATION_NAME),
                 TRIM(rc.RDB$CONSTRAINT_NAME),

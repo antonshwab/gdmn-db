@@ -17,7 +17,7 @@ class FirebirdDBStructure {
         });
     }
     static async read(transaction) {
-        const fields = await ATransaction_1.ATransaction.executeResultSet(transaction, `
+        const fields = await ATransaction_1.ATransaction.executeQueryResultSet(transaction, `
             SELECT
                 TRIM(f.RDB$FIELD_NAME),
                 f.RDB$FIELD_TYPE,
@@ -46,7 +46,7 @@ class FirebirdDBStructure {
             }
             return array;
         });
-        const relationFields = await ATransaction_1.ATransaction.executeResultSet(transaction, `
+        const relationFields = await ATransaction_1.ATransaction.executeQueryResultSet(transaction, `
             SELECT
                 TRIM(rf.RDB$RELATION_NAME),
                 TRIM(rf.RDB$FIELD_NAME),
@@ -68,7 +68,7 @@ class FirebirdDBStructure {
             }
             return array;
         });
-        const constraints = await ATransaction_1.ATransaction.executeResultSet(transaction, `
+        const constraints = await ATransaction_1.ATransaction.executeQueryResultSet(transaction, `
             SELECT
                 TRIM(rc.RDB$RELATION_NAME),
                 TRIM(rc.RDB$CONSTRAINT_NAME),
