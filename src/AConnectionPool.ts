@@ -31,7 +31,7 @@ export abstract class AConnectionPool<Options,
      * <pre>
      * const result = await AConnectionPool.executeConnectionPool(Factory.XXModule.newDefaultConnectionPool(),
      *      async (connectionPool) => {
-     *          return await AConnectionPool.executeConnection(connectionPool, async (parent) => {
+     *          return await AConnectionPool.executeConnection(connectionPool, async (connection) => {
      *              return ...
      *          });
      *      })}
@@ -52,8 +52,8 @@ export abstract class AConnectionPool<Options,
     /**
      * Example:
      * <pre>
-     * const result = await AConnectionPool.executeConnection(connectionPool, async (parent) => {
-     *      return await AConnection.executeTransaction(parent, {}, async (parent) => {
+     * const result = await AConnectionPool.executeConnection(connectionPool, async (connection) => {
+     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
      *          return ...
      *      });
      * })}
@@ -67,30 +67,30 @@ export abstract class AConnectionPool<Options,
     }
 
     /**
-     * Is the parent pool prepared?
+     * Is the connection pool prepared?
      *
      * @returns {Promise<boolean>}
-     * true if the parent pool created;
-     * false if the parent pool destroyed or not created
+     * true if the connection pool created;
+     * false if the connection pool destroyed or not created
      */
     public abstract isCreated(): Promise<boolean>;
 
     /**
-     * Prepare the parent pool for use with some database.
+     * Prepare the connection pool for use with some database.
      * After work you need to call {@link AConnectionPool.destroy()} method.
      *
      * @param {ConOptions} connectionOptions
-     * the options for opening database parent
+     * the options for opening database connection
      * @param {Options} options
-     * the options for creating parent pool
+     * the options for creating connection pool
      */
     public abstract create(connectionOptions: ConOptions, options: Options): Promise<void>;
 
-    /** Release resources occupied by the parent pool. */
+    /** Release resources occupied by the connection pool. */
     public abstract destroy(): Promise<void>;
 
     /**
-     * Get free database parent. With this parent you
+     * Get free database connection. With this connection you
      * need to work as usual. i.e close it is also necessary
      *
      * @returns {Promise<C extends AConnection<ConOptions, RS, S, T>>}

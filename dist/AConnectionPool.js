@@ -19,7 +19,7 @@ class AConnectionPool {
      * <pre>
      * const result = await AConnectionPool.executeConnectionPool(Factory.XXModule.newDefaultConnectionPool(),
      *      async (connectionPool) => {
-     *          return await AConnectionPool.executeConnection(connectionPool, async (parent) => {
+     *          return await AConnectionPool.executeConnection(connectionPool, async (connection) => {
      *              return ...
      *          });
      *      })}
@@ -34,8 +34,8 @@ class AConnectionPool {
     /**
      * Example:
      * <pre>
-     * const result = await AConnectionPool.executeConnection(connectionPool, async (parent) => {
-     *      return await AConnection.executeTransaction(parent, {}, async (parent) => {
+     * const result = await AConnectionPool.executeConnection(connectionPool, async (connection) => {
+     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
      *          return ...
      *      });
      * })}

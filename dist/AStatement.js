@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const AResultSet_1 = require("./AResultSet");
 /**
- * An object that represents a precompiled SQL source.
- * A SQL source is precompiled and stored in a Statement object.
- * This object can then be used to efficiently execute this source multiple times.
+ * An object that represents a precompiled SQL statement.
+ * A SQL statement is precompiled and stored in a Statement object.
+ * This object can then be used to efficiently execute this statement multiple times.
  */
 class AStatement {
     static async executeSelf(selfReceiver, callback) {

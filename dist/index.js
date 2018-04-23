@@ -14,13 +14,4 @@ __export(require("./Factory"));
 __export(require("./default/connectionPool/DefaultConnectionPool"));
 __export(require("./default/DefaultParamsAnalyzer"));
 __export(require("./DBStructure"));
-__export(require("./fb/FirebirdConnection"));
-__export(require("./fb/FirebirdTransaction"));
-__export(require("./fb/FirebirdStatement"));
-__export(require("./fb/FirebirdResultSet"));
-__export(require("./fb/FirebirdBlob"));
-__export(require("./fb/FirebirdDBStructure"));
-__export(require("./fb/FirebirdDriver"));
-var fb_utils_1 = require("./fb/utils/fb-utils");
-exports.TransactionIsolation = fb_utils_1.TransactionIsolation;
 //# sourceMappingURL=index.js.map

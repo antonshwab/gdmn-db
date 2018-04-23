@@ -11,14 +11,14 @@ class ADriver {
         throw new Error("Unsupported yet");
     }
     /**
-     * Create object for access to a specific parent pool of driver.
+     * Create object for access to a specific connection pool of driver.
      * May not be available for the current driver.
      */
     newConnectionPool() {
         throw new Error("Unsupported yet");
     }
     /**
-     * Create object for access to a default parent pool of driver.
+     * Create object for access to a default connection pool of driver.
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}

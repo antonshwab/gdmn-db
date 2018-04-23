@@ -1,6 +1,7 @@
 import {expect} from "chai";
 import {existsSync, unlinkSync} from "fs";
-import {DefaultParamsAnalyzer, Factory, FirebirdTransaction, IConnectionOptions} from "../src";
+import {DefaultParamsAnalyzer, Factory, IConnectionOptions} from "../src";
+import {FirebirdTransaction} from "../src/fb/FirebirdTransaction";
 import {connectionTest} from "./global/AConnection";
 import {connectionPoolTest} from "./global/AConnectionPool";
 import {resultSetTest} from "./global/AResultSet";

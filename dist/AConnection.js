@@ -5,22 +5,22 @@ const ATransaction_1 = require("./ATransaction");
  * Example:
  * <pre>
  * (async () => {
- *      const parent = Factory.XXModule.newConnection();
+ *      const connection = Factory.XXModule.newConnection();
  *      try {
- *          await parent.connect({...});
+ *          await connection.connect({...});
  *
- *          const parent = await parent.createTransaction();
+ *          const transaction = await connection.createTransaction();
  *          try {
- *              await parent.start();
+ *              await transaction.start();
  *
- *              const resultSet = await parent.executeQuery("some sql");
+ *              const resultSet = await transaction.executeQuery("some sql");
  *              await resultSet.getArrays();
  *              await resultSet.close();
  *
- *              await parent.commit();
+ *              await transaction.commit();
  *          } catch (error) {
  *              try {
- *                  await parent.rollback();
+ *                  await transaction.rollback();
  *              } catch (error) {
  *                  console.warn(error);
  *              }
@@ -28,7 +28,7 @@ const ATransaction_1 = require("./ATransaction");
  *          }
  *      } finally {
  *          try {
- *              await parent.disconnect();
+ *              await connection.disconnect();
  *          } catch (err) {
  *              console.warn(err);
  *          }
@@ -52,8 +52,8 @@ class AConnection {
     /**
      * Example:
      * <pre>
-     * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (source) => {
-     *      return await AConnection.executeTransaction(parent, {}, async (parent) => {
+     * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (connection) => {
+     *      return await AConnection.executeTransaction(parent, {}, async (transaction) => {
      *          return ...
      *      });
      * })}
