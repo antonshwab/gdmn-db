@@ -17,3 +17,5 @@ export * from "./fb/FirebirdResultSet";
 export * from "./fb/FirebirdBlob";
 export * from "./fb/FirebirdDBStructure";
 export * from "./fb/FirebirdDriver";
+export { TransactionIsolation } from "./fb/utils/fb-utils";
+export { ITransactionOpt } from "./fb/utils/fb-utils";

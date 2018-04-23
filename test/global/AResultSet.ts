@@ -4,6 +4,8 @@ import {AConnection, AConnectionPool, AResultSet, ATransaction, IDefaultConnecti
 export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
     describe("AResultSet", async () => {
 
+        const countRow = 10;
+
         let globalConnection: AConnection;
         let globalTransaction: ATransaction;
 
@@ -306,11 +308,61 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 });
         });
 
-        it("read data", async () => {
+        it("read data (getString)", async () => {
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+                async (resultSet) => {
+                    while (await resultSet.next()) {
+                        expect(resultSet.getString("ID")).to.equal(getData(countRow)[resultSet.position].id.toString());
+                        expect(resultSet.getString("NAME")).to.equal(getData(countRow)[resultSet.position].name);
+                    }
+                });
+        });
+
+        it("read data (getNumber)", async () => {
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+                async (resultSet) => {
+                    while (await resultSet.next()) {
+                        expect(resultSet.getNumber("ID")).to.equal(getData(countRow)[resultSet.position].id);
+                        expect(isNaN(resultSet.getNumber("NAME"))).to.equal(true);
+                    }
+                });
+        });
+
+        it("read data (getBoolean)", async () => {
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+                async (resultSet) => {
+                    while (await resultSet.next()) {
+                        expect(resultSet.getBoolean("ID")).to.equal(resultSet.position !== 0);
+                        expect(resultSet.getBoolean("NAME")).to.equal(true);
+                    }
+                });
+        });
+
+        it("read data (getDate)", async () => {
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+                async (resultSet) => {
+                    while (await resultSet.next()) {
+                        should().exist(resultSet.getDate("ID"));
+                        should().not.exist(resultSet.getDate("NAME"));
+                    }
+                });
+        });
+
+        it("read data (getObjects)", async () => {
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+                async (resultSet) => {
+                    const result = await resultSet.getObjects();
+                    expect(result.map((object) => ({id: object.ID, name: object.NAME})))
+                        .to.deep.equal(getData(countRow));
+                });
+        });
+
+        it("read data (getArrays)", async () => {
             await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
                 async (resultSet) => {
                     const result = await resultSet.getArrays();
-                    expect(result.map((array) => ({id: array[0], name: array[1]}))).to.deep.equal(getData(10));
+                    expect(result.map((array) => ({id: array[0], name: array[1]})))
+                        .to.deep.equal(getData(countRow));
                 });
         });
     });

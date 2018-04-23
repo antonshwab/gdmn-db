@@ -15,7 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "generic-pool": "^3.4.2",
-    "node-firebird-driver-native": "0.0.1-beta.1"
+    "node-firebird-native-api": "0.0.1-beta.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",

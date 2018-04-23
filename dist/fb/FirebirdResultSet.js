@@ -1,27 +1,38 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const node_firebird_driver_native_1 = require("node-firebird-driver-native");
+const fb = __importStar(require("node-firebird-native-api"));
 const AResultSet_1 = require("../AResultSet");
 const FirebirdBlob_1 = require("./FirebirdBlob");
+const FirebirdBlobLink_1 = require("./FirebirdBlobLink");
 var Status;
 (function (Status) {
     Status[Status["UNFINISHED"] = 0] = "UNFINISHED";
     Status[Status["FINISHED"] = 1] = "FINISHED";
-    Status[Status["CLOSED"] = 2] = "CLOSED";
 })(Status || (Status = {}));
 class FirebirdResultSet extends AResultSet_1.AResultSet {
-    constructor(connect, transaction, resultSet) {
+    constructor(parent, handler) {
         super();
+        this.disposeStatementOnClose = false;
         this._data = [];
         this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
         this._status = Status.UNFINISHED;
-        this._connection = connect;
-        this._transaction = transaction;
-        this._resultSet = resultSet;
+        this.parent = parent;
+        this._handler = handler;
     }
     get position() {
         this._checkClosed();
         return this._currentIndex;
+    }
+    static async open(parent) {
+        const handler = await parent.parent.parent.context.statusAction((status) => parent.source.handler.openCursorAsync(status, parent.parent.handler, parent.source.inMetadata, parent.source.inBuffer, parent.source.outMetadata, 0));
+        return new FirebirdResultSet(parent, handler);
     }
     async next() {
         this._checkClosed();
@@ -29,13 +40,10 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             this._currentIndex++;
             if (this._currentIndex === this._data.length) {
                 if (this._status === Status.UNFINISHED) {
-                    const newResult = await this._resultSet.fetch({ fetchSize: 1 });
-                    if (newResult.length) {
+                    const newResult = await this._fetch({ fetchSize: 1 });
+                    if (newResult) {
                         this._data.push(newResult[0]);
                         return true;
-                    }
-                    else {
-                        this._status = Status.FINISHED;
                     }
                 }
                 return false;
@@ -144,17 +152,20 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return this._currentIndex === this._data.length - 1;
     }
     async isClosed() {
-        return this._status === Status.CLOSED;
+        return !this._handler;
     }
     async close() {
         this._checkClosed();
-        await this._resultSet.close();
-        this._status = Status.CLOSED;
+        await this.parent.parent.parent.context.statusAction((status) => this._handler.closeAsync(status));
+        this._handler = undefined;
         this._data = [];
         this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
+        if (this.disposeStatementOnClose) {
+            await this.parent.dispose();
+        }
     }
     getBlob(field) {
-        return new FirebirdBlob_1.FirebirdBlob(this._connection, this._transaction, this._getValue(field));
+        return new FirebirdBlob_1.FirebirdBlob(this, this._getValue(field));
     }
     getBoolean(field) {
         this._throwIfBlob(field);
@@ -168,7 +179,8 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         if (this.isNull(field)) {
             return null;
         }
-        return new Date(this._getValue(field));
+        const date = new Date(this._getValue(field));
+        return isNaN(date.getTime()) ? null : date;
     }
     getNumber(field) {
         this._throwIfBlob(field);
@@ -192,10 +204,11 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return value === null || value === undefined;
     }
     getObject() {
-        const array = this.getArray();
-        return array.reduce((object, item, index) => {
-            object[index] = item;
-            return object;
+        return this.parent.source.outDescriptors.reduce((row, descriptor, index) => {
+            if (descriptor.alias) {
+                row[descriptor.alias] = this.getAny(index);
+            }
+            return row;
         }, {});
     }
     getArray() {
@@ -203,11 +216,12 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return this._data[this._currentIndex];
     }
     async getObjects() {
-        const arrays = await this.getArrays();
-        return arrays.map((array) => array.reduce((object, item, index) => {
-            object[index] = item;
-            return object;
-        }, {}));
+        await this.beforeFirst();
+        const objects = [];
+        while (await this.next()) {
+            objects.push(this.getObject());
+        }
+        return objects;
     }
     async getArrays() {
         this._checkClosed();
@@ -226,18 +240,57 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             return row[field];
         }
         else {
-            throw new Error("Not supported yet");
+            const index = this.parent.source.outDescriptors.findIndex((descriptor) => descriptor.alias === field);
+            // TODO
+            return row[index];
         }
     }
     _checkClosed() {
-        if (this._status === Status.CLOSED) {
+        if (!this._handler) {
             throw new Error("ResultSet is closed");
         }
     }
     _throwIfBlob(field) {
-        if (this._getValue(field) instanceof node_firebird_driver_native_1.Blob) {
+        if (this._getValue(field) instanceof FirebirdBlobLink_1.FirebirdBlobLink) {
             throw new Error("Invalid typecasting");
         }
+    }
+    async _fetch(options) {
+        this._checkClosed();
+        if (this._status === Status.FINISHED) {
+            return [];
+        }
+        const fetchRet = await this.parent.parent.parent.context.statusAction(async (status) => {
+            const rows = [];
+            const buffers = [
+                this.parent.source.outBuffer,
+                new Uint8Array(this.parent.source.outMetadata.getMessageLengthSync(status))
+            ];
+            let buffer = 0;
+            let nextFetch = this._handler.fetchNextAsync(status, buffers[buffer]);
+            while (true) {
+                if (await nextFetch === fb.Status.RESULT_OK) {
+                    const buffer1 = buffer;
+                    buffer = ++buffer % 2;
+                    const finish = options && options.fetchSize && rows.length + 1 >= options.fetchSize;
+                    if (!finish) {
+                        nextFetch = this._handler.fetchNextAsync(status, buffers[buffer]);
+                    }
+                    rows.push(await this.parent.source.dataReader(this.parent, buffers[buffer1]));
+                    if (finish) {
+                        return { finished: false, rows };
+                    }
+                }
+                else {
+                    return { finished: true, rows };
+                }
+            }
+        });
+        if (fetchRet.finished) {
+            this._status = Status.FINISHED;
+            return;
+        }
+        return fetchRet.rows;
     }
 }
 exports.FirebirdResultSet = FirebirdResultSet;

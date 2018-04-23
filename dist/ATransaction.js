@@ -15,7 +15,7 @@ var Isolation;
     Isolation[Isolation["SERIALIZABLE"] = 3] = "SERIALIZABLE";
 })(Isolation = exports.Isolation || (exports.Isolation = {}));
 /**
- * The transaction object
+ * The parent object
  */
 class ATransaction {
     constructor(options = ATransaction.DEFAULT_OPTIONS) {
@@ -39,10 +39,10 @@ class ATransaction {
     /**
      * Example:
      * <pre>
-     * const result = await ATransaction.executePrepareStatement(transaction, "some sql with params",
-     *      async (statement) => {
-     *          await statement.execute([param1, param2]);
-     *          await statement.execute([param3, param4]);
+     * const result = await ATransaction.executePrepareStatement(parent, "some sql with params",
+     *      async (source) => {
+     *          await source.execute([param1, param2]);
+     *          await source.execute([param3, param4]);
      *          return "some value";
      *      })}
      * </pre>

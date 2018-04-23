@@ -9,7 +9,7 @@ import {FirebirdTransaction} from "./FirebirdTransaction";
 export class FirebirdDBStructure {
 
     /**
-     * Execute database connection, execute transaction and read the structure of database.
+     * Execute database parent, execute parent and read the structure of database.
      *
      * @param {FirebirdOptions} options
      * @returns {Promise<DBStructure>}

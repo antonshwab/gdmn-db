@@ -3,16 +3,16 @@ import { AResultSet } from "./AResultSet";
 import { INamedParams } from "./ATransaction";
 import { TExecutor } from "./types";
 /**
- * An object that represents a precompiled SQL statement.
- * A SQL statement is precompiled and stored in a Statement object.
- * This object can then be used to efficiently execute this statement multiple times.
+ * An object that represents a precompiled SQL source.
+ * A SQL source is precompiled and stored in a Statement object.
+ * This object can then be used to efficiently execute this source multiple times.
  */
 export declare abstract class AStatement<B extends ABlob = ABlob, RS extends AResultSet<B> = AResultSet<B>> {
     static executeSelf<R>(selfReceiver: TExecutor<null, AStatement>, callback: TExecutor<AStatement, R>): Promise<R>;
     /**
      * Example:
      * <pre>
-     * const result = await AStatement.executeQueryResultSet(statement, async (resultSet) => {
+     * const result = await AStatement.executeQueryResultSet(source, async (resultSet) => {
      *      return await resultSet.getArrays();
      * })}
      * </pre>
@@ -21,7 +21,7 @@ export declare abstract class AStatement<B extends ABlob = ABlob, RS extends ARe
     /**
      * Example:
      * <pre>
-     * const result = await AStatement.executeQueryResultSet(statement, [param1, param2], async (resultSet) => {
+     * const result = await AStatement.executeQueryResultSet(source, [param1, param2], async (resultSet) => {
      *      return await resultSet.getArrays();
      * })}
      * </pre>

@@ -14,22 +14,22 @@ export interface IConnectionOptions {
  * Example:
  * <pre>
  * (async () => {
- *      const connection = Factory.XXModule.newConnection();
+ *      const parent = Factory.XXModule.newConnection();
  *      try {
- *          await connection.connect({...});
+ *          await parent.connect({...});
  *
- *          const transaction = await connection.createTransaction();
+ *          const parent = await parent.createTransaction();
  *          try {
- *              await transaction.start();
+ *              await parent.start();
  *
- *              const resultSet = await transaction.executeQuery("some sql");
+ *              const resultSet = await parent.executeQuery("some sql");
  *              await resultSet.getArrays();
  *              await resultSet.close();
  *
- *              await transaction.commit();
+ *              await parent.commit();
  *          } catch (error) {
  *              try {
- *                  await transaction.rollback();
+ *                  await parent.rollback();
  *              } catch (error) {
  *                  console.warn(error);
  *              }
@@ -37,7 +37,7 @@ export interface IConnectionOptions {
  *          }
  *      } finally {
  *          try {
- *              await connection.disconnect();
+ *              await parent.disconnect();
  *          } catch (err) {
  *              console.warn(err);
  *          }
@@ -51,7 +51,7 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
      * Example:
      * <pre>
      * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (source) => {
-     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
+     *      return await AConnection.executeTransaction(parent, {}, async (parent) => {
      *          return ...
      *      });
      * })}
@@ -61,8 +61,8 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
     /**
      * Example:
      * <pre>
-     * const result = await AConnection.executeTransaction(connection, async transaction => {
-     *      return await transaction.executePrepareStatement("some sql", async statement => {
+     * const result = await AConnection.executeTransaction(parent, async parent => {
+     *      return await parent.executePrepareStatement("some sql", async source => {
      *          return ...
      *      });
      * })}
@@ -72,8 +72,8 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
     /**
      * Example:
      * <pre>
-     * const result = await AConnection.executeTransaction(connection, {}, async transaction => {
-     *      return await transaction.executePrepareStatement("some sql", async statement => {
+     * const result = await AConnection.executeTransaction(parent, {}, async parent => {
+     *      return await parent.executePrepareStatement("some sql", async source => {
      *          return ...
      *      });
      * })}
@@ -84,7 +84,7 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
      * Create database and connect to them.
      *
      * @param {Options} options
-     * the options for creating database and connection to them
+     * the options for creating database and parent to them
      */
     abstract createDatabase(options: Options): Promise<void>;
     /** Drop database and disconnect from them. */
@@ -93,17 +93,17 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
      * Connect to the database.
      *
      * @param {Options} options
-     * the options for opening database connection
+     * the options for opening database parent
      */
     abstract connect(options: Options): Promise<void>;
     /** Disconnect from the database. */
     abstract disconnect(): Promise<void>;
     /**
-     * Create transaction.
+     * Create parent.
      * @see {@link ATransaction.DEFAULT_OPTIONS}
      *
      * @param {ITransactionOptions} [options=DEFAULT_OPTIONS]
-     * the options for transaction; optional
+     * the options for parent; optional
      * @returns {Promise<T extends ATransaction<RS, S>>}
      * a Transaction object;
      * never null
