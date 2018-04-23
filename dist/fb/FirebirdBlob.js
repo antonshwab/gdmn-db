@@ -1,51 +1,76 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import {Attachment, Blob, Transaction} from "node-firebird-driver-native";
 const stream_1 = require("stream");
 const ABlob_1 = require("../ABlob");
-const blobObj_1 = require("./api/blobObj");
+const FirebirdBlobLink_1 = require("./FirebirdBlobLink");
+const FirebirdBlobStream_1 = require("./FirebirdBlobStream");
 class FirebirdBlob extends ABlob_1.ABlob {
-    constructor(connection, transaction, blob) {
+    constructor(parent, value) {
         super();
-        this._connection = connection;
-        this._transaction = transaction;
-        this._blob = blob;
+        this.parent = parent;
+        this.blobLink = value;
     }
     async asBuffer() {
-        if (this._blob && this._blob instanceof blobObj_1.BlobObj) {
-            const blobStream = await this._connection.openBlob(this._transaction, this._blob);
-            const length = await blobStream.length;
-            const buffers = [];
-            let i = 0;
-            while (i < length) {
-                const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
-                i += size;
-                const buffer = Buffer.alloc(size);
-                buffers.push(buffer);
-                await blobStream.read(buffer);
+        if (this.blobLink && this.blobLink instanceof FirebirdBlobLink_1.FirebirdBlobLink) {
+            const blobStream = await FirebirdBlobStream_1.FirebirdBlobStream.open(this.parent.parent.parent, this.blobLink);
+            try {
+                const length = await blobStream.length;
+                const buffers = [];
+                let i = 0;
+                while (i < length) {
+                    const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
+                    i += size;
+                    const buffer = Buffer.alloc(size);
+                    buffers.push(buffer);
+                    await blobStream.read(buffer);
+                }
+                return Buffer.concat(buffers, length);
             }
-            return Buffer.concat(buffers, length);
+            catch (error) {
+                if (blobStream) {
+                    await blobStream.cancel();
+                }
+                throw error;
+            }
+            finally {
+                if (blobStream) {
+                    await blobStream.close();
+                }
+            }
         }
         return null;
     }
     async asStream() {
-        if (this._blob && this._blob instanceof blobObj_1.BlobObj) {
+        if (this.blobLink && this.blobLink instanceof FirebirdBlobLink_1.FirebirdBlobLink) {
             const stream = new stream_1.Readable({ read: () => null });
-            const blobStream = await this._connection.openBlob(this._transaction, this._blob);
-            const length = await blobStream.length;
-            const buffers = [];
-            let i = 0;
-            while (i < length) {
-                const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
-                i += size;
-                buffers.push(Buffer.alloc(size));
+            const blobStream = await FirebirdBlobStream_1.FirebirdBlobStream.open(this.parent.parent.parent, this.blobLink);
+            try {
+                const length = await blobStream.length;
+                const buffers = [];
+                let i = 0;
+                while (i < length) {
+                    const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
+                    i += size;
+                    buffers.push(Buffer.alloc(size));
+                }
+                const promises = buffers.map(async (buffer) => {
+                    await blobStream.read(buffer);
+                    stream.push(buffer);
+                });
+                Promise.all(promises).then(() => stream.push(null)).catch(console.warn);
+                return stream;
             }
-            const promises = buffers.map(async (buffer) => {
-                await blobStream.read(buffer);
-                stream.push(buffer);
-            });
-            Promise.all(promises).then(() => stream.push(null)).catch(console.warn);
-            return stream;
+            catch (error) {
+                if (blobStream) {
+                    await blobStream.cancel();
+                }
+                throw error;
+            }
+            finally {
+                if (blobStream) {
+                    await blobStream.close();
+                }
+            }
         }
         return null;
     }

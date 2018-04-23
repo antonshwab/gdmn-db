@@ -1,23 +1,20 @@
+import {Attachment} from "node-firebird-native-api";
 import {AConnection, IConnectionOptions} from "../AConnection";
 import {ITransactionOptions} from "../ATransaction";
-import {Attachment} from "./api/attachment";
-import {Client, createNativeClient, getDefaultLibraryFilename} from "./api/client";
 import {FirebirdBlob} from "./FirebirdBlob";
+import {FirebirdContext} from "./FirebirdContext";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";
 import {FirebirdTransaction} from "./FirebirdTransaction";
+import {createDpb} from "./utils/fb-utils";
 
 export type FirebirdOptions = IConnectionOptions;
 
 export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlob, FirebirdResultSet, FirebirdStatement,
     FirebirdTransaction> {
 
-    private _client?: Client;
-    private _connection?: Attachment;
-
-    constructor() {
-        super();
-    }
+    public context: FirebirdContext = new FirebirdContext();
+    public handler?: Attachment;
 
     private static _optionsToUri(options: FirebirdOptions): string {
         let url = "";
@@ -35,63 +32,60 @@ export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlo
     }
 
     public async createDatabase(options: FirebirdOptions): Promise<void> {
-        if (this._connection) {
+        if (this.handler) {
             throw new Error("Database already connected");
         }
 
-        this._client = createNativeClient(getDefaultLibraryFilename());
-        this._connection = await this._client.createDatabase(FirebirdConnection._optionsToUri(options), {
-            username: options.username,
-            password: options.password
+        this.context.create();
+        this.handler = await this.context.statusAction(async (status) => {
+            const dpb = createDpb(options);
+            return await this.context!.client!.dispatcher!.createDatabaseAsync(status,
+                FirebirdConnection._optionsToUri(options), dpb.length, dpb);
         });
     }
 
     public async dropDatabase(): Promise<void> {
-        if (!this._connection || !this._client) {
+        if (!this.handler) {
             throw new Error("Need database connection");
         }
 
-        await this._connection.dropDatabase();
-        await this._client.dispose();
-        this._clearVariables();
+        await this.context.statusAction((status) => this.handler!.dropDatabaseAsync(status));
+        this.handler = undefined;
+        this.context.destroy();
     }
 
     public async connect(options: FirebirdOptions): Promise<void> {
-        if (this._connection) {
+        if (this.handler) {
             throw new Error("Database already connected");
         }
 
-        this._client = createNativeClient(getDefaultLibraryFilename());
-        this._connection = await this._client.connect(FirebirdConnection._optionsToUri(options), {
-            username: options.username,
-            password: options.password
+        this.context.create();
+        this.handler = await this.context.statusAction(async (status) => {
+            const dpb = createDpb(options);
+            return await this.context!.client!.dispatcher!.attachDatabaseAsync(status,
+                FirebirdConnection._optionsToUri(options), dpb.length, dpb);
         });
     }
 
     public async createTransaction(options?: ITransactionOptions): Promise<FirebirdTransaction> {
-        if (!this._connection) {
+        if (!this.handler) {
             throw new Error("Need database connection");
         }
 
-        return new FirebirdTransaction(this._connection, options);
+        return await FirebirdTransaction.create(this, options);
     }
 
     public async disconnect(): Promise<void> {
-        if (!this._connection || !this._client) {
+        if (!this.handler) {
             throw new Error("Need database connection");
         }
 
-        await this._connection.disconnect();
-        await this._client.dispose();
-        this._clearVariables();
+        await this.context.statusAction((status) => this.handler!.detachAsync(status));
+        this.handler = undefined;
+        this.context.destroy();
     }
 
     public async isConnected(): Promise<boolean> {
-        return Boolean(this._connection);
-    }
-
-    private _clearVariables(): void {
-        this._connection = undefined;
-        this._client = undefined;
+        return Boolean(this.handler);
     }
 }

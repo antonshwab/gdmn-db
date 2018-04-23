@@ -1,8 +1,6 @@
 /// <reference types="node" />
 import * as fb from "node-firebird-native-api";
-import { Attachment } from "./attachment";
-import { Transaction } from "./transaction";
-import { ConnectOptions, TransactionOptions } from "./types";
+import { FirebirdStatement } from "../FirebirdStatement";
 export declare enum SQLTypes {
     SQL_TEXT = 452,
     SQL_VARYING = 448,
@@ -43,8 +41,27 @@ export declare enum tpb {
 export declare enum blobInfo {
     totalLength = 6,
 }
-export declare function createDpb(options?: ConnectOptions): Buffer;
-export declare function createTpb(options?: TransactionOptions): Buffer;
+export declare function createDpb(options?: {
+    username?: string;
+    password?: string;
+}): Buffer;
+export declare enum TransactionIsolation {
+    CONSISTENCY = "CONSISTENCY",
+    READ_COMMITTED = "READ_COMMITTED",
+    SNAPSHOT = "SNAPSHOT",
+}
+/** ITransactionOpt interface. */
+export interface ITransactionOpt {
+    isolation?: TransactionIsolation;
+    readCommittedMode?: "NO_RECORD_VERSION" | "RECORD_VERSION";
+    accessMode?: "READ_ONLY" | "READ_WRITE";
+    waitMode?: "NO_WAIT" | "WAIT";
+    noAutoUndo?: boolean;
+    ignoreLimbo?: boolean;
+    restartRequests?: boolean;
+    autoCommit?: boolean;
+}
+export declare function createTpb(options?: ITransactionOpt): Buffer;
 /** Changes a number from a scale to another. */
 /***
  export function changeScale(value: number, inputScale: number, outputScale: number): number {
@@ -69,12 +86,12 @@ export interface IDescriptor {
     offset: number;
     nullOffset: number;
 }
-export declare type DataReader = (attachment: Attachment, transaction: Transaction, buffer: Uint8Array) => Promise<any[]>;
-export declare type ItemReader = (attachment: Attachment, transaction: Transaction, buffer: Uint8Array) => Promise<any>;
+export declare type DataReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<any[]>;
+export declare type ItemReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<any>;
 /** Creates a data reader. */
 export declare function createDataReader(descriptors: IDescriptor[]): DataReader;
-export declare type DataWriter = (attachment: Attachment, transaction: Transaction, buffer: Uint8Array, values: any[] | undefined) => Promise<void>;
-export declare type ItemWriter = (attachment: Attachment, transaction: Transaction, buffer: Uint8Array, values: any) => Promise<void>;
+export declare type DataWriter = (statement: FirebirdStatement, buffer: Uint8Array, values: any[] | undefined) => Promise<void>;
+export declare type ItemWriter = (statement: FirebirdStatement, buffer: Uint8Array, values: any) => Promise<void>;
 /** Creates a data writer. */
 export declare function createDataWriter(descriptors: IDescriptor[]): DataWriter;
 export declare function fixMetadata(status: fb.Status, metadata?: fb.MessageMetadata): fb.MessageMetadata | undefined;

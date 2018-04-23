@@ -5,22 +5,22 @@ const ATransaction_1 = require("./ATransaction");
  * Example:
  * <pre>
  * (async () => {
- *      const connection = Factory.XXModule.newConnection();
+ *      const parent = Factory.XXModule.newConnection();
  *      try {
- *          await connection.connect({...});
+ *          await parent.connect({...});
  *
- *          const transaction = await connection.createTransaction();
+ *          const parent = await parent.createTransaction();
  *          try {
- *              await transaction.start();
+ *              await parent.start();
  *
- *              const resultSet = await transaction.executeQuery("some sql");
+ *              const resultSet = await parent.executeQuery("some sql");
  *              await resultSet.getArrays();
  *              await resultSet.close();
  *
- *              await transaction.commit();
+ *              await parent.commit();
  *          } catch (error) {
  *              try {
- *                  await transaction.rollback();
+ *                  await parent.rollback();
  *              } catch (error) {
  *                  console.warn(error);
  *              }
@@ -28,7 +28,7 @@ const ATransaction_1 = require("./ATransaction");
  *          }
  *      } finally {
  *          try {
- *              await connection.disconnect();
+ *              await parent.disconnect();
  *          } catch (err) {
  *              console.warn(err);
  *          }
@@ -53,7 +53,7 @@ class AConnection {
      * Example:
      * <pre>
      * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (source) => {
-     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
+     *      return await AConnection.executeTransaction(parent, {}, async (parent) => {
      *          return ...
      *      });
      * })}

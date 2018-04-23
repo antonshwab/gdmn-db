@@ -1,39 +1,38 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import {Attachment, Transaction, TransactionIsolation, TransactionOptions} from "node-firebird-driver-native";
 const ATransaction_1 = require("../ATransaction");
-const DefaultParamsAnalyzer_1 = require("../default/DefaultParamsAnalyzer");
-const types_1 = require("./api/types");
-const FirebirdResultSet_1 = require("./FirebirdResultSet");
 const FirebirdStatement_1 = require("./FirebirdStatement");
+const fb_utils_1 = require("./utils/fb-utils");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
-    constructor(connect, options) {
+    constructor(parent, options) {
         super(options);
-        this._transaction = null;
-        this._connection = connect;
+        this.parent = parent;
+    }
+    static async create(parent, options) {
+        return new FirebirdTransaction(parent, options);
     }
     async start() {
-        if (this._transaction) {
+        if (this.handler) {
             throw new Error("Transaction already opened");
         }
         const options = {};
         switch (this._options.isolation) {
             case ATransaction_1.Isolation.SERIALIZABLE:
-                options.isolation = types_1.TransactionIsolation.CONSISTENCY;
+                options.isolation = fb_utils_1.TransactionIsolation.CONSISTENCY;
                 options.waitMode = "NO_WAIT";
                 break;
             case ATransaction_1.Isolation.REPEATABLE_READ:
-                options.isolation = types_1.TransactionIsolation.SNAPSHOT;
+                options.isolation = fb_utils_1.TransactionIsolation.SNAPSHOT;
                 options.waitMode = "NO_WAIT";
                 break;
             case ATransaction_1.Isolation.READ_UNCOMMITED:
-                options.isolation = types_1.TransactionIsolation.READ_COMMITTED;
+                options.isolation = fb_utils_1.TransactionIsolation.READ_COMMITTED;
                 options.readCommittedMode = "NO_RECORD_VERSION";
                 options.waitMode = "NO_WAIT";
                 break;
             case ATransaction_1.Isolation.READ_COMMITED:
             default:
-                options.isolation = types_1.TransactionIsolation.READ_COMMITTED;
+                options.isolation = fb_utils_1.TransactionIsolation.READ_COMMITTED;
                 options.readCommittedMode = "RECORD_VERSION";
                 options.waitMode = "NO_WAIT";
                 break;
@@ -46,47 +45,47 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
             default:
                 options.accessMode = "READ_WRITE";
         }
-        this._transaction = await this._connection.startTransaction(options);
+        this.handler = await this.parent.context.statusAction(async (status) => {
+            const tpb = fb_utils_1.createTpb(options);
+            return await this.parent.handler.startTransactionAsync(status, tpb.length, tpb);
+        });
     }
     async commit() {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
-        await this._transaction.commit();
-        this._transaction = null;
+        await this.parent.context.statusAction((status) => this.handler.commitAsync(status));
+        this.handler = undefined;
     }
     async rollback() {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
-        await this._transaction.rollback();
-        this._transaction = null;
+        await this.parent.context.statusAction((status) => this.handler.rollbackAsync(status));
+        this.handler = undefined;
     }
     async isActive() {
-        return Boolean(this._transaction);
+        return Boolean(this.handler);
     }
     async prepare(sql) {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
-        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
-        const statement = await this._connection.prepare(this._transaction, paramsAnalyzer.sql);
-        return new FirebirdStatement_1.FirebirdStatement(this._connection, this._transaction, statement, paramsAnalyzer);
+        return await FirebirdStatement_1.FirebirdStatement.prepare(this, sql);
     }
     async executeQuery(sql, params) {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
-        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
-        const resultSet = await this._connection.executeQuery(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
-        return new FirebirdResultSet_1.FirebirdResultSet(this._connection, this._transaction, resultSet);
+        const statement = await FirebirdStatement_1.FirebirdStatement.prepare(this, sql);
+        const resultSet = await statement.executeQuery(params);
+        return resultSet;
     }
     async execute(sql, params) {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
-        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
-        await this._connection.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
+        await FirebirdTransaction.executePrepareStatement(this, sql, (statement) => statement.execute(params));
     }
 }
 FirebirdTransaction.EXCLUDE_PATTERNS = [

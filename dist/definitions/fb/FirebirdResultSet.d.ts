@@ -1,17 +1,17 @@
+import { ResultSet as NativeResultSet } from "node-firebird-native-api";
 import { AResultSet, IRow } from "../AResultSet";
-import { Attachment } from "./api/attachment";
-import { ResultSet } from "./api/resultSet";
-import { Transaction } from "./api/transaction";
 import { FirebirdBlob } from "./FirebirdBlob";
+import { FirebirdStatement } from "./FirebirdStatement";
 export declare class FirebirdResultSet extends AResultSet<FirebirdBlob> {
-    private readonly _connection;
-    private readonly _transaction;
-    private readonly _resultSet;
+    readonly parent: FirebirdStatement;
+    disposeStatementOnClose: boolean;
+    private _handler?;
     private _data;
     private _currentIndex;
     private _status;
-    constructor(connect: Attachment, transaction: Transaction, resultSet: ResultSet);
+    protected constructor(parent: FirebirdStatement, handler: NativeResultSet);
     readonly position: number;
+    static open(parent: FirebirdStatement): Promise<FirebirdResultSet>;
     next(): Promise<boolean>;
     previous(): Promise<boolean>;
     to(i: number): Promise<boolean>;
@@ -46,4 +46,5 @@ export declare class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     private _getValue(field);
     private _checkClosed();
     private _throwIfBlob(field);
+    private _fetch(options?);
 }

@@ -1,11 +1,10 @@
+import {Transaction} from "node-firebird-native-api";
 import {AccessMode, ATransaction, INamedParams, Isolation, ITransactionOptions} from "../ATransaction";
-import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
-import {Attachment} from "./api/attachment";
-import {Transaction} from "./api/transaction";
-import {TransactionIsolation, TransactionOptions} from "./api/types";
 import {FirebirdBlob} from "./FirebirdBlob";
+import {FirebirdConnection} from "./FirebirdConnection";
 import {FirebirdResultSet} from "./FirebirdResultSet";
 import {FirebirdStatement} from "./FirebirdStatement";
+import {createTpb, ITransactionOpt, TransactionIsolation} from "./utils/fb-utils";
 
 export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResultSet, FirebirdStatement> {
 
@@ -17,20 +16,25 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
     ];
     public static PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
 
-    private readonly _connection: Attachment;
-    private _transaction: null | Transaction = null;
+    public readonly parent: FirebirdConnection;
+    public handler?: Transaction;
 
-    constructor(connect: Attachment, options?: ITransactionOptions) {
+    protected constructor(parent: FirebirdConnection, options?: ITransactionOptions) {
         super(options);
-        this._connection = connect;
+        this.parent = parent;
+    }
+
+    public static async create(parent: FirebirdConnection,
+                               options?: ITransactionOptions): Promise<FirebirdTransaction> {
+        return new FirebirdTransaction(parent, options);
     }
 
     public async start(): Promise<void> {
-        if (this._transaction) {
+        if (this.handler) {
             throw new Error("Transaction already opened");
         }
 
-        const options: TransactionOptions = {};
+        const options: ITransactionOpt = {};
         switch (this._options.isolation) {
             case Isolation.SERIALIZABLE:
                 options.isolation = TransactionIsolation.CONSISTENCY;
@@ -62,61 +66,57 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
                 options.accessMode = "READ_WRITE";
         }
 
-        this._transaction = await this._connection.startTransaction(options);
+        this.handler = await this.parent.context.statusAction(async (status) => {
+            const tpb = createTpb(options);
+            return await this.parent.handler!.startTransactionAsync(status, tpb.length, tpb);
+        });
     }
 
     public async commit(): Promise<void> {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
 
-        await this._transaction.commit();
-        this._transaction = null;
+        await this.parent.context.statusAction((status) => this.handler!.commitAsync(status));
+        this.handler = undefined;
     }
 
     public async rollback(): Promise<void> {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
 
-        await this._transaction.rollback();
-        this._transaction = null;
+        await this.parent.context.statusAction((status) => this.handler!.rollbackAsync(status));
+        this.handler = undefined;
     }
 
     public async isActive(): Promise<boolean> {
-        return Boolean(this._transaction);
+        return Boolean(this.handler);
     }
 
     public async prepare(sql: string): Promise<FirebirdStatement> {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
 
-        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
-            FirebirdTransaction.PLACEHOLDER_PATTERN);
-        const statement = await this._connection.prepare(this._transaction, paramsAnalyzer.sql);
-        return new FirebirdStatement(this._connection, this._transaction, statement, paramsAnalyzer);
+        return await FirebirdStatement.prepare(this, sql);
     }
 
     public async executeQuery(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet> {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
 
-        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
-            FirebirdTransaction.PLACEHOLDER_PATTERN);
-        const resultSet = await this._connection.executeQuery(this._transaction, paramsAnalyzer.sql,
-            paramsAnalyzer.prepareParams(params));
-        return new FirebirdResultSet(this._connection, this._transaction, resultSet);
+        const statement = await FirebirdStatement.prepare(this, sql);
+        const resultSet = await statement.executeQuery(params);
+        return resultSet;
     }
 
     public async execute(sql: string, params?: any[] | INamedParams): Promise<void> {
-        if (!this._transaction) {
-            throw new Error("Need to open transaction");
+        if (!this.handler) {
+            throw new Error("Need to open handler");
         }
 
-        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, FirebirdTransaction.EXCLUDE_PATTERNS,
-            FirebirdTransaction.PLACEHOLDER_PATTERN);
-        await this._connection.execute(this._transaction, paramsAnalyzer.sql, paramsAnalyzer.prepareParams(params));
+        await FirebirdTransaction.executePrepareStatement(this, sql, (statement) => statement.execute(params));
     }
 }

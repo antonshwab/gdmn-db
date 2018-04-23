@@ -1,14 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import {Attachment, Client, createNativeClient, getDefaultLibraryFilename} from "node-firebird-driver-native";
 const AConnection_1 = require("../AConnection");
-const client_1 = require("./api/client");
+const FirebirdContext_1 = require("./FirebirdContext");
 const FirebirdTransaction_1 = require("./FirebirdTransaction");
+const fb_utils_1 = require("./utils/fb-utils");
 class FirebirdConnection extends AConnection_1.AConnection {
     constructor() {
-        super();
-        this._client = null;
-        this._connection = null;
+        super(...arguments);
+        this.context = new FirebirdContext_1.FirebirdContext();
     }
     static _optionsToUri(options) {
         let url = "";
@@ -25,53 +24,49 @@ class FirebirdConnection extends AConnection_1.AConnection {
         return url;
     }
     async createDatabase(options) {
-        if (this._connection) {
+        if (this.handler) {
             throw new Error("Database already connected");
         }
-        this._client = client_1.createNativeClient(client_1.getDefaultLibraryFilename());
-        this._connection = await this._client.createDatabase(FirebirdConnection._optionsToUri(options), {
-            username: options.username,
-            password: options.password
+        this.context.create();
+        this.handler = await this.context.statusAction(async (status) => {
+            const dpb = fb_utils_1.createDpb(options);
+            return await this.context.client.dispatcher.createDatabaseAsync(status, FirebirdConnection._optionsToUri(options), dpb.length, dpb);
         });
     }
     async dropDatabase() {
-        if (!this._connection || !this._client) {
+        if (!this.handler) {
             throw new Error("Need database connection");
         }
-        await this._connection.dropDatabase();
-        await this._client.dispose();
-        this._clearVariables();
+        await this.context.statusAction((status) => this.handler.dropDatabaseAsync(status));
+        this.handler = undefined;
+        this.context.destroy();
     }
     async connect(options) {
-        if (this._connection) {
+        if (this.handler) {
             throw new Error("Database already connected");
         }
-        this._client = client_1.createNativeClient(client_1.getDefaultLibraryFilename());
-        this._connection = await this._client.connect(FirebirdConnection._optionsToUri(options), {
-            username: options.username,
-            password: options.password
+        this.context.create();
+        this.handler = await this.context.statusAction(async (status) => {
+            const dpb = fb_utils_1.createDpb(options);
+            return await this.context.client.dispatcher.attachDatabaseAsync(status, FirebirdConnection._optionsToUri(options), dpb.length, dpb);
         });
     }
     async createTransaction(options) {
-        if (!this._connection) {
+        if (!this.handler) {
             throw new Error("Need database connection");
         }
-        return new FirebirdTransaction_1.FirebirdTransaction(this._connection, options);
+        return await FirebirdTransaction_1.FirebirdTransaction.create(this, options);
     }
     async disconnect() {
-        if (!this._connection || !this._client) {
+        if (!this.handler) {
             throw new Error("Need database connection");
         }
-        await this._connection.disconnect();
-        await this._client.dispose();
-        this._clearVariables();
+        await this.context.statusAction((status) => this.handler.detachAsync(status));
+        this.handler = undefined;
+        this.context.destroy();
     }
     async isConnected() {
-        return Boolean(this._connection);
-    }
-    _clearVariables() {
-        this._connection = null;
-        this._client = null;
+        return Boolean(this.handler);
     }
 }
 exports.FirebirdConnection = FirebirdConnection;

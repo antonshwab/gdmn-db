@@ -1,17 +1,26 @@
+import { MessageMetadata, Statement } from "node-firebird-native-api";
 import { AStatement } from "../AStatement";
 import { INamedParams } from "../ATransaction";
 import { DefaultParamsAnalyzer } from "../default/DefaultParamsAnalyzer";
-import { Attachment } from "./api/attachment";
-import { Statement } from "./api/statement";
-import { Transaction } from "./api/transaction";
 import { FirebirdBlob } from "./FirebirdBlob";
 import { FirebirdResultSet } from "./FirebirdResultSet";
+import { FirebirdTransaction } from "./FirebirdTransaction";
+import { DataReader, DataWriter } from "./utils/fb-utils";
+export interface ISource {
+    handler: Statement;
+    inMetadata: MessageMetadata;
+    outMetadata: MessageMetadata;
+    inBuffer?: Uint8Array;
+    outBuffer?: Uint8Array;
+    dataWriter?: DataWriter;
+    dataReader?: DataReader;
+}
 export declare class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSet> {
-    private readonly _connection;
-    private readonly _transaction;
-    private readonly _statement;
+    readonly parent: FirebirdTransaction;
+    source?: ISource;
     private readonly _paramsAnalyzer;
-    constructor(connect: Attachment, transaction: Transaction, statement: Statement, paramsAnalyzer: DefaultParamsAnalyzer);
+    protected constructor(parent: FirebirdTransaction, paramsAnalyzer: DefaultParamsAnalyzer, source?: ISource);
+    static prepare(transaction: FirebirdTransaction, sql: string): Promise<FirebirdStatement>;
     dispose(): Promise<void>;
     execute(params?: any[] | INamedParams): Promise<void>;
     executeQuery(params?: any[] | INamedParams): Promise<FirebirdResultSet>;
