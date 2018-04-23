@@ -19,22 +19,26 @@ class FirebirdStatement extends AStatement_1.AStatement {
             const handler = await transaction.parent.handler.prepareAsync(status, transaction.handler, 0, paramsAnalyzer.sql, 3, node_firebird_native_api_1.Statement.PREPARE_PREFETCH_ALL);
             const inMetadata = fb_utils_1.fixMetadata(status, await handler.getInputMetadataAsync(status));
             const outMetadata = fb_utils_1.fixMetadata(status, await handler.getOutputMetadataAsync(status));
+            const inDescriptors = fb_utils_1.createDescriptors(status, inMetadata);
+            const outDescriptors = fb_utils_1.createDescriptors(status, outMetadata);
             let inBuffer;
             let outBuffer;
             let dataWriter;
             let dataReader;
             if (inMetadata) {
                 inBuffer = new Uint8Array(inMetadata.getMessageLengthSync(status));
-                dataWriter = fb_utils_1.createDataWriter(fb_utils_1.createDescriptors(status, inMetadata));
+                dataWriter = fb_utils_1.createDataWriter(inDescriptors);
             }
             if (outMetadata) {
                 outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
-                dataReader = fb_utils_1.createDataReader(fb_utils_1.createDescriptors(status, outMetadata));
+                dataReader = fb_utils_1.createDataReader(outDescriptors);
             }
             return {
                 handler: handler,
                 inMetadata: inMetadata,
                 outMetadata: outMetadata,
+                inDescriptors,
+                outDescriptors,
                 inBuffer,
                 outBuffer,
                 dataWriter,

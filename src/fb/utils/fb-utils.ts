@@ -201,6 +201,7 @@ export function getPortableInteger(buffer: Uint8Array, length: number): number {
 
 /** Descriptor for a field or parameter. */
 export interface IDescriptor {
+    alias?: string;
     type: number;
     subType: number;
     length: number;
@@ -209,8 +210,14 @@ export interface IDescriptor {
     nullOffset: number;
 }
 
-export type DataReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<any[]>;
-export type ItemReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<any>;
+export interface IItemReaderResult {
+    value: any;
+    descriptor: IDescriptor;
+}
+
+export type DataReader = (statement: FirebirdStatement,
+                          buffer: Uint8Array) => Promise<IItemReaderResult[]>;
+export type ItemReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<IItemReaderResult>;
 
 /** Creates a data reader. */
 export function createDataReader(descriptors: IDescriptor[]): DataReader {
@@ -481,6 +488,7 @@ export function createDescriptors(status: fb.Status, metadata?: fb.MessageMetada
 
     for (let i = 0; i < count; ++i) {
         ret.push({
+            alias: metadata.getAliasSync(status, i),
             type: metadata.getTypeSync(status, i),
             subType: metadata.getSubTypeSync(status, i),
             nullOffset: metadata.getNullOffsetSync(status, i),

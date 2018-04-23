@@ -79,6 +79,7 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
         }
         const statement = await FirebirdStatement_1.FirebirdStatement.prepare(this, sql);
         const resultSet = await statement.executeQuery(params);
+        resultSet.disposeStatementOnClose = true;
         return resultSet;
     }
     async execute(sql, params) {

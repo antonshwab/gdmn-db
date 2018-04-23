@@ -377,6 +377,7 @@ function createDescriptors(status, metadata) {
     const ret = [];
     for (let i = 0; i < count; ++i) {
         ret.push({
+            alias: metadata.getAliasSync(status, i),
             type: metadata.getTypeSync(status, i),
             subType: metadata.getSubTypeSync(status, i),
             nullOffset: metadata.getNullOffsetSync(status, i),

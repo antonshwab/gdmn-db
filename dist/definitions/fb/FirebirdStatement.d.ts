@@ -5,11 +5,13 @@ import { DefaultParamsAnalyzer } from "../default/DefaultParamsAnalyzer";
 import { FirebirdBlob } from "./FirebirdBlob";
 import { FirebirdResultSet } from "./FirebirdResultSet";
 import { FirebirdTransaction } from "./FirebirdTransaction";
-import { DataReader, DataWriter } from "./utils/fb-utils";
+import { DataReader, DataWriter, IDescriptor } from "./utils/fb-utils";
 export interface ISource {
     handler: Statement;
     inMetadata: MessageMetadata;
     outMetadata: MessageMetadata;
+    inDescriptors: IDescriptor[];
+    outDescriptors: IDescriptor[];
     inBuffer?: Uint8Array;
     outBuffer?: Uint8Array;
     dataWriter?: DataWriter;

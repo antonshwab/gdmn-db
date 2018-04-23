@@ -109,6 +109,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
 
         const statement = await FirebirdStatement.prepare(this, sql);
         const resultSet = await statement.executeQuery(params);
+        resultSet.disposeStatementOnClose = true;
         return resultSet;
     }
 

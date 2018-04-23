@@ -11,13 +11,16 @@ import {
     createDescriptors,
     DataReader,
     DataWriter,
-    fixMetadata
+    fixMetadata,
+    IDescriptor
 } from "./utils/fb-utils";
 
 export interface ISource {
     handler: Statement;
     inMetadata: MessageMetadata;
     outMetadata: MessageMetadata;
+    inDescriptors: IDescriptor[];
+    outDescriptors: IDescriptor[];
     inBuffer?: Uint8Array;
     outBuffer?: Uint8Array;
     dataWriter?: DataWriter;
@@ -53,24 +56,29 @@ export class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSe
             const outMetadata = fixMetadata(status,
                 await handler!.getOutputMetadataAsync(status));
 
+            const inDescriptors = createDescriptors(status, inMetadata);
+            const outDescriptors = createDescriptors(status, outMetadata);
             let inBuffer;
             let outBuffer;
             let dataWriter;
             let dataReader;
+
             if (inMetadata) {
                 inBuffer = new Uint8Array(inMetadata.getMessageLengthSync(status));
-                dataWriter = createDataWriter(createDescriptors(status, inMetadata));
+                dataWriter = createDataWriter(inDescriptors);
             }
 
             if (outMetadata) {
                 outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
-                dataReader = createDataReader(createDescriptors(status, outMetadata));
+                dataReader = createDataReader(outDescriptors);
             }
 
             return {
                 handler: handler!,
                 inMetadata: inMetadata!,
                 outMetadata: outMetadata!,
+                inDescriptors,
+                outDescriptors,
                 inBuffer,
                 outBuffer,
                 dataWriter,

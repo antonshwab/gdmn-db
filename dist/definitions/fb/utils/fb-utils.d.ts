@@ -79,6 +79,7 @@ export declare function createTpb(options?: ITransactionOpt): Buffer;
 export declare function getPortableInteger(buffer: Uint8Array, length: number): number;
 /** Descriptor for a field or parameter. */
 export interface IDescriptor {
+    alias?: string;
     type: number;
     subType: number;
     length: number;
@@ -86,8 +87,12 @@ export interface IDescriptor {
     offset: number;
     nullOffset: number;
 }
-export declare type DataReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<any[]>;
-export declare type ItemReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<any>;
+export interface IItemReaderResult {
+    value: any;
+    descriptor: IDescriptor;
+}
+export declare type DataReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<IItemReaderResult[]>;
+export declare type ItemReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<IItemReaderResult>;
 /** Creates a data reader. */
 export declare function createDataReader(descriptors: IDescriptor[]): DataReader;
 export declare type DataWriter = (statement: FirebirdStatement, buffer: Uint8Array, values: any[] | undefined) => Promise<void>;

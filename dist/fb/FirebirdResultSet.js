@@ -10,6 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fb = __importStar(require("node-firebird-native-api"));
 const AResultSet_1 = require("../AResultSet");
 const FirebirdBlob_1 = require("./FirebirdBlob");
+const FirebirdBlobLink_1 = require("./FirebirdBlobLink");
 var Status;
 (function (Status) {
     Status[Status["UNFINISHED"] = 0] = "UNFINISHED";
@@ -178,7 +179,8 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         if (this.isNull(field)) {
             return null;
         }
-        return new Date(this._getValue(field));
+        const date = new Date(this._getValue(field));
+        return isNaN(date.getTime()) ? null : date;
     }
     getNumber(field) {
         this._throwIfBlob(field);
@@ -202,10 +204,11 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return value === null || value === undefined;
     }
     getObject() {
-        const array = this.getArray();
-        return array.reduce((object, item, index) => {
-            object[index] = item;
-            return object;
+        return this.parent.source.outDescriptors.reduce((row, descriptor, index) => {
+            if (descriptor.alias) {
+                row[descriptor.alias] = this.getAny(index);
+            }
+            return row;
         }, {});
     }
     getArray() {
@@ -213,11 +216,12 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         return this._data[this._currentIndex];
     }
     async getObjects() {
-        const arrays = await this.getArrays();
-        return arrays.map((array) => array.reduce((object, item, index) => {
-            object[index] = item;
-            return object;
-        }, {}));
+        await this.beforeFirst();
+        const objects = [];
+        while (await this.next()) {
+            objects.push(this.getObject());
+        }
+        return objects;
     }
     async getArrays() {
         this._checkClosed();
@@ -236,7 +240,9 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             return row[field];
         }
         else {
-            throw new Error("Not supported yet");
+            const index = this.parent.source.outDescriptors.findIndex((descriptor) => descriptor.alias === field);
+            // TODO
+            return row[index];
         }
     }
     _checkClosed() {
@@ -245,7 +251,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
     }
     _throwIfBlob(field) {
-        if (this._getValue(field) instanceof Blob) {
+        if (this._getValue(field) instanceof FirebirdBlobLink_1.FirebirdBlobLink) {
             throw new Error("Invalid typecasting");
         }
     }

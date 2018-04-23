@@ -2,6 +2,7 @@ import * as fb from "node-firebird-native-api";
 import {ResultSet as NativeResultSet} from "node-firebird-native-api";
 import {AResultSet, IRow} from "../AResultSet";
 import {FirebirdBlob} from "./FirebirdBlob";
+import {FirebirdBlobLink} from "./FirebirdBlobLink";
 import {FirebirdStatement} from "./FirebirdStatement";
 
 enum Status {
@@ -230,7 +231,8 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         if (this.isNull(field)) {
             return null;
         }
-        return new Date(this._getValue(field));
+        const date = new Date(this._getValue(field));
+        return isNaN(date.getTime()) ? null : date;
     }
 
     public getNumber(i: number): number;
@@ -269,11 +271,12 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     }
 
     public getObject(): IRow {
-        const array = this.getArray();
-        return array.reduce((object, item, index) => {
-            object[index] = item;
-            return object;
-        }, {});
+        return this.parent.source!.outDescriptors.reduce((row, descriptor, index) => {
+            if (descriptor.alias) {
+                row[descriptor.alias] = this.getAny(index);
+            }
+            return row;
+        }, {} as IRow);
     }
 
     public getArray(): any[] {
@@ -283,11 +286,12 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     }
 
     public async getObjects(): Promise<IRow[]> {
-        const arrays = await this.getArrays();
-        return arrays.map((array) => array.reduce((object, item, index) => {
-            object[index] = item;
-            return object;
-        }, {}));
+        await this.beforeFirst();
+        const objects = [];
+        while (await this.next()) {
+            objects.push(this.getObject());
+        }
+        return objects;
     }
 
     public async getArrays(): Promise<any[][]> {
@@ -309,7 +313,10 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         if (typeof field === "number") {
             return row[field];
         } else {
-            throw new Error("Not supported yet");
+            const index = this.parent.source!.outDescriptors.findIndex((descriptor) =>
+                descriptor.alias === field);
+            // TODO
+            return row[index];
         }
     }
 
@@ -320,7 +327,7 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     }
 
     private _throwIfBlob(field: number | string): void {
-        if (this._getValue(field) instanceof Blob) {
+        if (this._getValue(field) instanceof FirebirdBlobLink) {
             throw new Error("Invalid typecasting");
         }
     }
