@@ -19,65 +19,69 @@ class FirebirdDBStructure {
     static async read(transaction) {
         const fields = await ATransaction_1.ATransaction.executeQueryResultSet(transaction, `
             SELECT
-                TRIM(f.RDB$FIELD_NAME),
-                f.RDB$FIELD_TYPE,
-                f.RDB$NULL_FLAG,
-                f.RDB$DEFAULT_VALUE,
-                f.RDB$FIELD_LENGTH,
-                f.RDB$FIELD_SCALE,
-                f.RDB$VALIDATION_SOURCE,
-                f.RDB$FIELD_SUB_TYPE,
-                f.RDB$FIELD_PRECISION
+                TRIM(f.RDB$FIELD_NAME)          AS "fieldName",
+                f.RDB$FIELD_TYPE                AS "fieldType",
+                f.RDB$NULL_FLAG                 AS "nullFlag",
+                f.RDB$DEFAULT_VALUE             AS "defaultValue",
+                f.RDB$FIELD_LENGTH              AS "fieldLength",
+                f.RDB$FIELD_SCALE               AS "fieldScale",
+                f.RDB$VALIDATION_SOURCE         AS "validationSource",
+                f.RDB$FIELD_SUB_TYPE            AS "fieldSubType",
+                f.RDB$FIELD_PRECISION           AS "fieldPrecision"
             FROM RDB$FIELDS f
         `, async (resultSet) => {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
-                    RDB$FIELD_NAME: resultSet.getString(0),
-                    RDB$FIELD_TYPE: resultSet.getNumber(1),
-                    RDB$NULL_FLAG: resultSet.getNumber(2),
-                    RDB$DEFAULT_VALUE: resultSet.isNull(3) ? null : await resultSet.getBlob(3).asString(),
-                    RDB$FIELD_LENGTH: resultSet.getNumber(4),
-                    RDB$FIELD_SCALE: resultSet.getNumber(5),
-                    RDB$VALIDATION_SOURCE: resultSet.isNull(6) ? null : await resultSet.getBlob(6).asString(),
-                    RDB$FIELD_SUB_TYPE: resultSet.isNull(7) ? null : resultSet.getNumber(7),
-                    RDB$FIELD_PRECISION: resultSet.getNumber(8)
+                    RDB$FIELD_NAME: resultSet.getString("fieldName"),
+                    RDB$FIELD_TYPE: resultSet.getNumber("fieldType"),
+                    RDB$NULL_FLAG: resultSet.getNumber("nullFlag"),
+                    RDB$DEFAULT_VALUE: resultSet.isNull("defaultValue") ? null
+                        : await resultSet.getBlob("defaultValue").asString(),
+                    RDB$FIELD_LENGTH: resultSet.getNumber("fieldLength"),
+                    RDB$FIELD_SCALE: resultSet.getNumber("fieldScale"),
+                    RDB$VALIDATION_SOURCE: resultSet.isNull("validationSource") ? null
+                        : await resultSet.getBlob("validationSource").asString(),
+                    RDB$FIELD_SUB_TYPE: resultSet.isNull("fieldSubType") ? null
+                        : resultSet.getNumber("fieldSubType"),
+                    RDB$FIELD_PRECISION: resultSet.getNumber("fieldPrecision")
                 });
             }
             return array;
         });
         const relationFields = await ATransaction_1.ATransaction.executeQueryResultSet(transaction, `
             SELECT
-                TRIM(rf.RDB$RELATION_NAME),
-                TRIM(rf.RDB$FIELD_NAME),
-                TRIM(rf.RDB$FIELD_SOURCE),
-                rf.RDB$NULL_FLAG,
-                rf.RDB$DEFAULT_VALUE
+                TRIM(rf.RDB$RELATION_NAME)      AS "relationName",
+                TRIM(rf.RDB$FIELD_NAME)         AS "fieldName",
+                TRIM(rf.RDB$FIELD_SOURCE)       AS "fieldSource",
+                rf.RDB$NULL_FLAG                AS "nullFlag",
+                rf.RDB$DEFAULT_VALUE            AS "defaultValue"
             FROM RDB$RELATION_FIELDS rf
             ORDER BY RDB$RELATION_NAME
         `, async (resultSet) => {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
-                    RDB$RELATION_NAME: resultSet.getString(0),
-                    RDB$FIELD_NAME: resultSet.getString(1),
-                    RDB$FIELD_SOURCE: resultSet.getString(2),
-                    RDB$NULL_FLAG: resultSet.getNumber(3),
-                    RDB$DEFAULT_VALUE: resultSet.isNull(4) ? null : await resultSet.getBlob(4).asString()
+                    RDB$RELATION_NAME: resultSet.getString("relationName"),
+                    RDB$FIELD_NAME: resultSet.getString("fieldName"),
+                    RDB$FIELD_SOURCE: resultSet.getString("fieldSource"),
+                    RDB$NULL_FLAG: resultSet.getNumber("nullFlag"),
+                    RDB$DEFAULT_VALUE: resultSet.isNull("defaultValue") ? null
+                        : await resultSet.getBlob("defaultValue").asString()
                 });
             }
             return array;
         });
         const constraints = await ATransaction_1.ATransaction.executeQueryResultSet(transaction, `
             SELECT
-                TRIM(rc.RDB$RELATION_NAME),
-                TRIM(rc.RDB$CONSTRAINT_NAME),
-                TRIM(rc.RDB$CONSTRAINT_TYPE),
-                TRIM(s.RDB$INDEX_NAME),
-                TRIM(s.RDB$FIELD_NAME),
-                TRIM(rfc.RDB$CONST_NAME_UQ),
-                TRIM(rfc.RDB$UPDATE_RULE),
-                TRIM(rfc.RDB$DELETE_RULE)
+                TRIM(rc.RDB$RELATION_NAME)      AS "relationName",
+                TRIM(rc.RDB$CONSTRAINT_NAME)    AS "constraintName",
+                TRIM(rc.RDB$CONSTRAINT_TYPE)    AS "constraintType",
+                TRIM(s.RDB$INDEX_NAME)          AS "indexName",
+                TRIM(s.RDB$FIELD_NAME)          AS "fieldName",
+                TRIM(rfc.RDB$CONST_NAME_UQ)     AS "constNameUq",
+                TRIM(rfc.RDB$UPDATE_RULE)       AS "updateRule",
+                TRIM(rfc.RDB$DELETE_RULE)       AS "deleteRule"
             FROM RDB$RELATION_CONSTRAINTS rc
                 JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = rc.RDB$INDEX_NAME
                 LEFT JOIN RDB$REF_CONSTRAINTS rfc ON rfc.RDB$CONSTRAINT_NAME = rc.RDB$CONSTRAINT_NAME
@@ -86,14 +90,14 @@ class FirebirdDBStructure {
             const array = [];
             while (await resultSet.next()) {
                 array.push({
-                    RDB$RELATION_NAME: resultSet.getString(0),
-                    RDB$CONSTRAINT_NAME: resultSet.getString(1),
-                    RDB$CONSTRAINT_TYPE: resultSet.getString(2),
-                    RDB$INDEX_NAME: resultSet.getString(3),
-                    RDB$FIELD_NAME: resultSet.getString(4),
-                    RDB$CONST_NAME_UQ: resultSet.getString(5),
-                    RDB$UPDATE_RULE: resultSet.getString(6),
-                    RDB$DELETE_RULE: resultSet.getString(7)
+                    RDB$RELATION_NAME: resultSet.getString("relationName"),
+                    RDB$CONSTRAINT_NAME: resultSet.getString("constraintName"),
+                    RDB$CONSTRAINT_TYPE: resultSet.getString("constraintType"),
+                    RDB$INDEX_NAME: resultSet.getString("indexName"),
+                    RDB$FIELD_NAME: resultSet.getString("fieldName"),
+                    RDB$CONST_NAME_UQ: resultSet.getString("constNameUq"),
+                    RDB$UPDATE_RULE: resultSet.getString("updateRule"),
+                    RDB$DELETE_RULE: resultSet.getString("deleteRule")
                 });
             }
             return array;
