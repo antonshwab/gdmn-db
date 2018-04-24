@@ -29,6 +29,7 @@ export enum SQLTypes {
 
 export enum dpb {
     isc_dpb_version1 = 1,
+    isc_dpb_set_db_sql_dialect = 65,
     lc_ctype = 48,
     user_name = 28,
     password = 29
@@ -57,8 +58,13 @@ export enum blobInfo {
 
 export function createDpb(options?: { username?: string, password?: string }): Buffer {
     const code = (c: number) => String.fromCharCode(c);
+    let ret = `${code(dpb.isc_dpb_version1)}`;
+
+    const dialect = 3;
+    ret += `${code(dpb.isc_dpb_set_db_sql_dialect)}${code(dialect.toString().length)}${code(dialect)}`;
+
     const charSet = "utf8";
-    let ret = `${code(dpb.isc_dpb_version1)}${code(dpb.lc_ctype)}${code(charSet.length)}${charSet}`;
+    ret += `${code(dpb.lc_ctype)}${code(charSet.length)}${charSet}`;
 
     if (!options) {
         options = {};

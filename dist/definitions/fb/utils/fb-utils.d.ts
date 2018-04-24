@@ -18,6 +18,7 @@ export declare enum SQLTypes {
 }
 export declare enum dpb {
     isc_dpb_version1 = 1,
+    isc_dpb_set_db_sql_dialect = 65,
     lc_ctype = 48,
     user_name = 28,
     password = 29,

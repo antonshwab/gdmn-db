@@ -35,6 +35,7 @@ var SQLTypes;
 var dpb;
 (function (dpb) {
     dpb[dpb["isc_dpb_version1"] = 1] = "isc_dpb_version1";
+    dpb[dpb["isc_dpb_set_db_sql_dialect"] = 65] = "isc_dpb_set_db_sql_dialect";
     dpb[dpb["lc_ctype"] = 48] = "lc_ctype";
     dpb[dpb["user_name"] = 28] = "user_name";
     dpb[dpb["password"] = 29] = "password";
@@ -62,8 +63,11 @@ var blobInfo;
 })(blobInfo = exports.blobInfo || (exports.blobInfo = {}));
 function createDpb(options) {
     const code = (c) => String.fromCharCode(c);
+    let ret = `${code(dpb.isc_dpb_version1)}`;
+    const dialect = 3;
+    ret += `${code(dpb.isc_dpb_set_db_sql_dialect)}${code(dialect.toString().length)}${code(dialect)}`;
     const charSet = "utf8";
-    let ret = `${code(dpb.isc_dpb_version1)}${code(dpb.lc_ctype)}${code(charSet.length)}${charSet}`;
+    ret += `${code(dpb.lc_ctype)}${code(charSet.length)}${charSet}`;
     if (!options) {
         options = {};
     }
