@@ -9,6 +9,7 @@ import { FirebirdTransaction } from "./FirebirdTransaction";
 export declare type FirebirdOptions = IConnectionOptions;
 export declare class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlob, FirebirdResultSet, FirebirdStatement, FirebirdTransaction> {
     context: FirebirdContext;
+    transactions: Set<FirebirdTransaction>;
     handler?: Attachment;
     private static _optionsToUri(options);
     createDatabase(options: FirebirdOptions): Promise<void>;
@@ -17,4 +18,5 @@ export declare class FirebirdConnection extends AConnection<FirebirdOptions, Fir
     createTransaction(options?: ITransactionOptions): Promise<FirebirdTransaction>;
     disconnect(): Promise<void>;
     isConnected(): Promise<boolean>;
+    private closeChildren();
 }

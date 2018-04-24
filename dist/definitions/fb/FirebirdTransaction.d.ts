@@ -8,6 +8,7 @@ export declare class FirebirdTransaction extends ATransaction<FirebirdBlob, Fire
     static EXCLUDE_PATTERNS: RegExp[];
     static PLACEHOLDER_PATTERN: RegExp;
     readonly parent: FirebirdConnection;
+    statements: Set<FirebirdStatement>;
     handler?: Transaction;
     protected constructor(parent: FirebirdConnection, options?: ITransactionOptions);
     static create(parent: FirebirdConnection, options?: ITransactionOptions): Promise<FirebirdTransaction>;
@@ -18,4 +19,5 @@ export declare class FirebirdTransaction extends ATransaction<FirebirdBlob, Fire
     prepare(sql: string): Promise<FirebirdStatement>;
     executeQuery(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet>;
     execute(sql: string, params?: any[] | INamedParams): Promise<void>;
+    private closeChildren();
 }

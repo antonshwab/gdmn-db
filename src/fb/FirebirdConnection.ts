@@ -14,6 +14,7 @@ export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlo
     FirebirdTransaction> {
 
     public context: FirebirdContext = new FirebirdContext();
+    public transactions = new Set<FirebirdTransaction>();
     public handler?: Attachment;
 
     private static _optionsToUri(options: FirebirdOptions): string {
@@ -49,6 +50,8 @@ export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlo
             throw new Error("Need database connection");
         }
 
+        await this.closeChildren();
+
         await this.context.statusAction((status) => this.handler!.dropDatabaseAsync(status));
         this.handler = undefined;
         this.context.destroy();
@@ -80,6 +83,8 @@ export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlo
             throw new Error("Need database connection");
         }
 
+        await this.closeChildren();
+
         await this.context.statusAction((status) => this.handler!.detachAsync(status));
         this.handler = undefined;
         this.context.destroy();
@@ -87,5 +92,15 @@ export class FirebirdConnection extends AConnection<FirebirdOptions, FirebirdBlo
 
     public async isConnected(): Promise<boolean> {
         return Boolean(this.handler);
+    }
+
+    private async closeChildren(): Promise<void> {
+        if (this.transactions.size) {
+            console.warn("Not all transactions finished, they will be rollbacked");
+        }
+        await Promise.all(Array.from(this.transactions).reduceRight((promises, transaction) => {
+            promises.push(transaction.rollback());
+            return promises;
+        }, [] as Array<Promise<void>>));
     }
 }

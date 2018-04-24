@@ -9,9 +9,11 @@ const fb_utils_1 = require("./utils/fb-utils");
 class FirebirdStatement extends AStatement_1.AStatement {
     constructor(parent, paramsAnalyzer, source) {
         super();
+        this.resultSets = new Set();
         this.parent = parent;
         this._paramsAnalyzer = paramsAnalyzer;
         this.source = source;
+        parent.statements.add(this);
     }
     static async prepare(transaction, sql) {
         const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, FirebirdTransaction_1.FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction_1.FirebirdTransaction.PLACEHOLDER_PATTERN);
@@ -51,10 +53,12 @@ class FirebirdStatement extends AStatement_1.AStatement {
         if (!this.source) {
             throw new Error("Statement already disposed");
         }
+        await this.closeChildren();
         this.source.inMetadata.releaseSync();
         this.source.outMetadata.releaseSync();
         await this.parent.parent.context.statusAction((status) => this.source.handler.freeAsync(status));
         this.source = undefined;
+        this.parent.statements.delete(this);
     }
     async execute(params) {
         if (!this.source) {
@@ -77,6 +81,16 @@ class FirebirdStatement extends AStatement_1.AStatement {
         }
         await this.parent.parent.context.statusAction((status) => this.source.dataWriter(this, this.source.inBuffer, this._paramsAnalyzer.prepareParams(params)));
         return FirebirdResultSet_1.FirebirdResultSet.open(this);
+    }
+    async closeChildren() {
+        if (this.resultSets.size) {
+            console.warn("Not all resultSets closed, they will be closed");
+        }
+        await Promise.all(Array.from(this.resultSets).reduceRight((promises, resultSet) => {
+            resultSet.disposeStatementOnClose = false;
+            promises.push(resultSet.close());
+            return promises;
+        }, []));
     }
 }
 exports.FirebirdStatement = FirebirdStatement;

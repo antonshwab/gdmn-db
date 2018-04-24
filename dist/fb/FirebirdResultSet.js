@@ -25,6 +25,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         this._status = Status.UNFINISHED;
         this.parent = parent;
         this._handler = handler;
+        this.parent.resultSets.add(this);
     }
     get position() {
         this._checkClosed();
@@ -160,6 +161,7 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         this._handler = undefined;
         this._data = [];
         this._currentIndex = AResultSet_1.AResultSet.NO_INDEX;
+        this.parent.resultSets.delete(this);
         if (this.disposeStatementOnClose) {
             await this.parent.dispose();
         }

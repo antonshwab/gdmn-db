@@ -23,6 +23,7 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         super();
         this.parent = parent;
         this._handler = handler;
+        this.parent.resultSets.add(this);
     }
 
     get position(): number {
@@ -200,6 +201,7 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         this._handler = undefined;
         this._data = [];
         this._currentIndex = AResultSet.NO_INDEX;
+        this.parent.resultSets.delete(this);
 
         if (this.disposeStatementOnClose) {
             await this.parent.dispose();

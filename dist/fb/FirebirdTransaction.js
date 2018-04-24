@@ -6,6 +6,7 @@ const fb_utils_1 = require("./utils/fb-utils");
 class FirebirdTransaction extends ATransaction_1.ATransaction {
     constructor(parent, options) {
         super(options);
+        this.statements = new Set();
         this.parent = parent;
     }
     static async create(parent, options) {
@@ -49,33 +50,38 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
             const tpb = fb_utils_1.createTpb(options);
             return await this.parent.handler.startTransactionAsync(status, tpb.length, tpb);
         });
+        this.parent.transactions.add(this);
     }
     async commit() {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
+        await this.closeChildren();
         await this.parent.context.statusAction((status) => this.handler.commitAsync(status));
         this.handler = undefined;
+        this.parent.transactions.delete(this);
     }
     async rollback() {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
+        await this.closeChildren();
         await this.parent.context.statusAction((status) => this.handler.rollbackAsync(status));
         this.handler = undefined;
+        this.parent.transactions.delete(this);
     }
     async isActive() {
         return Boolean(this.handler);
     }
     async prepare(sql) {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
         return await FirebirdStatement_1.FirebirdStatement.prepare(this, sql);
     }
     async executeQuery(sql, params) {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
         const statement = await FirebirdStatement_1.FirebirdStatement.prepare(this, sql);
         const resultSet = await statement.executeQuery(params);
@@ -84,9 +90,18 @@ class FirebirdTransaction extends ATransaction_1.ATransaction {
     }
     async execute(sql, params) {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
         await FirebirdTransaction.executePrepareStatement(this, sql, (statement) => statement.execute(params));
+    }
+    async closeChildren() {
+        if (this.statements.size) {
+            console.warn("Not all statements disposed, they will be disposed");
+        }
+        await Promise.all(Array.from(this.statements).reduceRight((promises, statement) => {
+            promises.push(statement.dispose());
+            return promises;
+        }, []));
     }
 }
 FirebirdTransaction.EXCLUDE_PATTERNS = [

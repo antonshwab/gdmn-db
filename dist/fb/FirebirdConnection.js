@@ -8,6 +8,7 @@ class FirebirdConnection extends AConnection_1.AConnection {
     constructor() {
         super(...arguments);
         this.context = new FirebirdContext_1.FirebirdContext();
+        this.transactions = new Set();
     }
     static _optionsToUri(options) {
         let url = "";
@@ -37,6 +38,7 @@ class FirebirdConnection extends AConnection_1.AConnection {
         if (!this.handler) {
             throw new Error("Need database connection");
         }
+        await this.closeChildren();
         await this.context.statusAction((status) => this.handler.dropDatabaseAsync(status));
         this.handler = undefined;
         this.context.destroy();
@@ -61,12 +63,22 @@ class FirebirdConnection extends AConnection_1.AConnection {
         if (!this.handler) {
             throw new Error("Need database connection");
         }
+        await this.closeChildren();
         await this.context.statusAction((status) => this.handler.detachAsync(status));
         this.handler = undefined;
         this.context.destroy();
     }
     async isConnected() {
         return Boolean(this.handler);
+    }
+    async closeChildren() {
+        if (this.transactions.size) {
+            console.warn("Not all transactions finished, they will be rollbacked");
+        }
+        await Promise.all(Array.from(this.transactions).reduceRight((promises, transaction) => {
+            promises.push(transaction.rollback());
+            return promises;
+        }, []));
     }
 }
 exports.FirebirdConnection = FirebirdConnection;

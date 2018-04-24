@@ -1,5 +1,4 @@
 import {ABlob} from "./ABlob";
-import {AConnectionPool} from "./AConnectionPool";
 import {AResultSet} from "./AResultSet";
 import {AStatement} from "./AStatement";
 import {ATransaction, ITransactionOptions} from "./ATransaction";

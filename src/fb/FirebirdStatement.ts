@@ -30,6 +30,7 @@ export interface ISource {
 export class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSet> {
 
     public readonly parent: FirebirdTransaction;
+    public resultSets = new Set<FirebirdResultSet>();
     public source?: ISource;
     private readonly _paramsAnalyzer: DefaultParamsAnalyzer;
 
@@ -40,6 +41,8 @@ export class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSe
         this.parent = parent;
         this._paramsAnalyzer = paramsAnalyzer;
         this.source = source;
+
+        parent.statements.add(this);
     }
 
     public static async prepare(transaction: FirebirdTransaction,
@@ -94,10 +97,13 @@ export class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSe
             throw new Error("Statement already disposed");
         }
 
+        await this.closeChildren();
+
         this.source.inMetadata.releaseSync();
         this.source.outMetadata.releaseSync();
         await this.parent.parent.context.statusAction((status) => this.source!.handler.freeAsync(status));
         this.source = undefined;
+        this.parent.statements.delete(this);
     }
 
     public async execute(params?: any[] | INamedParams): Promise<void> {
@@ -131,5 +137,17 @@ export class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSe
             this.source!.dataWriter!(this, this.source!.inBuffer!, this._paramsAnalyzer.prepareParams(params)));
 
         return FirebirdResultSet.open(this);
+    }
+
+    private async closeChildren(): Promise<void> {
+        if (this.resultSets.size) {
+            console.warn("Not all resultSets closed, they will be closed");
+        }
+
+        await Promise.all(Array.from(this.resultSets).reduceRight((promises, resultSet) => {
+            resultSet.disposeStatementOnClose = false;
+            promises.push(resultSet.close());
+            return promises;
+        }, [] as Array<Promise<void>>));
     }
 }

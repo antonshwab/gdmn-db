@@ -17,6 +17,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
     public static PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
 
     public readonly parent: FirebirdConnection;
+    public statements = new Set<FirebirdStatement>();
     public handler?: Transaction;
 
     protected constructor(parent: FirebirdConnection, options?: ITransactionOptions) {
@@ -70,24 +71,31 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
             const tpb = createTpb(options);
             return await this.parent.handler!.startTransactionAsync(status, tpb.length, tpb);
         });
+        this.parent.transactions.add(this);
     }
 
     public async commit(): Promise<void> {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
+
+        await this.closeChildren();
 
         await this.parent.context.statusAction((status) => this.handler!.commitAsync(status));
         this.handler = undefined;
+        this.parent.transactions.delete(this);
     }
 
     public async rollback(): Promise<void> {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
+
+        await this.closeChildren();
 
         await this.parent.context.statusAction((status) => this.handler!.rollbackAsync(status));
         this.handler = undefined;
+        this.parent.transactions.delete(this);
     }
 
     public async isActive(): Promise<boolean> {
@@ -96,7 +104,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
 
     public async prepare(sql: string): Promise<FirebirdStatement> {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
 
         return await FirebirdStatement.prepare(this, sql);
@@ -104,7 +112,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
 
     public async executeQuery(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet> {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
 
         const statement = await FirebirdStatement.prepare(this, sql);
@@ -115,9 +123,19 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
 
     public async execute(sql: string, params?: any[] | INamedParams): Promise<void> {
         if (!this.handler) {
-            throw new Error("Need to open handler");
+            throw new Error("Need to open transaction");
         }
 
         await FirebirdTransaction.executePrepareStatement(this, sql, (statement) => statement.execute(params));
+    }
+
+    private async closeChildren(): Promise<void> {
+        if (this.statements.size) {
+            console.warn("Not all statements disposed, they will be disposed");
+        }
+        await Promise.all(Array.from(this.statements).reduceRight((promises, statement) => {
+            promises.push(statement.dispose());
+            return promises;
+        }, [] as Array<Promise<void>>));
     }
 }

@@ -19,6 +19,7 @@ export interface ISource {
 }
 export declare class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSet> {
     readonly parent: FirebirdTransaction;
+    resultSets: Set<FirebirdResultSet>;
     source?: ISource;
     private readonly _paramsAnalyzer;
     protected constructor(parent: FirebirdTransaction, paramsAnalyzer: DefaultParamsAnalyzer, source?: ISource);
@@ -26,4 +27,5 @@ export declare class FirebirdStatement extends AStatement<FirebirdBlob, Firebird
     dispose(): Promise<void>;
     execute(params?: any[] | INamedParams): Promise<void>;
     executeQuery(params?: any[] | INamedParams): Promise<FirebirdResultSet>;
+    private closeChildren();
 }
