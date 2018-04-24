@@ -77,7 +77,7 @@ export class FirebirdDBStructure {
                 rf.RDB$NULL_FLAG                AS "nullFlag",
                 rf.RDB$DEFAULT_VALUE            AS "defaultValue"
             FROM RDB$RELATION_FIELDS rf
-            ORDER BY RDB$RELATION_NAME
+            ORDER BY RDB$RELATION_NAME, RDB$FIELD_POSITION
         `, async (resultSet) => {
             const array: IRDB$RELATIONFIELD[] = [];
             while (await resultSet.next()) {
