@@ -47,5 +47,4 @@ export declare class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     private _getValue(field);
     private getOutDescriptor(field);
     private _checkClosed();
-    private _fetch(options?);
 }

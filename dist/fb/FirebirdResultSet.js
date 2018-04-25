@@ -44,11 +44,15 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
             this._currentIndex++;
             if (this._currentIndex === this._buffers.length) {
                 if (!this._finished) {
-                    const newResult = await this._fetch({ fetchSize: 1 });
-                    if (newResult) {
-                        this._buffers.push(newResult[0]);
-                        return true;
-                    }
+                    return await this.parent.parent.parent.context.statusAction(async (status) => {
+                        const result = await this.source.handler.fetchNextAsync(status, this.source.outBuffer);
+                        if (result === node_firebird_native_api_1.Status.RESULT_OK) {
+                            this._buffers.push(this.source.outBuffer);
+                            return true;
+                        }
+                        this._finished = true;
+                        return false;
+                    });
                 }
                 return false;
             }
@@ -251,43 +255,6 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         if (!this.source) {
             throw new Error("ResultSet is closed");
         }
-    }
-    async _fetch(options) {
-        this._checkClosed();
-        if (this._finished) {
-            return [];
-        }
-        const fetchRet = await this.parent.parent.parent.context.statusAction(async (status) => {
-            const rows = [];
-            const buffers = [
-                this.source.outBuffer,
-                new Uint8Array(this.parent.source.outMetadata.getMessageLengthSync(status))
-            ];
-            let buffer = 0;
-            let nextFetch = this.source.handler.fetchNextAsync(status, buffers[buffer]);
-            while (true) {
-                if (await nextFetch === node_firebird_native_api_1.Status.RESULT_OK) {
-                    const buffer1 = buffer;
-                    buffer = ++buffer % 2;
-                    const finish = options && options.fetchSize && rows.length + 1 >= options.fetchSize;
-                    if (!finish) {
-                        nextFetch = this.source.handler.fetchNextAsync(status, buffers[buffer]);
-                    }
-                    rows.push(buffers[buffer1]);
-                    if (finish) {
-                        return { finished: false, rows };
-                    }
-                }
-                else {
-                    return { finished: true, rows };
-                }
-            }
-        });
-        if (fetchRet.finished) {
-            this._finished = true;
-            return;
-        }
-        return fetchRet.rows;
     }
 }
 exports.FirebirdResultSet = FirebirdResultSet;
