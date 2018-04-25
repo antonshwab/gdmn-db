@@ -122,9 +122,6 @@ export class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSe
             if (newTransaction && this.parent.handler !== newTransaction) {
                 //// FIXME: newTransaction.releaseSync();
             }
-            // return this.source!.outMetadata
-            //     ? await this.source!.dataReader!(this)
-            //     : [];
         });
     }
 
@@ -133,8 +130,7 @@ export class FirebirdStatement extends AStatement<FirebirdBlob, FirebirdResultSe
             throw new Error("Statement already disposed");
         }
 
-        await this.parent.parent.context.statusAction((status) =>
-            this.source!.dataWriter!(this, this.source!.inBuffer!, this._paramsAnalyzer.prepareParams(params)));
+        this.source!.dataWriter!(this, this.source!.inBuffer!, this._paramsAnalyzer.prepareParams(params));
 
         return FirebirdResultSet.open(this);
     }

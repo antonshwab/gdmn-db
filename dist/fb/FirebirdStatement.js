@@ -70,16 +70,13 @@ class FirebirdStatement extends AStatement_1.AStatement {
             if (newTransaction && this.parent.handler !== newTransaction) {
                 //// FIXME: newTransaction.releaseSync();
             }
-            // return this.source!.outMetadata
-            //     ? await this.source!.dataReader!(this)
-            //     : [];
         });
     }
     async executeQuery(params) {
         if (!this.source) {
             throw new Error("Statement already disposed");
         }
-        await this.parent.parent.context.statusAction((status) => this.source.dataWriter(this, this.source.inBuffer, this._paramsAnalyzer.prepareParams(params)));
+        this.source.dataWriter(this, this.source.inBuffer, this._paramsAnalyzer.prepareParams(params));
         return FirebirdResultSet_1.FirebirdResultSet.open(this);
     }
     async closeChildren() {

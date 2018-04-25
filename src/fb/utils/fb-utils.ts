@@ -27,6 +27,12 @@ export enum SQLTypes {
     SQL_NULL = 32766
 }
 
+export enum SQL_BLOB_SUB_TYPE {
+    BINARY = 0,
+    TEXT = 1,
+    BLR = 2
+}
+
 export enum dpb {
     isc_dpb_version1 = 1,
     isc_dpb_set_db_sql_dialect = 65,
@@ -398,6 +404,10 @@ export function createDataWriter(descriptors: IDescriptor[]): DataWriter {
                         value = value.blobLink;
                     }
 
+                    if (descriptor.subType === SQL_BLOB_SUB_TYPE.TEXT && typeof value === "string") {
+                        value = Buffer.from(value, "utf8");
+                    }
+
                     if (value instanceof Buffer) {
                         const blobStream = await FirebirdBlobStream.create(statement.parent);
                         try {
@@ -410,8 +420,8 @@ export function createDataWriter(descriptors: IDescriptor[]): DataWriter {
                         await blobStream.close();
 
                         targetBlobId.set(blobStream.blobLink.id);
-                    }
-                    else if (value instanceof FirebirdBlobLink) {
+
+                    } else if (value instanceof FirebirdBlobLink) {
                         if (value.connection === statement.parent.parent) {
                             targetBlobId.set(value.id);
                         } else {

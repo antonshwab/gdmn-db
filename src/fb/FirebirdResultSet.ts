@@ -1,9 +1,10 @@
 import * as fb from "node-firebird-native-api";
 import {ResultSet as NativeResultSet} from "node-firebird-native-api";
-import {AResultSet, IRow} from "../AResultSet";
+import {AResultSet} from "../AResultSet";
 import {FirebirdBlob} from "./FirebirdBlob";
 import {FirebirdBlobLink} from "./FirebirdBlobLink";
 import {FirebirdStatement} from "./FirebirdStatement";
+import {IDescriptor, SQL_BLOB_SUB_TYPE} from "./utils/fb-utils";
 
 enum Status {
     UNFINISHED, FINISHED
@@ -259,10 +260,19 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         return String(this._getValue(field));
     }
 
-    public getAny(i: number): any;
-    public getAny(name: string): any;
-    public getAny(field: any): any {
-        return this._getValue(field);
+    public async getAny(i: number): Promise<any>;
+    public async getAny(name: string): Promise<any>;
+    public async getAny(field: any): Promise<any> {
+        const value = this._getValue(field);
+        if (value instanceof FirebirdBlobLink) {
+            const descriptor = this.getDescriptor(field);
+            if (descriptor.subType === SQL_BLOB_SUB_TYPE.TEXT) {
+                return await this.getBlob(field).asString();
+            } else {
+                return await this.getBlob(field).asBuffer();
+            }
+        }
+        return value;
     }
 
     public isNull(i: number): boolean;
@@ -272,42 +282,6 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         return value === null || value === undefined;
     }
 
-    public getObject(): IRow {
-        return this.parent.source!.outDescriptors.reduce((row, descriptor, index) => {
-            if (descriptor.alias) {
-                row[descriptor.alias] = this.getAny(index);
-            }
-            return row;
-        }, {} as IRow);
-    }
-
-    public getArray(): any[] {
-        this._checkClosed();
-
-        return this._data[this._currentIndex];
-    }
-
-    public async getObjects(): Promise<IRow[]> {
-        await this.beforeFirst();
-        const objects = [];
-        while (await this.next()) {
-            objects.push(this.getObject());
-        }
-        return objects;
-    }
-
-    public async getArrays(): Promise<any[][]> {
-        this._checkClosed();
-
-        // loading all rows
-        if (this._status === Status.UNFINISHED) {
-            while (await this.next()) {
-                // nothing
-            }
-        }
-        return this._data;
-    }
-
     private _getValue(field: number | string): any {
         this._checkClosed();
 
@@ -315,10 +289,17 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         if (typeof field === "number") {
             return row[field];
         } else {
-            const index = this.parent.source!.outDescriptors.findIndex((descriptor) =>
-                descriptor.alias === field);
-            // TODO
+            const index = this.parent.source!.outDescriptors.findIndex((descriptor) => descriptor.alias === field);
             return row[index];
+        }
+    }
+
+    private getDescriptor(field: number | string): IDescriptor {
+        const descriptors = this.parent.source!.outDescriptors;
+        if (typeof field === "number") {
+            return descriptors[field];
+        } else {
+            return descriptors.find((descriptor) => descriptor.alias === field)!;
         }
     }
 

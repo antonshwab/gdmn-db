@@ -4,18 +4,18 @@ import {AConnection, AConnectionPool, IDefaultConnectionPoolOptions} from "../..
 export function transactionTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
     describe("ATransaction", async () => {
 
-        let globalTransaction: AConnection;
+        let globalConnection: AConnection;
 
         before(async () => {
-            globalTransaction = await connectionPool.get();
+            globalConnection = await connectionPool.get();
         });
 
         after(async () => {
-            await globalTransaction.disconnect();
+            await globalConnection.disconnect();
         });
 
         it("lifecycle", async () => {
-            const transaction = await globalTransaction.createTransaction();
+            const transaction = await globalConnection.createTransaction();
             expect(await transaction.isActive()).to.equal(false);
 
             await transaction.start();
@@ -32,7 +32,7 @@ export function transactionTest(connectionPool: AConnectionPool<IDefaultConnecti
         });
 
         it("prepare", async () => {
-            await AConnection.executeTransaction(globalTransaction, async (transaction) => {
+            await AConnection.executeTransaction(globalConnection, async (transaction) => {
                 const statement = await transaction.prepare("SELECT FIRST 1 * FROM RDB$FIELDS");
                 should().exist(statement);
 
@@ -41,14 +41,14 @@ export function transactionTest(connectionPool: AConnectionPool<IDefaultConnecti
         });
 
         it("execute", async () => {
-            await AConnection.executeTransaction(globalTransaction, async (transaction) => {
+            await AConnection.executeTransaction(globalConnection, async (transaction) => {
                 const result = await transaction.execute("SELECT FIRST 1 * FROM RDB$FIELDS");
                 should().not.exist(result);
             });
         });
 
         it("executeQuery", async () => {
-            await AConnection.executeTransaction(globalTransaction, async (transaction) => {
+            await AConnection.executeTransaction(globalConnection, async (transaction) => {
                 const resultSet = await transaction.executeQuery("SELECT FIRST 1 * FROM RDB$FIELDS");
                 should().exist(resultSet);
 

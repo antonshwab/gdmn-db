@@ -13,7 +13,7 @@ export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOption
             expect(await connectionPool.isCreated()).to.equal(false);
         });
 
-        it("get parent", async () => {
+        it("get connection", async () => {
             await AConnectionPool.executeConnectionPool(
                 driver.newDefaultConnectionPool(), dbOptions, {min: 1, max: 1},
                 async (connectionPool) => {

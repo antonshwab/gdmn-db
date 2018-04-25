@@ -15,14 +15,26 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
             await globalTransaction.start();
 
             await AConnection.executeTransaction(globalConnection, async (transaction) => {
-                await transaction.execute("CREATE TABLE TEST_TABLE(id INT NOT NULL PRIMARY KEY, name VARCHAR(20))");
+                await transaction.execute(`
+                    CREATE TABLE TEST_TABLE (
+                        id              INT NOT NULL PRIMARY KEY,
+                        name            VARCHAR(20)  NOT NULL,
+                        dateTime        TIMESTAMP NOT NULL,
+                        onlyDate        DATE NOT NULL,
+                        onlyTime        TIME NOT NULL,
+                        nullValue       VARCHAR(20),
+                        textBlob        BLOB SUB_TYPE TEXT NOT NULL
+                    )
+                `);
             });
 
             await AConnection.executeTransaction(globalConnection, async (transaction) => {
                 await ATransaction.executePrepareStatement(transaction,
-                    "INSERT INTO TEST_TABLE (id, name) VALUES(:id, :name)", async (statement) => {
-                        const data = getData(10);
-                        for (const item of data) {
+                    `
+                        INSERT INTO TEST_TABLE (id, name, dateTime, onlyDate, onlyTime, nullValue, textBlob)
+                        VALUES(:id, :name, :dateTime, :onlyDate, :onlyTime, :nullValue, :textBlob)
+                    `, async (statement) => {
+                        for (const item of arrayData) {
                             await statement.execute(item);
                         }
                     });
@@ -308,12 +320,64 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 });
         });
 
+        it("read data (isNull)", async () => {
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+                async (resultSet) => {
+                    while (await resultSet.next()) {
+                        expect(resultSet.isNull("ID")).to.equal(false);
+                        expect(resultSet.isNull("NAME")).to.equal(false);
+                        expect(resultSet.isNull("DATETIME")).to.equal(false);
+                        expect(resultSet.isNull("ONLYDATE")).to.equal(false);
+                        expect(resultSet.isNull("ONLYTIME")).to.equal(false);
+                        expect(resultSet.isNull("NULLVALUE")).to.equal(true);
+                        expect(resultSet.isNull("TEXTBLOB")).to.equal(false);
+                    }
+                });
+        });
+
+        it("read data (getAny)", async () => {
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+                async (resultSet) => {
+                    while (await resultSet.next()) {
+                        const dataItem = arrayData[resultSet.position];
+                        expect(await resultSet.getAny("ID")).to.equal(dataItem.id);
+                        expect(await resultSet.getAny("NAME")).to.equal(dataItem.name);
+                        expect((await resultSet.getAny("DATETIME"))!.getTime()).to.equal(dataItem.dateTime.getTime());
+                        expect((await resultSet.getAny("ONLYDATE"))!.getTime()).to.equal(dataItem.onlyDate.getTime());
+                        expect((await resultSet.getAny("ONLYTIME"))!.getTime()).to.equal(dataItem.onlyTime.getTime());
+                        should().not.exist(await resultSet.getAny("NULLVALUE"));
+                        expect(await resultSet.getAny("TEXTBLOB")).to.equal(dataItem.textBlob);
+                    }
+                });
+        });
+
+        it("read data (getBlob)", async () => {
+            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
+                async (resultSet) => {
+                    while (await resultSet.next()) {
+                        const dataItem = arrayData[resultSet.position];
+                        expect(await resultSet.getBlob("ID").asString()).to.equal("");
+                        expect(await resultSet.getBlob("NAME").asString()).to.equal("");
+                        expect(await resultSet.getBlob("DATETIME").asString()).to.equal("");
+                        expect(await resultSet.getBlob("ONLYDATE").asString()).to.equal("");
+                        expect(await resultSet.getBlob("ONLYTIME").asString()).to.equal("");
+                        expect(await resultSet.getBlob("NULLVALUE").asString()).to.equal("");
+                        expect(await resultSet.getBlob("TEXTBLOB").asString()).to.equal(dataItem.textBlob);
+                    }
+                });
+        });
+
         it("read data (getString)", async () => {
             await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
                 async (resultSet) => {
                     while (await resultSet.next()) {
-                        expect(resultSet.getString("ID")).to.equal(getData(countRow)[resultSet.position].id.toString());
-                        expect(resultSet.getString("NAME")).to.equal(getData(countRow)[resultSet.position].name);
+                        const dataItem = arrayData[resultSet.position];
+                        expect(resultSet.getString("ID")).to.equal(dataItem.id.toString());
+                        expect(resultSet.getString("NAME")).to.equal(dataItem.name);
+                        expect(resultSet.getString("DATETIME")).to.equal(dataItem.dateTime.toString());
+                        expect(resultSet.getString("ONLYDATE")).to.equal(dataItem.onlyDate.toString());
+                        expect(resultSet.getString("ONLYTIME")).to.equal(dataItem.onlyTime.toString());
+                        expect(resultSet.getString("NULLVALUE")).to.equal("");
                     }
                 });
         });
@@ -322,8 +386,13 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
             await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
                 async (resultSet) => {
                     while (await resultSet.next()) {
-                        expect(resultSet.getNumber("ID")).to.equal(getData(countRow)[resultSet.position].id);
+                        const dataItem = arrayData[resultSet.position];
+                        expect(resultSet.getNumber("ID")).to.equal(dataItem.id);
                         expect(isNaN(resultSet.getNumber("NAME"))).to.equal(true);
+                        expect(isNaN(resultSet.getNumber("DATETIME"))).to.equal(true);
+                        expect(isNaN(resultSet.getNumber("ONLYDATE"))).to.equal(true);
+                        expect(isNaN(resultSet.getNumber("ONLYTIME"))).to.equal(true);
+                        expect(resultSet.getNumber("NULLVALUE")).to.equal(0);
                     }
                 });
         });
@@ -334,6 +403,10 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                     while (await resultSet.next()) {
                         expect(resultSet.getBoolean("ID")).to.equal(resultSet.position !== 0);
                         expect(resultSet.getBoolean("NAME")).to.equal(true);
+                        expect(resultSet.getBoolean("DATETIME")).to.equal(true);
+                        expect(resultSet.getBoolean("ONLYDATE")).to.equal(true);
+                        expect(resultSet.getBoolean("ONLYTIME")).to.equal(true);
+                        expect(resultSet.getBoolean("NULLVALUE")).to.equal(false);
                     }
                 });
         });
@@ -342,36 +415,48 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
             await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
                 async (resultSet) => {
                     while (await resultSet.next()) {
+                        const dataItem = arrayData[resultSet.position];
                         should().exist(resultSet.getDate("ID"));
                         should().not.exist(resultSet.getDate("NAME"));
+                        expect(resultSet.getDate("DATETIME")!.getTime()).to.equal(dataItem.dateTime.getTime());
+                        expect(resultSet.getDate("ONLYDATE")!.getTime()).to.equal(dataItem.onlyDate.getTime());
+                        expect(resultSet.getDate("ONLYTIME")!.getTime()).to.equal(dataItem.onlyTime.getTime());
+                        should().not.exist(resultSet.getDate("NULLVALUE"));
                     }
-                });
-        });
-
-        it("read data (getObjects)", async () => {
-            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
-                async (resultSet) => {
-                    const result = await resultSet.getObjects();
-                    expect(result.map((object) => ({id: object.ID, name: object.NAME})))
-                        .to.deep.equal(getData(countRow));
-                });
-        });
-
-        it("read data (getArrays)", async () => {
-            await ATransaction.executeQueryResultSet(globalTransaction, "SELECT * FROM TEST_TABLE",
-                async (resultSet) => {
-                    const result = await resultSet.getArrays();
-                    expect(result.map((array) => ({id: array[0], name: array[1]})))
-                        .to.deep.equal(getData(countRow));
                 });
         });
     });
 }
 
-function getData(count: number): Array<{ id: number, name: string }> {
-    const data = [];
+interface IDataItem {
+    id: number;
+    name: string;
+    dateTime: Date;
+    onlyDate: Date;
+    onlyTime: Date;
+    nullValue: null;
+    textBlob: string;
+}
+
+const arrayData = getData(10);
+
+function getData(count: number): IDataItem[] {
+    const dateTime = new Date();
+    const onlyDate = new Date();
+    onlyDate.setHours(0, 0, 0, 0);
+    const onlyTime = new Date();
+
+    const data: IDataItem[] = [];
     for (let i = 0; i < count; i++) {
-        data.push({id: i, name: `Name №${i + 1}`});
+        data.push({
+            id: i,
+            name: `Name №${i + 1}`,
+            dateTime,
+            onlyDate,
+            onlyTime,
+            nullValue: null,
+            textBlob: "Test text blob field"
+        });
     }
     return data;
 }

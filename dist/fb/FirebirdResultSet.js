@@ -11,6 +11,7 @@ const fb = __importStar(require("node-firebird-native-api"));
 const AResultSet_1 = require("../AResultSet");
 const FirebirdBlob_1 = require("./FirebirdBlob");
 const FirebirdBlobLink_1 = require("./FirebirdBlobLink");
+const fb_utils_1 = require("./utils/fb-utils");
 var Status;
 (function (Status) {
     Status[Status["UNFINISHED"] = 0] = "UNFINISHED";
@@ -198,42 +199,22 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
         return String(this._getValue(field));
     }
-    getAny(field) {
-        return this._getValue(field);
+    async getAny(field) {
+        const value = this._getValue(field);
+        if (value instanceof FirebirdBlobLink_1.FirebirdBlobLink) {
+            const descriptor = this.getDescriptor(field);
+            if (descriptor.subType === fb_utils_1.SQL_BLOB_SUB_TYPE.TEXT) {
+                return await this.getBlob(field).asString();
+            }
+            else {
+                return await this.getBlob(field).asBuffer();
+            }
+        }
+        return value;
     }
     isNull(field) {
         const value = this._getValue(field);
         return value === null || value === undefined;
-    }
-    getObject() {
-        return this.parent.source.outDescriptors.reduce((row, descriptor, index) => {
-            if (descriptor.alias) {
-                row[descriptor.alias] = this.getAny(index);
-            }
-            return row;
-        }, {});
-    }
-    getArray() {
-        this._checkClosed();
-        return this._data[this._currentIndex];
-    }
-    async getObjects() {
-        await this.beforeFirst();
-        const objects = [];
-        while (await this.next()) {
-            objects.push(this.getObject());
-        }
-        return objects;
-    }
-    async getArrays() {
-        this._checkClosed();
-        // loading all rows
-        if (this._status === Status.UNFINISHED) {
-            while (await this.next()) {
-                // nothing
-            }
-        }
-        return this._data;
     }
     _getValue(field) {
         this._checkClosed();
@@ -243,8 +224,16 @@ class FirebirdResultSet extends AResultSet_1.AResultSet {
         }
         else {
             const index = this.parent.source.outDescriptors.findIndex((descriptor) => descriptor.alias === field);
-            // TODO
             return row[index];
+        }
+    }
+    getDescriptor(field) {
+        const descriptors = this.parent.source.outDescriptors;
+        if (typeof field === "number") {
+            return descriptors[field];
+        }
+        else {
+            return descriptors.find((descriptor) => descriptor.alias === field);
         }
     }
     _checkClosed() {

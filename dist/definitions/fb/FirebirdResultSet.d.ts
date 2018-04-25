@@ -1,5 +1,5 @@
 import { ResultSet as NativeResultSet } from "node-firebird-native-api";
-import { AResultSet, IRow } from "../AResultSet";
+import { AResultSet } from "../AResultSet";
 import { FirebirdBlob } from "./FirebirdBlob";
 import { FirebirdStatement } from "./FirebirdStatement";
 export declare class FirebirdResultSet extends AResultSet<FirebirdBlob> {
@@ -35,15 +35,12 @@ export declare class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     getNumber(name: string): number;
     getString(i: number): string;
     getString(name: string): string;
-    getAny(i: number): any;
-    getAny(name: string): any;
+    getAny(i: number): Promise<any>;
+    getAny(name: string): Promise<any>;
     isNull(i: number): boolean;
     isNull(name: string): boolean;
-    getObject(): IRow;
-    getArray(): any[];
-    getObjects(): Promise<IRow[]>;
-    getArrays(): Promise<any[][]>;
     private _getValue(field);
+    private getDescriptor(field);
     private _checkClosed();
     private _throwIfBlob(field);
     private _fetch(options?);

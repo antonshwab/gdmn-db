@@ -13,7 +13,7 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
             expect(await connection.isConnected()).to.equal(false);
         });
 
-        it("create parent", async () => {
+        it("create connection", async () => {
             await AConnection.executeConnection(driver.newConnection(), dbOptions,
                 async (connection) => {
                     const transaction = await connection.createTransaction();

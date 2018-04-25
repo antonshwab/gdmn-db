@@ -32,6 +32,12 @@ var SQLTypes;
     SQLTypes[SQLTypes["SQL_BOOLEAN"] = 32764] = "SQL_BOOLEAN";
     SQLTypes[SQLTypes["SQL_NULL"] = 32766] = "SQL_NULL";
 })(SQLTypes = exports.SQLTypes || (exports.SQLTypes = {}));
+var SQL_BLOB_SUB_TYPE;
+(function (SQL_BLOB_SUB_TYPE) {
+    SQL_BLOB_SUB_TYPE[SQL_BLOB_SUB_TYPE["BINARY"] = 0] = "BINARY";
+    SQL_BLOB_SUB_TYPE[SQL_BLOB_SUB_TYPE["TEXT"] = 1] = "TEXT";
+    SQL_BLOB_SUB_TYPE[SQL_BLOB_SUB_TYPE["BLR"] = 2] = "BLR";
+})(SQL_BLOB_SUB_TYPE = exports.SQL_BLOB_SUB_TYPE || (exports.SQL_BLOB_SUB_TYPE = {}));
 var dpb;
 (function (dpb) {
     dpb[dpb["isc_dpb_version1"] = 1] = "isc_dpb_version1";
@@ -297,6 +303,9 @@ function createDataWriter(descriptors) {
                     const targetBlobId = buffer.subarray(descriptor.offset, descriptor.offset + 8);
                     if (value instanceof FirebirdBlobStream_1.FirebirdBlobStream) {
                         value = value.blobLink;
+                    }
+                    if (descriptor.subType === SQL_BLOB_SUB_TYPE.TEXT && typeof value === "string") {
+                        value = Buffer.from(value, "utf8");
                     }
                     if (value instanceof Buffer) {
                         const blobStream = await FirebirdBlobStream_1.FirebirdBlobStream.create(statement.parent);

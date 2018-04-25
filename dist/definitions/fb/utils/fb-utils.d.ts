@@ -16,6 +16,11 @@ export declare enum SQLTypes {
     SQL_BOOLEAN = 32764,
     SQL_NULL = 32766,
 }
+export declare enum SQL_BLOB_SUB_TYPE {
+    BINARY = 0,
+    TEXT = 1,
+    BLR = 2,
+}
 export declare enum dpb {
     isc_dpb_version1 = 1,
     isc_dpb_set_db_sql_dialect = 65,
