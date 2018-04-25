@@ -19,5 +19,5 @@ export declare class FirebirdTransaction extends ATransaction<FirebirdBlob, Fire
     prepare(sql: string): Promise<FirebirdStatement>;
     executeQuery(sql: string, params?: any[] | INamedParams): Promise<FirebirdResultSet>;
     execute(sql: string, params?: any[] | INamedParams): Promise<void>;
-    private closeChildren();
+    private _closeChildren();
 }

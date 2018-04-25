@@ -18,5 +18,5 @@ export declare class FirebirdConnection extends AConnection<FirebirdOptions, Fir
     createTransaction(options?: ITransactionOptions): Promise<FirebirdTransaction>;
     disconnect(): Promise<void>;
     isConnected(): Promise<boolean>;
-    private closeChildren();
+    private _closeChildren();
 }

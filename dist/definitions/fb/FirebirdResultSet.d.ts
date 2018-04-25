@@ -1,17 +1,22 @@
-import { ResultSet as NativeResultSet } from "node-firebird-native-api";
+import { ResultSet as ApiResultSet } from "node-firebird-native-api";
 import { AResultSet } from "../AResultSet";
 import { FirebirdBlob } from "./FirebirdBlob";
 import { FirebirdStatement } from "./FirebirdStatement";
+export interface IResultSetSource {
+    handler: ApiResultSet;
+    outBuffer: Uint8Array;
+}
 export declare class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     readonly parent: FirebirdStatement;
     disposeStatementOnClose: boolean;
-    private _handler?;
-    private _data;
+    source?: IResultSetSource;
+    private _buffers;
     private _currentIndex;
-    private _status;
-    protected constructor(parent: FirebirdStatement, handler: NativeResultSet);
+    private _finished;
+    protected constructor(parent: FirebirdStatement, source: IResultSetSource);
     readonly position: number;
-    static open(parent: FirebirdStatement): Promise<FirebirdResultSet>;
+    static open(parent: FirebirdStatement, params: any[]): Promise<FirebirdResultSet>;
+    private static _throwIfBlob(value);
     next(): Promise<boolean>;
     previous(): Promise<boolean>;
     to(i: number): Promise<boolean>;
@@ -40,8 +45,7 @@ export declare class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     isNull(i: number): boolean;
     isNull(name: string): boolean;
     private _getValue(field);
-    private getDescriptor(field);
+    private getOutDescriptor(field);
     private _checkClosed();
-    private _throwIfBlob(field);
     private _fetch(options?);
 }

@@ -1,12 +1,12 @@
-import * as fb from "node-firebird-native-api";
-import * as os from "os";
-import * as stringDecoder from "string_decoder";
+import {MessageMetadata, Status} from "node-firebird-native-api";
+import {endianness} from "os";
+import {StringDecoder} from "string_decoder";
 import {FirebirdBlobLink} from "../FirebirdBlobLink";
 import {FirebirdBlobStream} from "../FirebirdBlobStream";
 import {FirebirdStatement} from "../FirebirdStatement";
 import {decodeDate, decodeTime, encodeDate, encodeTime} from "./date-time";
 
-const littleEndian = os.endianness() === "LE";
+const littleEndian = endianness() === "LE";
 
 export enum SQLTypes {
     SQL_TEXT = 452,
@@ -222,245 +222,242 @@ export interface IDescriptor {
     nullOffset: number;
 }
 
-export interface IItemReaderResult {
-    value: any;
-    descriptor: IDescriptor;
-}
-
-export type DataReader = (statement: FirebirdStatement,
-                          buffer: Uint8Array) => Promise<IItemReaderResult[]>;
-export type ItemReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<IItemReaderResult>;
-
-/** Creates a data reader. */
-export function createDataReader(descriptors: IDescriptor[]): DataReader {
-    const mappers = new Array<ItemReader>(descriptors.length);
-
-    for (let i = 0; i < descriptors.length; ++i) {
-        const descriptor = descriptors[i];
-
-        mappers[i] = async (statement: FirebirdStatement, buffer: Uint8Array): Promise<any> => {
-            const dataView = new DataView(buffer.buffer);
-
-            if (dataView.getInt16(descriptor.nullOffset, littleEndian) === -1) {
-                return null;
-            }
-
-            switch (descriptor.type) {
-                // SQL_TEXT is handled changing its descriptor to SQL_VARYING with IMetadataBuilder.
-                case SQLTypes.SQL_VARYING: {
-                    //// TODO: none, octets
-                    const varLength = dataView.getUint16(descriptor.offset, littleEndian);
-                    const decoder = new stringDecoder.StringDecoder("utf8");
-                    const buf = Buffer.from(buffer.buffer as any, descriptor.offset + 2, varLength);
-                    return decoder.end(buf);
-                }
-
-                /***
-                 case sqlTypes.SQL_SHORT:
-                 return changeScale(dataView.getInt16(descriptor.offset, littleEndian), descriptor.scale, 0);
-                 case sqlTypes.SQL_LONG:
-                 return changeScale(dataView.getInt32(descriptor.offset, littleEndian), descriptor.scale, 0);
-                 //// TODO: sqlTypes.SQL_INT64
-                 case sqlTypes.SQL_FLOAT:
-                 return dataView.getFloat32(descriptor.offset, littleEndian);
-                 ***/
-
-                case SQLTypes.SQL_DOUBLE:
-                    return dataView.getFloat64(descriptor.offset, littleEndian);
-
-                case SQLTypes.SQL_TYPE_TIME: {
-                    const now = new Date();
-                    const decodedTime = decodeTime(dataView.getUint32(descriptor.offset, littleEndian));
-                    return new Date(now.getFullYear(), now.getMonth(), now.getDate(),
-                        decodedTime.hours, decodedTime.minutes, decodedTime.seconds, decodedTime.fractions / 10);
-                }
-
-                case SQLTypes.SQL_TYPE_DATE: {
-                    const decodedDate = decodeDate(dataView.getInt32(descriptor.offset, littleEndian));
-                    return new Date(decodedDate.year, decodedDate.month - 1, decodedDate.day);
-                }
-
-                case SQLTypes.SQL_TIMESTAMP: {
-                    const decodedDate = decodeDate(dataView.getInt32(descriptor.offset, littleEndian));
-                    const decodedTime = decodeTime(dataView.getUint32(descriptor.offset + 4, littleEndian));
-                    return new Date(decodedDate.year, decodedDate.month - 1, decodedDate.day,
-                        decodedTime.hours, decodedTime.minutes, decodedTime.seconds, decodedTime.fractions / 10);
-                }
-
-                case SQLTypes.SQL_BOOLEAN:
-                    return dataView.getInt8(descriptor.offset) !== 0;
-
-                case SQLTypes.SQL_BLOB:
-                    return new FirebirdBlobLink(statement.parent.parent,
-                        buffer.slice(descriptor.offset, descriptor.offset + 8));
-
-                case SQLTypes.SQL_NULL:
-                    return null;
-
-                default:
-                    throw new Error(`Unrecognized Firebird type number ${descriptor.type}`);
-            }
-        };
+export function createDescriptors(status: Status, metadata?: MessageMetadata): IDescriptor[] {
+    if (!metadata) {
+        return [];
     }
 
-    return async (statement: FirebirdStatement, buffer: Uint8Array): Promise<any[]> => {
-        return await Promise.all(mappers.map((mapper) => mapper(statement, buffer)));
-    };
-}
+    const count = metadata.getCountSync(status);
+    const ret: IDescriptor[] = [];
 
-export type DataWriter = (statement: FirebirdStatement, buffer: Uint8Array, values: any[] | undefined) => Promise<void>;
-export type ItemWriter = (statement: FirebirdStatement, buffer: Uint8Array, values: any) => Promise<void>;
-
-/** Creates a data writer. */
-export function createDataWriter(descriptors: IDescriptor[]): DataWriter {
-    const mappers = new Array<ItemWriter>(descriptors.length);
-
-    for (let i = 0; i < descriptors.length; ++i) {
-        const descriptor = descriptors[i];
-
-        mappers[i] = async (statement: FirebirdStatement, buffer: Uint8Array, value: any): Promise<void> => {
-            const dataView = new DataView(buffer.buffer);
-
-            if (value == null) {
-                dataView.setInt16(descriptor.nullOffset, -1, littleEndian);
-                return;
-            }
-
-            switch (descriptor.type) {
-                // SQL_TEXT is handled changing its descriptor to SQL_VARYING with IMetadataBuilder.
-                case SQLTypes.SQL_VARYING: {
-                    //// TODO: none, octets
-                    const str = value as string;
-                    const strBuffer = Buffer.from(str);
-
-                    const bytesArray = Uint8Array.from(strBuffer);
-
-                    if (bytesArray.length > descriptor.length) {
-                        throw new Error(`Length in bytes of string '${str}' (${bytesArray.length}) is ` +
-                            `greater than maximum expect length ${descriptor.length}.`);
-                    }
-
-                    dataView.setUint16(descriptor.offset, bytesArray.length, littleEndian);
-
-                    for (let y = 0; y < bytesArray.length; ++y) {
-                        buffer[descriptor.offset + 2 + y] = bytesArray[y];
-                    }
-
-                    break;
-                }
-
-                /***
-                 case sqlTypes.SQL_SHORT:
-                 dataView.setInt16(descriptor.offset, changeScale(value, 0, descriptor.scale), littleEndian);
-                 break;
-                 case sqlTypes.SQL_LONG:
-                 dataView.setInt32(descriptor.offset, changeScale(value, 0, descriptor.scale), littleEndian);
-                 break;
-                 //// TODO: sqlTypes.SQL_INT64
-                 case sqlTypes.SQL_FLOAT:
-                 dataView.setFloat32(descriptor.offset, value, littleEndian);
-                 break;
-                 ***/
-
-                case SQLTypes.SQL_DOUBLE:
-                    dataView.setFloat64(descriptor.offset, value, littleEndian);
-                    break;
-
-                case SQLTypes.SQL_TYPE_TIME: {
-                    const date = value as Date;
-                    dataView.setUint32(descriptor.offset,
-                        encodeTime(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds() * 10),
-                        littleEndian);
-                    break;
-                }
-
-                case SQLTypes.SQL_TYPE_DATE: {
-                    const date = value as Date;
-                    dataView.setInt32(descriptor.offset,
-                        encodeDate(date.getFullYear(), date.getMonth() + 1, date.getDate()),
-                        littleEndian);
-                    break;
-                }
-
-                case SQLTypes.SQL_TIMESTAMP: {
-                    const date = value as Date;
-                    dataView.setInt32(descriptor.offset,
-                        encodeDate(date.getFullYear(), date.getMonth() + 1, date.getDate()),
-                        littleEndian);
-                    dataView.setUint32(descriptor.offset + 4,
-                        encodeTime(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds() * 10),
-                        littleEndian);
-                    break;
-                }
-
-                case SQLTypes.SQL_BOOLEAN:
-                    dataView.setInt8(descriptor.offset, value ? 1 : 0);
-                    break;
-
-                case SQLTypes.SQL_BLOB: {
-                    const targetBlobId = buffer.subarray(descriptor.offset, descriptor.offset + 8);
-
-                    if (value instanceof FirebirdBlobStream) {
-                        value = value.blobLink;
-                    }
-
-                    if (descriptor.subType === SQL_BLOB_SUB_TYPE.TEXT && typeof value === "string") {
-                        value = Buffer.from(value, "utf8");
-                    }
-
-                    if (value instanceof Buffer) {
-                        const blobStream = await FirebirdBlobStream.create(statement.parent);
-                        try {
-                            await blobStream.write(value);
-                        } catch (e) {
-                            await blobStream.cancel();
-                            throw e;
-                        }
-
-                        await blobStream.close();
-
-                        targetBlobId.set(blobStream.blobLink.id);
-
-                    } else if (value instanceof FirebirdBlobLink) {
-                        if (value.connection === statement.parent.parent) {
-                            targetBlobId.set(value.id);
-                        } else {
-                            throw new Error("Cannot pass a BLOB from another handler as parameter.");
-                            //// TODO: add support for it
-                        }
-                    } else {
-                        throw new Error("Unrecognized type used as BLOB. Must be: Buffer or FirebirdBlobLink.");
-                    }
-                    break;
-                }
-
-                case SQLTypes.SQL_NULL:
-                    break;
-
-                default:
-                    throw new Error(`Unrecognized Firebird type number ${descriptor.type}`);
-            }
-        };
+    for (let i = 0; i < count; ++i) {
+        ret.push({
+            alias: metadata.getAliasSync(status, i),
+            type: metadata.getTypeSync(status, i),
+            subType: metadata.getSubTypeSync(status, i),
+            nullOffset: metadata.getNullOffsetSync(status, i),
+            offset: metadata.getOffsetSync(status, i),
+            length: metadata.getLengthSync(status, i),
+            scale: metadata.getScaleSync(status, i),
+        });
     }
 
-    return async (statement: FirebirdStatement, buffer: Uint8Array, values: any[] | undefined): Promise<void> => {
-        if ((values || []).length !== descriptors.length) {
-            throw new Error("Incorrect number of parameters: expected " + descriptors.length +
-                `, received ${(values || []).length}.`);
+    return ret;
+}
+
+export function bufferToValue(statement: FirebirdStatement,
+                              outDescriptor: IDescriptor,
+                              outBuffer: Uint8Array): any {
+    const dataView = new DataView(outBuffer.buffer);
+
+    if (dataView.getInt16(outDescriptor.nullOffset, littleEndian) === -1) {
+        return null;
+    }
+
+    switch (outDescriptor.type) {
+        // SQL_TEXT is handled changing its descriptor to SQL_VARYING with IMetadataBuilder.
+        case SQLTypes.SQL_VARYING: {
+            //// TODO: none, octets
+            const varLength = dataView.getUint16(outDescriptor.offset, littleEndian);
+            const decoder = new StringDecoder("utf8");
+            const buf = Buffer.from(outBuffer.buffer as any, outDescriptor.offset + 2, varLength);
+            return decoder.end(buf);
         }
 
-        await Promise.all(mappers.map((mapper, index) => (
-            mapper(statement, buffer, (values as any[])[index])
-        )));
-    };
+        /***
+         case sqlTypes.SQL_SHORT:
+         return changeScale(dataView.getInt16(descriptor.offset, littleEndian), descriptor.scale, 0);
+         case sqlTypes.SQL_LONG:
+         return changeScale(dataView.getInt32(descriptor.offset, littleEndian), descriptor.scale, 0);
+         //// TODO: sqlTypes.SQL_INT64
+         case sqlTypes.SQL_FLOAT:
+         return dataView.getFloat32(descriptor.offset, littleEndian);
+         ***/
+
+        case SQLTypes.SQL_DOUBLE:
+            return dataView.getFloat64(outDescriptor.offset, littleEndian);
+
+        case SQLTypes.SQL_TYPE_TIME: {
+            const now = new Date();
+            const decodedTime = decodeTime(dataView.getUint32(outDescriptor.offset, littleEndian));
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+                decodedTime.hours, decodedTime.minutes, decodedTime.seconds, decodedTime.fractions / 10);
+        }
+
+        case SQLTypes.SQL_TYPE_DATE: {
+            const decodedDate = decodeDate(dataView.getInt32(outDescriptor.offset, littleEndian));
+            return new Date(decodedDate.year, decodedDate.month - 1, decodedDate.day);
+        }
+
+        case SQLTypes.SQL_TIMESTAMP: {
+            const decodedDate = decodeDate(dataView.getInt32(outDescriptor.offset, littleEndian));
+            const decodedTime = decodeTime(dataView.getUint32(outDescriptor.offset + 4, littleEndian));
+            return new Date(decodedDate.year, decodedDate.month - 1, decodedDate.day,
+                decodedTime.hours, decodedTime.minutes, decodedTime.seconds, decodedTime.fractions / 10);
+        }
+
+        case SQLTypes.SQL_BOOLEAN:
+            return dataView.getInt8(outDescriptor.offset) !== 0;
+
+        case SQLTypes.SQL_BLOB:
+            return new FirebirdBlobLink(statement.parent.parent,
+                outBuffer.slice(outDescriptor.offset, outDescriptor.offset + 8));
+
+        case SQLTypes.SQL_NULL:
+            return null;
+
+        default:
+            throw new Error(`Unrecognized Firebird type number ${outDescriptor.type}`);
+    }
 }
 
-export function fixMetadata(status: fb.Status, metadata?: fb.MessageMetadata): fb.MessageMetadata | undefined {
+export async function valueToBuffer(statement: FirebirdStatement,
+                                    inDescriptor: IDescriptor,
+                                    inBuffer: Uint8Array,
+                                    value: any): Promise<void> {
+    const dataView = new DataView(inBuffer.buffer);
+
+    if (value == null) {
+        dataView.setInt16(inDescriptor.nullOffset, -1, littleEndian);
+        return;
+    }
+
+    switch (inDescriptor.type) {
+        // SQL_TEXT is handled changing its descriptor to SQL_VARYING with IMetadataBuilder.
+        case SQLTypes.SQL_VARYING: {
+            //// TODO: none, octets
+            const str = value as string;
+            const strBuffer = Buffer.from(str);
+
+            const bytesArray = Uint8Array.from(strBuffer);
+
+            if (bytesArray.length > inDescriptor.length) {
+                throw new Error(`Length in bytes of string '${str}' (${bytesArray.length}) is ` +
+                    `greater than maximum expect length ${inDescriptor.length}.`);
+            }
+
+            dataView.setUint16(inDescriptor.offset, bytesArray.length, littleEndian);
+
+            for (let y = 0; y < bytesArray.length; ++y) {
+                inBuffer[inDescriptor.offset + 2 + y] = bytesArray[y];
+            }
+
+            break;
+        }
+
+        /***
+         case sqlTypes.SQL_SHORT:
+         dataView.setInt16(descriptor.offset, changeScale(value, 0, descriptor.scale), littleEndian);
+         break;
+         case sqlTypes.SQL_LONG:
+         dataView.setInt32(descriptor.offset, changeScale(value, 0, descriptor.scale), littleEndian);
+         break;
+         //// TODO: sqlTypes.SQL_INT64
+         case sqlTypes.SQL_FLOAT:
+         dataView.setFloat32(descriptor.offset, value, littleEndian);
+         break;
+         ***/
+
+        case SQLTypes.SQL_DOUBLE:
+            dataView.setFloat64(inDescriptor.offset, value, littleEndian);
+            break;
+
+        case SQLTypes.SQL_TYPE_TIME: {
+            const date = value as Date;
+            dataView.setUint32(inDescriptor.offset,
+                encodeTime(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds() * 10),
+                littleEndian);
+            break;
+        }
+
+        case SQLTypes.SQL_TYPE_DATE: {
+            const date = value as Date;
+            dataView.setInt32(inDescriptor.offset,
+                encodeDate(date.getFullYear(), date.getMonth() + 1, date.getDate()),
+                littleEndian);
+            break;
+        }
+
+        case SQLTypes.SQL_TIMESTAMP: {
+            const date = value as Date;
+            dataView.setInt32(inDescriptor.offset,
+                encodeDate(date.getFullYear(), date.getMonth() + 1, date.getDate()),
+                littleEndian);
+            dataView.setUint32(inDescriptor.offset + 4,
+                encodeTime(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds() * 10),
+                littleEndian);
+            break;
+        }
+
+        case SQLTypes.SQL_BOOLEAN:
+            dataView.setInt8(inDescriptor.offset, value ? 1 : 0);
+            break;
+
+        case SQLTypes.SQL_BLOB: {
+            const targetBlobId = inBuffer.subarray(inDescriptor.offset, inDescriptor.offset + 8);
+
+            if (value instanceof FirebirdBlobStream) {
+                value = value.blobLink;
+            }
+
+            if (inDescriptor.subType === SQL_BLOB_SUB_TYPE.TEXT && typeof value === "string") {
+                value = Buffer.from(value, "utf8");
+            }
+
+            if (value instanceof Buffer) {
+                const blobStream = await FirebirdBlobStream.create(statement.parent);
+                try {
+                    await blobStream.write(value);
+                } catch (e) {
+                    await blobStream.cancel();
+                    throw e;
+                }
+
+                await blobStream.close();
+
+                targetBlobId.set(blobStream.blobLink.id);
+
+            } else if (value instanceof FirebirdBlobLink) {
+                if (value.connection === statement.parent.parent) {
+                    targetBlobId.set(value.id);
+                } else {
+                    throw new Error("Cannot pass a BLOB from another handler as parameter.");
+                    //// TODO: add support for it
+                }
+            } else {
+                throw new Error("Unrecognized type used as BLOB. Must be: Buffer or FirebirdBlobLink.");
+            }
+            break;
+        }
+
+        case SQLTypes.SQL_NULL:
+            break;
+
+        default:
+            throw new Error(`Unrecognized Firebird type number ${inDescriptor.type}`);
+    }
+}
+
+export async function dataWrite(statement: FirebirdStatement,
+                                inDescriptors: IDescriptor[],
+                                inBuffer: Uint8Array,
+                                values: any[]): Promise<void> {
+    if (values.length !== inDescriptors.length) {
+        throw new Error("Incorrect number of parameters: expected " + inDescriptors.length +
+            `, received ${(values || []).length}.`);
+    }
+
+    await Promise.all(inDescriptors.map((descriptor, index) => (
+        valueToBuffer(statement, descriptor, inBuffer, values[index]))
+    ));
+}
+
+export function fixMetadata(status: Status, metadata?: MessageMetadata): MessageMetadata | undefined {
     if (!metadata) {
         return undefined;
     }
 
-    let ret: fb.MessageMetadata;
+    let ret: MessageMetadata;
 
     const outBuilder = metadata.getBuilderSync(status)!;
     try {
@@ -490,29 +487,6 @@ export function fixMetadata(status: fb.Status, metadata?: fb.MessageMetadata): f
     }
 
     metadata.releaseSync();
-
-    return ret;
-}
-
-export function createDescriptors(status: fb.Status, metadata?: fb.MessageMetadata): IDescriptor[] {
-    if (!metadata) {
-        return [];
-    }
-
-    const count = metadata.getCountSync(status);
-    const ret: IDescriptor[] = [];
-
-    for (let i = 0; i < count; ++i) {
-        ret.push({
-            alias: metadata.getAliasSync(status, i),
-            type: metadata.getTypeSync(status, i),
-            subType: metadata.getSubTypeSync(status, i),
-            nullOffset: metadata.getNullOffsetSync(status, i),
-            offset: metadata.getOffsetSync(status, i),
-            length: metadata.getLengthSync(status, i),
-            scale: metadata.getScaleSync(status, i),
-        });
-    }
 
     return ret;
 }

@@ -1,29 +1,29 @@
-import * as fb from "node-firebird-native-api";
-import {ResultSet as NativeResultSet} from "node-firebird-native-api";
+import {ResultSet as ApiResultSet, Status} from "node-firebird-native-api";
 import {AResultSet} from "../AResultSet";
 import {FirebirdBlob} from "./FirebirdBlob";
 import {FirebirdBlobLink} from "./FirebirdBlobLink";
 import {FirebirdStatement} from "./FirebirdStatement";
-import {IDescriptor, SQL_BLOB_SUB_TYPE} from "./utils/fb-utils";
+import {bufferToValue, dataWrite, IDescriptor, SQL_BLOB_SUB_TYPE} from "./utils/fb-utils";
 
-enum Status {
-    UNFINISHED, FINISHED
+export interface IResultSetSource {
+    handler: ApiResultSet;
+    outBuffer: Uint8Array;
 }
 
 export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
 
     public readonly parent: FirebirdStatement;
     public disposeStatementOnClose: boolean = false;
-    private _handler?: NativeResultSet;
+    public source?: IResultSetSource;
 
-    private _data: any[][] = [];
+    private _buffers: Uint8Array[] = [];
     private _currentIndex: number = AResultSet.NO_INDEX;
-    private _status = Status.UNFINISHED;
+    private _finished = false;
 
-    protected constructor(parent: FirebirdStatement, handler: NativeResultSet) {
+    protected constructor(parent: FirebirdStatement, source: IResultSetSource) {
         super();
         this.parent = parent;
-        this._handler = handler;
+        this.source = source;
         this.parent.resultSets.add(this);
     }
 
@@ -33,23 +33,40 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         return this._currentIndex;
     }
 
-    public static async open(parent: FirebirdStatement): Promise<FirebirdResultSet> {
-        const handler = await parent.parent.parent.context.statusAction((status) =>
-            parent.source!.handler.openCursorAsync(status, parent.parent.handler, parent.source!.inMetadata,
-                parent.source!.inBuffer, parent.source!.outMetadata, 0));
-        return new FirebirdResultSet(parent, handler!);
+    public static async open(parent: FirebirdStatement, params: any[]): Promise<FirebirdResultSet> {
+        const source: IResultSetSource = await parent.parent.parent.context.statusAction(async (status) => {
+            const inBuffer = new Uint8Array(parent.source!.inMetadata.getMessageLengthSync(status));
+            const outBuffer = new Uint8Array(parent.source!.outMetadata.getMessageLengthSync(status));
+
+            await dataWrite(parent, parent.source!.inDescriptors, inBuffer, params);
+
+            const handler = await parent.source!.handler.openCursorAsync(status, parent.parent.handler,
+                parent.source!.inMetadata, inBuffer, parent.source!.outMetadata, 0);
+
+            return {
+                handler: handler!,
+                outBuffer
+            };
+        });
+        return new FirebirdResultSet(parent, source);
+    }
+
+    private static _throwIfBlob(value: any): void {
+        if (value instanceof FirebirdBlobLink) {
+            throw new Error("Invalid typecasting");
+        }
     }
 
     public async next(): Promise<boolean> {
         this._checkClosed();
 
-        if (this._currentIndex < this._data.length) {
+        if (this._currentIndex < this._buffers.length) {
             this._currentIndex++;
-            if (this._currentIndex === this._data.length) {
-                if (this._status === Status.UNFINISHED) {
+            if (this._currentIndex === this._buffers.length) {
+                if (!this._finished) {
                     const newResult = await this._fetch({fetchSize: 1});
                     if (newResult) {
-                        this._data.push(newResult[0]);
+                        this._buffers.push(newResult[0]);
                         return true;
                     }
                 }
@@ -102,13 +119,13 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     public async beforeFirst(): Promise<void> {
         this._checkClosed();
 
-        if (this._status === Status.UNFINISHED) {
+        if (!this._finished) {
             const index = this._currentIndex;
             await this.next();
             await this.to(index);
         }
 
-        if (this._data.length) {
+        if (this._buffers.length) {
             await this.to(AResultSet.NO_INDEX);
         }
     }
@@ -116,14 +133,14 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     public async afterLast(): Promise<void> {
         this._checkClosed();
 
-        if (this._status === Status.UNFINISHED) {
+        if (!this._finished) {
             const index = this._currentIndex;
             await this.last();
             await this.to(index);
         }
 
-        if (this._data.length) {
-            await this.to(this._data.length);
+        if (this._buffers.length) {
+            await this.to(this._buffers.length);
         }
     }
 
@@ -141,8 +158,8 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
             // nothing
         }
 
-        if (this._data.length) {
-            return await this.to(this._data.length - 1);
+        if (this._buffers.length) {
+            return await this.to(this._buffers.length - 1);
         }
 
         return false;
@@ -163,8 +180,8 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     public async isAfterLast(): Promise<boolean> {
         this._checkClosed();
 
-        if (this._status === Status.FINISHED) {
-            return !!this._data.length && this._currentIndex === this._data.length;
+        if (this._finished) {
+            return !!this._buffers.length && this._currentIndex === this._buffers.length;
         }
 
         return false;
@@ -173,7 +190,7 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     public async isFirst(): Promise<boolean> {
         this._checkClosed();
 
-        return !!this._data.length && this._currentIndex === 0;
+        return !!this._buffers.length && this._currentIndex === 0;
     }
 
     public async isLast(): Promise<boolean> {
@@ -183,24 +200,24 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
             return false;
         }
 
-        if (this._status === Status.UNFINISHED) {
+        if (!this._finished) {
             await this.next();
             await this.previous();
         }
 
-        return this._currentIndex === this._data.length - 1;
+        return this._currentIndex === this._buffers.length - 1;
     }
 
     public async isClosed(): Promise<boolean> {
-        return !this._handler;
+        return !this.source;
     }
 
     public async close(): Promise<void> {
         this._checkClosed();
 
-        await this.parent.parent.parent.context.statusAction((status) => this._handler!.closeAsync(status));
-        this._handler = undefined;
-        this._data = [];
+        await this.parent.parent.parent.context.statusAction((status) => this.source!.handler.closeAsync(status));
+        this.source = undefined;
+        this._buffers = [];
         this._currentIndex = AResultSet.NO_INDEX;
         this.parent.resultSets.delete(this);
 
@@ -218,9 +235,10 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     public getBoolean(i: number): boolean;
     public getBoolean(name: string): boolean;
     public getBoolean(field: any): boolean {
-        this._throwIfBlob(field);
+        const value = this._getValue(field);
+        FirebirdResultSet._throwIfBlob(value);
 
-        if (this.isNull(field)) {
+        if (value === null || value === undefined) {
             return false;
         }
         return Boolean(this._getValue(field));
@@ -229,21 +247,26 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     public getDate(i: number): null | Date;
     public getDate(name: string): null | Date;
     public getDate(field: any): null | Date {
-        this._throwIfBlob(field);
+        const value = this._getValue(field);
+        FirebirdResultSet._throwIfBlob(value);
 
-        if (this.isNull(field)) {
+        if (value === null || value === undefined) {
             return null;
         }
-        const date = new Date(this._getValue(field));
+        if (value instanceof Date) {
+            return value;
+        }
+        const date = new Date(value);
         return isNaN(date.getTime()) ? null : date;
     }
 
     public getNumber(i: number): number;
     public getNumber(name: string): number;
     public getNumber(field: any): number {
-        this._throwIfBlob(field);
+        const value = this._getValue(field);
+        FirebirdResultSet._throwIfBlob(value);
 
-        if (this.isNull(field)) {
+        if (value === null || value === undefined) {
             return 0;
         }
         return Number.parseFloat(this._getValue(field));
@@ -252,9 +275,10 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     public getString(i: number): string;
     public getString(name: string): string;
     public getString(field: any): string {
-        this._throwIfBlob(field);
+        const value = this._getValue(field);
+        FirebirdResultSet._throwIfBlob(value);
 
-        if (this.isNull(field)) {
+        if (value === null || value === undefined) {
             return "";
         }
         return String(this._getValue(field));
@@ -265,7 +289,7 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     public async getAny(field: any): Promise<any> {
         const value = this._getValue(field);
         if (value instanceof FirebirdBlobLink) {
-            const descriptor = this.getDescriptor(field);
+            const descriptor = this.getOutDescriptor(field);
             if (descriptor.subType === SQL_BLOB_SUB_TYPE.TEXT) {
                 return await this.getBlob(field).asString();
             } else {
@@ -285,64 +309,62 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
     private _getValue(field: number | string): any {
         this._checkClosed();
 
-        const row = this._data[this._currentIndex];
-        if (typeof field === "number") {
-            return row[field];
-        } else {
-            const index = this.parent.source!.outDescriptors.findIndex((descriptor) => descriptor.alias === field);
-            return row[index];
-        }
+        const descriptor = this.getOutDescriptor(field);
+        return bufferToValue(this.parent, descriptor, this._buffers[this._currentIndex]);
     }
 
-    private getDescriptor(field: number | string): IDescriptor {
-        const descriptors = this.parent.source!.outDescriptors;
+    private getOutDescriptor(field: number | string): IDescriptor {
+        this._checkClosed();
+
+        const outDescriptors = this.parent.source!.outDescriptors;
         if (typeof field === "number") {
-            return descriptors[field];
+            if (field >= outDescriptors.length) {
+                throw new Error("Index not found");
+            }
+            return outDescriptors[field];
         } else {
-            return descriptors.find((descriptor) => descriptor.alias === field)!;
+            const outDescriptor = outDescriptors.find((item) => item.alias === field);
+            if (!outDescriptor) {
+                throw new Error("Name not found");
+            }
+            return outDescriptor;
         }
     }
 
     private _checkClosed(): void {
-        if (!this._handler) {
+        if (!this.source) {
             throw new Error("ResultSet is closed");
         }
     }
 
-    private _throwIfBlob(field: number | string): void {
-        if (this._getValue(field) instanceof FirebirdBlobLink) {
-            throw new Error("Invalid typecasting");
-        }
-    }
-
-    private async _fetch(options?: { fetchSize?: number }): Promise<any[][] | undefined> {
+    private async _fetch(options?: { fetchSize?: number }): Promise<Uint8Array[] | undefined> {
         this._checkClosed();
 
-        if (this._status === Status.FINISHED) {
+        if (this._finished) {
             return [];
         }
 
         const fetchRet = await this.parent.parent.parent.context.statusAction(async (status) => {
             const rows = [];
             const buffers = [
-                this.parent.source!.outBuffer!,
+                this.source!.outBuffer,
                 new Uint8Array(this.parent.source!.outMetadata!.getMessageLengthSync(status))
             ];
             let buffer = 0;
-            let nextFetch = this._handler!.fetchNextAsync(status, buffers[buffer]);
+            let nextFetch = this.source!.handler.fetchNextAsync(status, buffers[buffer]);
 
             while (true) {
-                if (await nextFetch === fb.Status.RESULT_OK) {
+                if (await nextFetch === Status.RESULT_OK) {
                     const buffer1 = buffer;
                     buffer = ++buffer % 2;
 
                     const finish = options && options.fetchSize && rows.length + 1 >= options.fetchSize;
 
                     if (!finish) {
-                        nextFetch = this._handler!.fetchNextAsync(status, buffers[buffer]);
+                        nextFetch = this.source!.handler.fetchNextAsync(status, buffers[buffer]);
                     }
 
-                    rows.push(await this.parent.source!.dataReader!(this.parent, buffers[buffer1]));
+                    rows.push(buffers[buffer1]);
 
                     if (finish) {
                         return {finished: false, rows};
@@ -354,7 +376,7 @@ export class FirebirdResultSet extends AResultSet<FirebirdBlob> {
         });
 
         if (fetchRet.finished) {
-            this._status = Status.FINISHED;
+            this._finished = true;
             return;
         }
 

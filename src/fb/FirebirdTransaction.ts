@@ -79,7 +79,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
             throw new Error("Need to open transaction");
         }
 
-        await this.closeChildren();
+        await this._closeChildren();
 
         await this.parent.context.statusAction((status) => this.handler!.commitAsync(status));
         this.handler = undefined;
@@ -91,7 +91,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
             throw new Error("Need to open transaction");
         }
 
-        await this.closeChildren();
+        await this._closeChildren();
 
         await this.parent.context.statusAction((status) => this.handler!.rollbackAsync(status));
         this.handler = undefined;
@@ -129,7 +129,7 @@ export class FirebirdTransaction extends ATransaction<FirebirdBlob, FirebirdResu
         await FirebirdTransaction.executePrepareStatement(this, sql, (statement) => statement.execute(params));
     }
 
-    private async closeChildren(): Promise<void> {
+    private async _closeChildren(): Promise<void> {
         if (this.statements.size) {
             console.warn("Not all statements disposed, they will be disposed");
         }

@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import * as fb from "node-firebird-native-api";
+import { MessageMetadata, Status } from "node-firebird-native-api";
 import { FirebirdStatement } from "../FirebirdStatement";
 export declare enum SQLTypes {
     SQL_TEXT = 452,
@@ -93,17 +93,8 @@ export interface IDescriptor {
     offset: number;
     nullOffset: number;
 }
-export interface IItemReaderResult {
-    value: any;
-    descriptor: IDescriptor;
-}
-export declare type DataReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<IItemReaderResult[]>;
-export declare type ItemReader = (statement: FirebirdStatement, buffer: Uint8Array) => Promise<IItemReaderResult>;
-/** Creates a data reader. */
-export declare function createDataReader(descriptors: IDescriptor[]): DataReader;
-export declare type DataWriter = (statement: FirebirdStatement, buffer: Uint8Array, values: any[] | undefined) => Promise<void>;
-export declare type ItemWriter = (statement: FirebirdStatement, buffer: Uint8Array, values: any) => Promise<void>;
-/** Creates a data writer. */
-export declare function createDataWriter(descriptors: IDescriptor[]): DataWriter;
-export declare function fixMetadata(status: fb.Status, metadata?: fb.MessageMetadata): fb.MessageMetadata | undefined;
-export declare function createDescriptors(status: fb.Status, metadata?: fb.MessageMetadata): IDescriptor[];
+export declare function createDescriptors(status: Status, metadata?: MessageMetadata): IDescriptor[];
+export declare function bufferToValue(statement: FirebirdStatement, outDescriptor: IDescriptor, outBuffer: Uint8Array): any;
+export declare function valueToBuffer(statement: FirebirdStatement, inDescriptor: IDescriptor, inBuffer: Uint8Array, value: any): Promise<void>;
+export declare function dataWrite(statement: FirebirdStatement, inDescriptors: IDescriptor[], inBuffer: Uint8Array, values: any[]): Promise<void>;
+export declare function fixMetadata(status: Status, metadata?: MessageMetadata): MessageMetadata | undefined;

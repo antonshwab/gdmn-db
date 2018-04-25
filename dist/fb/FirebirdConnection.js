@@ -38,7 +38,7 @@ class FirebirdConnection extends AConnection_1.AConnection {
         if (!this.handler) {
             throw new Error("Need database connection");
         }
-        await this.closeChildren();
+        await this._closeChildren();
         await this.context.statusAction((status) => this.handler.dropDatabaseAsync(status));
         this.handler = undefined;
         this.context.destroy();
@@ -63,7 +63,7 @@ class FirebirdConnection extends AConnection_1.AConnection {
         if (!this.handler) {
             throw new Error("Need database connection");
         }
-        await this.closeChildren();
+        await this._closeChildren();
         await this.context.statusAction((status) => this.handler.detachAsync(status));
         this.handler = undefined;
         this.context.destroy();
@@ -71,7 +71,7 @@ class FirebirdConnection extends AConnection_1.AConnection {
     async isConnected() {
         return Boolean(this.handler);
     }
-    async closeChildren() {
+    async _closeChildren() {
         if (this.transactions.size) {
             console.warn("Not all transactions finished, they will be rollbacked");
         }

@@ -23,28 +23,12 @@ class FirebirdStatement extends AStatement_1.AStatement {
             const outMetadata = fb_utils_1.fixMetadata(status, await handler.getOutputMetadataAsync(status));
             const inDescriptors = fb_utils_1.createDescriptors(status, inMetadata);
             const outDescriptors = fb_utils_1.createDescriptors(status, outMetadata);
-            let inBuffer;
-            let outBuffer;
-            let dataWriter;
-            let dataReader;
-            if (inMetadata) {
-                inBuffer = new Uint8Array(inMetadata.getMessageLengthSync(status));
-                dataWriter = fb_utils_1.createDataWriter(inDescriptors);
-            }
-            if (outMetadata) {
-                outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
-                dataReader = fb_utils_1.createDataReader(outDescriptors);
-            }
             return {
                 handler: handler,
-                inMetadata: inMetadata,
-                outMetadata: outMetadata,
+                inMetadata,
+                outMetadata,
                 inDescriptors,
-                outDescriptors,
-                inBuffer,
-                outBuffer,
-                dataWriter,
-                dataReader
+                outDescriptors
             };
         });
         return new FirebirdStatement(transaction, paramsAnalyzer, source);
@@ -53,7 +37,7 @@ class FirebirdStatement extends AStatement_1.AStatement {
         if (!this.source) {
             throw new Error("Statement already disposed");
         }
-        await this.closeChildren();
+        await this._closeChildren();
         this.source.inMetadata.releaseSync();
         this.source.outMetadata.releaseSync();
         await this.parent.parent.context.statusAction((status) => this.source.handler.freeAsync(status));
@@ -65,8 +49,9 @@ class FirebirdStatement extends AStatement_1.AStatement {
             throw new Error("Statement already disposed");
         }
         await this.parent.parent.context.statusAction(async (status) => {
-            await this.source.dataWriter(this, this.source.inBuffer, this._paramsAnalyzer.prepareParams(params));
-            const newTransaction = await this.source.handler.executeAsync(status, this.parent.handler, this.source.inMetadata, this.source.inBuffer, this.source.outMetadata, this.source.outBuffer);
+            const inBuffer = new Uint8Array(this.source.inMetadata.getMessageLengthSync(status));
+            await fb_utils_1.dataWrite(this, this.source.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
+            const newTransaction = await this.source.handler.executeAsync(status, this.parent.handler, this.source.inMetadata, inBuffer, this.source.outMetadata, undefined);
             if (newTransaction && this.parent.handler !== newTransaction) {
                 //// FIXME: newTransaction.releaseSync();
             }
@@ -76,10 +61,9 @@ class FirebirdStatement extends AStatement_1.AStatement {
         if (!this.source) {
             throw new Error("Statement already disposed");
         }
-        this.source.dataWriter(this, this.source.inBuffer, this._paramsAnalyzer.prepareParams(params));
-        return FirebirdResultSet_1.FirebirdResultSet.open(this);
+        return FirebirdResultSet_1.FirebirdResultSet.open(this, this._paramsAnalyzer.prepareParams(params));
     }
-    async closeChildren() {
+    async _closeChildren() {
         if (this.resultSets.size) {
             console.warn("Not all resultSets closed, they will be closed");
         }
