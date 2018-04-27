@@ -106,8 +106,12 @@ export class DBStructure {
         this.loadRelationConstraints(constraints);
     }
 
-    public forEachRelation(f: (r: Relation) => void): void {
-        Object.entries(this._relations).forEach(([key, value]) => f(value));
+    public forEachRelation(f: (r: Relation) => void, hasPK?: boolean): void {
+        Object.entries(this._relations).forEach(([key, value]) => {
+          if (!hasPK || value.primaryKey) {
+            f(value);
+          }
+        });
     }
 
     public findRelation(f: (r: Relation) => boolean): Relation | null {

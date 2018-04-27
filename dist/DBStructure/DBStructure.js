@@ -60,8 +60,12 @@ class DBStructure {
         this.loadRelations(relations);
         this.loadRelationConstraints(constraints);
     }
-    forEachRelation(f) {
-        Object.entries(this._relations).forEach(([key, value]) => f(value));
+    forEachRelation(f, hasPK) {
+        Object.entries(this._relations).forEach(([key, value]) => {
+            if (!hasPK || value.primaryKey) {
+                f(value);
+            }
+        });
     }
     findRelation(f) {
         const entry = Object.entries(this._relations).find(([key, value]) => f(value));
