@@ -102,7 +102,7 @@ class DBStructure {
         constraints.forEach((item) => {
             const rel = this._relations[item.RDB$RELATION_NAME];
             rel.loadConstraintField(item);
-            if (item.RDB$CONSTRAINT_TYPE === 'PRIMARY KEY' || item.RDB$CONSTRAINT_TYPE === 'UNIQUE') {
+            if (item.RDB$CONSTRAINT_TYPE === "PRIMARY KEY" || item.RDB$CONSTRAINT_TYPE === "UNIQUE") {
                 this._relationsByUqConstraint[item.RDB$CONSTRAINT_NAME] = rel;
             }
         });
