@@ -82,6 +82,7 @@ export interface IRelations {
 export declare class DBStructure {
     private _fields;
     private _relations;
+    private _relationsByUqConstraint;
     readonly fields: IFields;
     readonly relations: IRelations;
     load(fields: IRDB$FIELD[], relations: IRDB$RELATIONFIELD[], constraints: IRDB$RELATIONCONSTRAINT[]): void;

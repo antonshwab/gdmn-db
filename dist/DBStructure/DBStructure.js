@@ -48,6 +48,7 @@ class DBStructure {
     constructor() {
         this._fields = {};
         this._relations = {};
+        this._relationsByUqConstraint = {};
     }
     get fields() {
         return this._fields;
@@ -75,14 +76,11 @@ class DBStructure {
         return null;
     }
     relationByUqConstraint(constraintName) {
-        const entry = Object.entries(this._relations).find(([key, value]) => {
-            const pk = value.primaryKey;
-            return (pk && pk.name === constraintName) || !!value.unique[constraintName];
-        });
-        if (entry) {
-            return entry[1];
+        const rel = this._relationsByUqConstraint[constraintName];
+        if (!rel) {
+            throw new Error(`Invalid constraint name ${constraintName}`);
         }
-        throw new Error(`Invalid constraint name ${constraintName}`);
+        return rel;
     }
     loadFields(fields) {
         this._fields = fields.reduce((loadedFields, item) => {
@@ -101,7 +99,13 @@ class DBStructure {
         }, { relations: {}, name: "" }).relations;
     }
     loadRelationConstraints(constraints) {
-        constraints.forEach((item) => this._relations[item.RDB$RELATION_NAME].loadConstraintField(item));
+        constraints.forEach((item) => {
+            const rel = this._relations[item.RDB$RELATION_NAME];
+            rel.loadConstraintField(item);
+            if (item.RDB$CONSTRAINT_TYPE === 'PRIMARY KEY' || item.RDB$CONSTRAINT_TYPE === 'UNIQUE') {
+                this._relationsByUqConstraint[item.RDB$CONSTRAINT_NAME] = rel;
+            }
+        });
     }
 }
 exports.DBStructure = DBStructure;
