@@ -5,8 +5,10 @@
   "main": "./dist/index.js",
   "types": "./dist/definitions/index.d.ts",
   "scripts": {
+    "clean": "rimraf dist",
     "start": "npm run tslint && npm run build && node ./dist/index.js",
     "build": "tsc",
+    "rebuild": "npm run clean && npm run build",
     "test": "mocha -r ts-node/register test/*.test.ts",
     "tslint": "tslint --project ."
   },
@@ -15,7 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "generic-pool": "^3.4.2",
-    "node-firebird-native-api": "0.0.1-beta.1"
+    "node-firebird-native-api": "git+https://github.com/sywka/node-firebird-native-api.git"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",
