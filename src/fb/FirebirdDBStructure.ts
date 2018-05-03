@@ -44,7 +44,7 @@ export class FirebirdDBStructure {
                 f.RDB$DEFAULT_VALUE             AS "defaultValue",
                 f.RDB$FIELD_LENGTH              AS "fieldLength",
                 f.RDB$FIELD_SCALE               AS "fieldScale",
-                CAST(f.RDB$VALIDATION_SOURCE AS VARCHAR(8192)) AS "validationSource",
+                f.RDB$VALIDATION_SOURCE         AS "validationSource",
                 f.RDB$FIELD_SUB_TYPE            AS "fieldSubType",
                 f.RDB$FIELD_PRECISION           AS "fieldPrecision"
             FROM RDB$FIELDS f
@@ -60,7 +60,7 @@ export class FirebirdDBStructure {
                     RDB$FIELD_LENGTH: resultSet.getNumber("fieldLength"),
                     RDB$FIELD_SCALE: resultSet.getNumber("fieldScale"),
                     RDB$VALIDATION_SOURCE: resultSet.isNull("validationSource") ? null
-                        : resultSet.getString("validationSource"),
+                        : await resultSet.getBlob("validationSource").asString(),
                     RDB$FIELD_SUB_TYPE: resultSet.isNull("fieldSubType") ? null
                         : resultSet.getNumber("fieldSubType"),
                     RDB$FIELD_PRECISION: resultSet.getNumber("fieldPrecision")

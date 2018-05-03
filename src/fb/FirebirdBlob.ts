@@ -22,11 +22,8 @@ export class FirebirdBlob extends ABlob {
                 const length = await blobStream.length;
 
                 const buffers: Buffer[] = [];
-                let i = 0;
-                while (i < length) {
-                    const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
-                    i += size;
-                    const buffer = Buffer.alloc(size);
+                for (let i = 0; i < length; i++) {  // TODO
+                    const buffer = Buffer.alloc(1);
                     buffers.push(buffer);
                     await blobStream.read(buffer);
                 }
@@ -54,11 +51,8 @@ export class FirebirdBlob extends ABlob {
                 const length = await blobStream.length;
 
                 const buffers: Buffer[] = [];
-                let i = 0;
-                while (i < length) {
-                    const size = length - i < 1024 * 16 ? length - i : 1024 * 16;
-                    i += size;
-                    buffers.push(Buffer.alloc(size));
+                for (let i = 0; i < length; i++) {  // TODO
+                    buffers.push(Buffer.alloc(1));
                 }
                 const promises = buffers.map(async (buffer) => {
                     await blobStream.read(buffer);
