@@ -19,7 +19,7 @@ export declare class Connection extends AConnection {
     connect(options: FirebirdOptions): Promise<void>;
     startTransaction(options?: ITransactionOptions): Promise<ATransaction>;
     disconnect(): Promise<void>;
-    execute(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<void>;
+    execute(transaction: Transaction, sql: string, params?: any[] | INamedParams): Promise<void>;
     executeQuery(transaction: Transaction, sql: string, params?: any[] | INamedParams, type?: CursorType): Promise<AResultSet>;
     prepare(transaction: Transaction, sql: string): Promise<AStatement>;
     private _closeChildren();

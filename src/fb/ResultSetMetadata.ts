@@ -41,7 +41,7 @@ export class ResultSetMetadata extends AResultSetMetadata {
                 const descriptors = createDescriptors(status, metadata!);
 
                 const fixedHandler = fixMetadata(status, metadata)!;
-                const fixedDescriptors = createDescriptors(status, fixMetadata(status, metadata));
+                const fixedDescriptors = createDescriptors(status, fixedHandler);
 
                 return {
                     fixedHandler,

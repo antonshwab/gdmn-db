@@ -34,14 +34,13 @@ class ResultSet extends AResultSet_1.AResultSet {
         const source = await statement.transaction.connection.context.statusAction(async (status) => {
             const metadata = await ResultSetMetadata_1.ResultSetMetadata.getMetadata(statement);
             const inBuffer = new Uint8Array(statement.source.inMetadata.getMessageLengthSync(status));
-            const outBuffer = new Uint8Array(metadata.handler.getMessageLengthSync(status));
+            const buffer = new Uint8Array(metadata.handler.getMessageLengthSync(status));
             await fb_utils_1.dataWrite(statement, statement.source.inDescriptors, inBuffer, params);
             const handler = await statement.source.handler.openCursorAsync(status, statement.transaction.handler, statement.source.inMetadata, inBuffer, metadata.handler, type || AResultSet_1.AResultSet.DEFAULT_TYPE === AResultSet_1.CursorType.SCROLLABLE ? node_firebird_native_api_1.Statement.CURSOR_TYPE_SCROLLABLE : 0);
-            // TODO IStatement::CURSOR_TYPE_SCROLLABLE optional
             return {
                 handler: handler,
                 metadata,
-                outBuffer
+                buffer
             };
         });
         return new ResultSet(statement, source, type);
@@ -53,33 +52,35 @@ class ResultSet extends AResultSet_1.AResultSet {
     }
     async next() {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchNextAsync(status, this.source.outBuffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchNextAsync(status, this.source.buffer)));
     }
     async previous() {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchPriorAsync(status, this.source.outBuffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchPriorAsync(status, this.source.buffer)));
     }
     async absolute(i) {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchAbsoluteAsync(status, i, this.source.outBuffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchAbsoluteAsync(status, i, this.source.buffer)));
     }
     async relative(i) {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchRelativeAsync(status, i, this.source.outBuffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchRelativeAsync(status, i, this.source.buffer)));
     }
     async first() {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchFirstAsync(status, this.source.outBuffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchFirstAsync(status, this.source.buffer)));
     }
     async last() {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchLastAsync(status, this.source.outBuffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchLastAsync(status, this.source.buffer)));
     }
     async close() {
         this._checkClosed();
-        await this.source.metadata.release();
         await this.statement.transaction.connection.context
-            .statusAction((status) => this.source.handler.closeAsync(status));
+            .statusAction(async (status) => {
+            await this.source.handler.closeAsync(status);
+            await this.source.metadata.release();
+        });
         this.source = undefined;
         this.statement.resultSets.delete(this);
         if (this.disposeStatementOnClose) {
@@ -157,7 +158,7 @@ class ResultSet extends AResultSet_1.AResultSet {
     _getValue(field) {
         this._checkClosed();
         const descriptor = this.getOutDescriptor(field);
-        return fb_utils_1.bufferToValue(this.statement, descriptor, this.source.outBuffer);
+        return fb_utils_1.bufferToValue(this.statement, descriptor, this.source.buffer);
     }
     getOutDescriptor(field) {
         this._checkClosed();

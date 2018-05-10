@@ -7,7 +7,7 @@ import { Statement } from "./Statement";
 export interface IResultSetSource {
     handler: NativeResultSet;
     metadata: ResultSetMetadata;
-    outBuffer: Uint8Array;
+    buffer: Uint8Array;
 }
 export declare class ResultSet extends AResultSet {
     disposeStatementOnClose: boolean;

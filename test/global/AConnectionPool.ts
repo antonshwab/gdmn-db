@@ -14,9 +14,11 @@ export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOption
         });
 
         it("get connection", async () => {
-            await AConnectionPool.executeConnectionPool(
-                driver.newDefaultConnectionPool(), dbOptions, {min: 1, max: 1},
-                async (connectionPool) => {
+            await AConnectionPool.executeConnectionPool({
+                connectionPool: driver.newDefaultConnectionPool(),
+                connectionOptions: dbOptions,
+                options: {min: 1, max: 1},
+                callback: async (connectionPool) => {
                     const con1 = await connectionPool.get();
                     expect(con1.connected).to.equal(true);
 
@@ -29,7 +31,8 @@ export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOption
                     await con2.disconnect();
                     expect(con2.connected).to.equal(false);
                     expect(con1).to.equal(con2);
-                });
+                }
+            });
         });
     });
 }

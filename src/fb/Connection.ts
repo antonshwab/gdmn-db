@@ -94,8 +94,10 @@ export class Connection extends AConnection {
         this.context.destroy();
     }
 
-    public async execute(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<void> {
-        return undefined;
+    public async execute(transaction: Transaction, sql: string, params?: any[] | INamedParams): Promise<void> {
+        const statement = await Statement.prepare(transaction, sql);
+        await statement.execute(params);
+        await statement.dispose();
     }
 
     public async executeQuery(transaction: Transaction,

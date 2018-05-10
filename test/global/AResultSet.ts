@@ -55,9 +55,9 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
 
         it("lifecycle", async () => {
             const resultSet = await globalConnection
-                .executeQuery(globalTransaction, "SELECT FIRST 2 * FROM TEST_TABLE");
+                .executeQuery(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE");
 
-            expect(await resultSet.absolute(1)).to.equal(true);
+            expect(await resultSet.next()).to.equal(true);
             expect(resultSet.closed).to.equal(false);
 
             await resultSet.close();

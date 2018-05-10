@@ -10,7 +10,7 @@ import {bufferToValue, dataWrite, IDescriptor, SQL_BLOB_SUB_TYPE} from "./utils/
 export interface IResultSetSource {
     handler: NativeResultSet;
     metadata: ResultSetMetadata;
-    outBuffer: Uint8Array;
+    buffer: Uint8Array;
 }
 
 enum ResultStatus {
@@ -49,19 +49,18 @@ export class ResultSet extends AResultSet {
         const source: IResultSetSource = await statement.transaction.connection.context.statusAction(async (status) => {
             const metadata = await ResultSetMetadata.getMetadata(statement);
             const inBuffer = new Uint8Array(statement.source!.inMetadata.getMessageLengthSync(status));
-            const outBuffer = new Uint8Array(metadata.handler.getMessageLengthSync(status));
+            const buffer = new Uint8Array(metadata.handler.getMessageLengthSync(status));
 
             await dataWrite(statement, statement.source!.inDescriptors, inBuffer, params);
 
             const handler = await statement.source!.handler.openCursorAsync(status, statement.transaction.handler,
                 statement.source!.inMetadata, inBuffer, metadata.handler,
                 type || AResultSet.DEFAULT_TYPE === CursorType.SCROLLABLE ? NativeStatement.CURSOR_TYPE_SCROLLABLE : 0);
-            // TODO IStatement::CURSOR_TYPE_SCROLLABLE optional
 
             return {
                 handler: handler!,
                 metadata,
-                outBuffer
+                buffer
             };
         });
         return new ResultSet(statement, source, type);
@@ -77,7 +76,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchNextAsync(status, this.source!.outBuffer)
+            this.source!.handler.fetchNextAsync(status, this.source!.buffer)
         ));
     }
 
@@ -85,7 +84,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchPriorAsync(status, this.source!.outBuffer)
+            this.source!.handler.fetchPriorAsync(status, this.source!.buffer)
         ));
     }
 
@@ -93,7 +92,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchAbsoluteAsync(status, i, this.source!.outBuffer)
+            this.source!.handler.fetchAbsoluteAsync(status, i, this.source!.buffer)
         ));
     }
 
@@ -101,7 +100,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchRelativeAsync(status, i, this.source!.outBuffer)
+            this.source!.handler.fetchRelativeAsync(status, i, this.source!.buffer)
         ));
     }
 
@@ -109,7 +108,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchFirstAsync(status, this.source!.outBuffer)
+            this.source!.handler.fetchFirstAsync(status, this.source!.buffer)
         ));
     }
 
@@ -117,17 +116,18 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchLastAsync(status, this.source!.outBuffer)
+            this.source!.handler.fetchLastAsync(status, this.source!.buffer)
         ));
     }
 
     public async close(): Promise<void> {
         this._checkClosed();
 
-        await this.source!.metadata.release();
-
         await this.statement.transaction.connection.context
-            .statusAction((status) => this.source!.handler.closeAsync(status));
+            .statusAction(async (status) => {
+                await this.source!.handler.closeAsync(status);
+                await this.source!.metadata.release();
+            });
         this.source = undefined;
         this.statement.resultSets.delete(this);
 
@@ -236,7 +236,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         const descriptor = this.getOutDescriptor(field);
-        return bufferToValue(this.statement, descriptor, this.source!.outBuffer);
+        return bufferToValue(this.statement, descriptor, this.source!.buffer);
     }
 
     private getOutDescriptor(field: number | string): IDescriptor {

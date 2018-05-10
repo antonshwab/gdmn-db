@@ -24,7 +24,7 @@ class ResultSetMetadata extends AResultSetMetadata_1.AResultSetMetadata {
             const metadata = await statement.source.handler.getOutputMetadataAsync(status);
             const descriptors = fb_utils_1.createDescriptors(status, metadata);
             const fixedHandler = fb_utils_1.fixMetadata(status, metadata);
-            const fixedDescriptors = fb_utils_1.createDescriptors(status, fb_utils_1.fixMetadata(status, metadata));
+            const fixedDescriptors = fb_utils_1.createDescriptors(status, fixedHandler);
             return {
                 fixedHandler,
                 descriptors,

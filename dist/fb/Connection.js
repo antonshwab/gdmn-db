@@ -74,7 +74,9 @@ class Connection extends AConnection_1.AConnection {
         this.context.destroy();
     }
     async execute(transaction, sql, params) {
-        return undefined;
+        const statement = await Statement_1.Statement.prepare(transaction, sql);
+        await statement.execute(params);
+        await statement.dispose();
     }
     async executeQuery(transaction, sql, params, type) {
         if (transaction.finished) {

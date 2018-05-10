@@ -20,7 +20,8 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                 callback: async (connection) => {
                     const transaction = await connection.startTransaction();
                     should().exist(transaction);
-                    expect(transaction.finished).to.equal(true);
+                    expect(transaction.finished).to.equal(false);
+                    await transaction.commit();
                 }
             });
         });
@@ -33,7 +34,7 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                     connection,
                     callback: (transaction) => AConnection.executePrepareStatement({
                         connection, transaction,
-                        sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
+                        sql: "SELECT FIRST 1 * FROM RDB$DATABASE",
                         callback: (statement) => should().exist(statement)
                     })
                 })
@@ -47,7 +48,7 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                 callback: (connection) => AConnection.executeTransaction({
                     connection,
                     callback: async (transaction) => {
-                        const result = await connection.execute(transaction, "SELECT FIRST 1 * FROM RDB$FIELDS");
+                        const result = await connection.execute(transaction, "SELECT FIRST 1 * FROM RDB$DATABASE");
                         should().not.exist(result);
                     }
                 })
@@ -61,9 +62,13 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                 callback: (connection) => AConnection.executeTransaction({
                     connection,
                     callback: (transaction) => AConnection.executeQueryResultSet({
-                        connection, transaction,
-                        sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
-                        callback: (resultSet) => should().exist(resultSet)
+                        connection,
+                        transaction,
+                        sql: "SELECT FIRST 1 * FROM RDB$DATABASE",
+                        callback: async (resultSet) => {
+                            await resultSet.next();
+                            should().exist(resultSet);
+                        }
                     })
                 })
             });
