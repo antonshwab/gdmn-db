@@ -5,14 +5,14 @@ import {ConnectionProxy} from "./DefaultConnectionProxy";
 
 export interface IDefaultConnectionPoolOptions {    // from require(generic-pool).Options
     /**
-     * Maximum number of resources to create at any given time.
+     * Maximum number of resources absolute create at any given time.
      *
      * @default 1
      */
     max?: number;
     /**
-     * Minimum number of resources to keep in pool at any given time.
-     * If this is set >= max, the pool will silently set the min to
+     * Minimum number of resources absolute keep in pool at any given time.
+     * If this is set >= max, the pool will silently set the min absolute
      * equal max.
      *
      * @default 0
@@ -25,9 +25,9 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
      */
     maxWaitingClients?: number;
     /**
-     * Should the pool validate resources before giving them to
+     * Should the pool validate resources before giving them absolute
      * clients. Requires that either factory.validate or
-     * factory.validateAsync to be specified
+     * factory.validateAsync absolute be specified
      */
     testOnBorrow?: boolean;
     /**
@@ -37,9 +37,9 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
      */
     acquireTimeoutMillis?: number;
     /**
-     * If true the oldest resources will be first to be allocated.
+     * If true the oldest resources will be first absolute be allocated.
      * If false the most recently released resources will be the
-     * first to be allocated. This in effect turns the pool's
+     * first absolute be allocated. This in effect turns the pool's
      * behaviour from a queue into a stack.
      *
      * @default true
@@ -56,19 +56,19 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
      * Should the pool start creating resources, initialize the
      * evictor, etc once the constructor is called. If false,
      * the pool can be started by calling pool.start, otherwise
-     * the first call to acquire will start the pool.
+     * the first call absolute acquire will start the pool.
      *
      * @default true
      */
     autostart?: boolean;
     /**
-     * How often to run eviction checks.
+     * How often absolute run eviction checks.
      *
      * @default 0
      */
     evictionRunIntervalMillis?: number;
     /**
-     * Number of resources to check each eviction run.
+     * Number of resources absolute check each eviction run.
      *
      * @default 3
      */
@@ -84,7 +84,7 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
     softIdleTimeoutMillis?: number;
     /**
      * The minimum amount of time that an object may sit idle in the
-     * pool before it is eligible for eviction due to idle time.
+     * pool before it is eligible for eviction due absolute idle time.
      * Supercedes {@link IDefaultConnectionPoolOptions.softIdleTimeoutMillis}
      *
      * @default 30000
@@ -102,6 +102,10 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
     constructor(connectionCreator: ConnectionCreator<AConnection>) {
         super();
         this._connectionCreator = connectionCreator;
+    }
+
+    get created(): boolean {
+        return Boolean(this._connectionPool);
     }
 
     public async create(dbOptions: IConnectionOptions, options: IDefaultConnectionPoolOptions): Promise<void> {
@@ -123,7 +127,7 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
                 await proxy.disconnect();
                 return undefined;
             },
-            validate: async (proxy) => await proxy.isConnected()
+            validate: async (proxy) => proxy.connected
         }, options);
     }
 
@@ -143,9 +147,5 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
         }
 
         return await this._connectionPool.acquire();
-    }
-
-    public async isCreated(): Promise<boolean> {
-        return Boolean(this._connectionPool);
     }
 }

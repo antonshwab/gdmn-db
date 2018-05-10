@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const os_1 = require("os");
 const string_decoder_1 = require("string_decoder");
-const FirebirdBlobLink_1 = require("../FirebirdBlobLink");
-const FirebirdBlobStream_1 = require("../FirebirdBlobStream");
+const BlobLink_1 = require("../BlobLink");
+const BlobStream_1 = require("../BlobStream");
 const date_time_1 = require("./date-time");
 const littleEndian = os_1.endianness() === "LE";
 var SQLTypes;
@@ -179,12 +179,14 @@ function createDescriptors(status, metadata) {
     for (let i = 0; i < count; ++i) {
         ret.push({
             alias: metadata.getAliasSync(status, i),
+            field: metadata.getFieldSync(status, i),
             type: metadata.getTypeSync(status, i),
             subType: metadata.getSubTypeSync(status, i),
-            nullOffset: metadata.getNullOffsetSync(status, i),
-            offset: metadata.getOffsetSync(status, i),
             length: metadata.getLengthSync(status, i),
             scale: metadata.getScaleSync(status, i),
+            offset: metadata.getOffsetSync(status, i),
+            nullOffset: metadata.getNullOffsetSync(status, i),
+            isNullable: metadata.isNullableSync(status, i)
         });
     }
     return ret;
@@ -232,7 +234,7 @@ function bufferToValue(statement, outDescriptor, outBuffer) {
         case SQLTypes.SQL_BOOLEAN:
             return dataView.getInt8(outDescriptor.offset) !== 0;
         case SQLTypes.SQL_BLOB:
-            return new FirebirdBlobLink_1.FirebirdBlobLink(statement.parent.parent, outBuffer.slice(outDescriptor.offset, outDescriptor.offset + 8));
+            return new BlobLink_1.BlobLink(statement.transaction.connection, outBuffer.slice(outDescriptor.offset, outDescriptor.offset + 8));
         case SQLTypes.SQL_NULL:
             return null;
         default:
@@ -299,14 +301,14 @@ async function valueToBuffer(statement, inDescriptor, inBuffer, value) {
             break;
         case SQLTypes.SQL_BLOB: {
             const targetBlobId = inBuffer.subarray(inDescriptor.offset, inDescriptor.offset + 8);
-            if (value instanceof FirebirdBlobStream_1.FirebirdBlobStream) {
+            if (value instanceof BlobStream_1.BlobStream) {
                 value = value.blobLink;
             }
             if (inDescriptor.subType === SQL_BLOB_SUB_TYPE.TEXT && typeof value === "string") {
                 value = Buffer.from(value, "utf8");
             }
             if (value instanceof Buffer) {
-                const blobStream = await FirebirdBlobStream_1.FirebirdBlobStream.create(statement.parent);
+                const blobStream = await BlobStream_1.BlobStream.create(statement.transaction);
                 try {
                     await blobStream.write(value);
                 }
@@ -317,8 +319,8 @@ async function valueToBuffer(statement, inDescriptor, inBuffer, value) {
                 await blobStream.close();
                 targetBlobId.set(blobStream.blobLink.id);
             }
-            else if (value instanceof FirebirdBlobLink_1.FirebirdBlobLink) {
-                if (value.connection === statement.parent.parent) {
+            else if (value instanceof BlobLink_1.BlobLink) {
+                if (value.connection === statement.transaction.connection) {
                     targetBlobId.set(value.id);
                 }
                 else {
@@ -327,7 +329,7 @@ async function valueToBuffer(statement, inDescriptor, inBuffer, value) {
                 }
             }
             else {
-                throw new Error("Unrecognized type used as BLOB. Must be: Buffer or FirebirdBlobLink.");
+                throw new Error("Unrecognized type used as BLOB. Must be: Buffer or BlobLink.");
             }
             break;
         }

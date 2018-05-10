@@ -1,10 +1,5 @@
-import { ABlob } from "./ABlob";
-import { AResultSet } from "./AResultSet";
-import { AStatement } from "./AStatement";
+import { AConnection } from "./AConnection";
 import { TExecutor } from "./types";
-export interface INamedParams {
-    [paramName: string]: any;
-}
 export declare enum AccessMode {
     READ_WRITE = 0,
     READ_ONLY = 1,
@@ -16,92 +11,30 @@ export declare enum Isolation {
     SERIALIZABLE = 3,
 }
 export interface ITransactionOptions {
-    isolation: Isolation;
-    accessMode: AccessMode;
+    isolation?: Isolation;
+    accessMode?: AccessMode;
 }
 /**
  * The transaction object
  */
-export declare abstract class ATransaction<B extends ABlob = ABlob, RS extends AResultSet<B> = AResultSet<B>, S extends AStatement<B, RS> = AStatement<B, RS>> {
+export declare abstract class ATransaction {
     static DEFAULT_OPTIONS: ITransactionOptions;
-    protected _options: ITransactionOptions;
-    protected constructor(options?: ITransactionOptions);
+    protected readonly _connection: AConnection;
+    protected readonly _options: ITransactionOptions;
+    protected constructor(connection: AConnection, options?: ITransactionOptions);
+    readonly connection: AConnection;
+    /** Transaction type */
+    readonly options: ITransactionOptions;
+    /**
+     * Indicates was the transaction will been started.
+     *
+     * @returns {boolean}
+     * true if the transaction was commited or rollbacked
+     */
+    readonly abstract finished: boolean;
     static executeSelf<R>(selfReceiver: TExecutor<null, ATransaction>, callback: TExecutor<ATransaction, R>): Promise<R>;
-    /**
-     * Example:
-     * <pre>
-     * const result = await ATransaction.executePrepareStatement(transaction, "some sql with params",
-     *      async (statement) => {
-     *          await statement.execute([param1, param2]);
-     *          await statement.execute([param3, param4]);
-     *          return "some value";
-     *      })}
-     * </pre>
-     */
-    static executePrepareStatement<R>(transaction: ATransaction, sql: string, callback: TExecutor<AStatement, R>): Promise<R>;
-    /**
-     * Example:
-     * <pre>
-     * const result = await ATransaction.executeQueryResultSet(transaction, "some sql",
-     *      async (resultSet) => {
-     *          return await resultSet.getArrays();
-     *      })
-     * </pre>
-     */
-    static executeQueryResultSet<R>(transaction: ATransaction, sql: string, callback: TExecutor<AResultSet, R>): Promise<R>;
-    /**
-     * Example:
-     * <pre>
-     * const result = await ATransaction.executeQueryResultSet(transaction, "some sql", [param1, param2],
-     *      async (resultSet) => {
-     *          return await resultSet.getArrays();
-     *      })
-     * </pre>
-     */
-    static executeQueryResultSet<R>(transaction: ATransaction, sql: string, params: any[] | INamedParams, callback: TExecutor<AResultSet, R>): Promise<R>;
-    /** Start the transaction. */
-    abstract start(): Promise<void>;
     /** Commit the transaction. */
     abstract commit(): Promise<void>;
     /** Rollback the transaction. */
     abstract rollback(): Promise<void>;
-    /**
-     * Indicates was the transaction will been started.
-     *
-     * @returns {Promise<boolean>}
-     * true if the transaction was started;
-     * false if the transaction was commited, rollbacked or not started yet
-     */
-    abstract isActive(): Promise<boolean>;
-    /**
-     * Creates a Statement object for sending parameterized SQL statements
-     * to the database.
-     *
-     * @param {string} sql
-     * an SQL statement that may contain one or more parameter placeholders
-     * @returns {Promise<S extends AStatement<RS>>}
-     * a Statement object containing the pre-compiled SQL statement
-     */
-    abstract prepare(sql: string): Promise<S>;
-    /**
-     * Executes the given SQL statement, which returns a ResultSet object.
-     *
-     * @param {string} sql
-     * an SQL statement to be sent to the database, typically a static SQL SELECT statement
-     * @param {any[] | INamedParams | null} params
-     * array of parameters or object containing placeholders as keys and parameters as values; optional
-     * @returns {Promise<RS extends AResultSet>}
-     * a ResultSet object that contains the data produced by the given query;
-     * never null
-     */
-    abstract executeQuery(sql: string, params?: any[] | INamedParams): Promise<RS>;
-    /**
-     * Executes the given SQL statement.
-     *
-     * @param {string} sql
-     * an SQL statement to be sent to the database, typically a static SQL SELECT statement
-     * @param {any[] | INamedParams | null} params
-     * array of parameters or object containing placeholders as keys and parameters as values; optional
-     */
-    abstract execute(sql: string, params?: any[] | INamedParams): Promise<void>;
 }

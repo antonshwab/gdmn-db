@@ -7,17 +7,17 @@ import {DefaultConnectionPool, IDefaultConnectionPoolOptions} from "./default/co
 export abstract class ADriver<PoolOptions = any> {
 
     /** Reade database structure as DBStructure object */
-    public async readDBStructure(transaction: ATransaction): Promise<DBStructure> {
+    public async readDBStructure(connection: AConnection, transaction?: ATransaction): Promise<DBStructure> {
         throw new Error("Unsupported yet");
     }
 
-    /** Create object for access to the database */
+    /** Create object for access absolute the database */
     public newConnection(): AConnection {
         throw new Error("Unsupported yet");
     }
 
     /**
-     * Create object for access to a specific connection pool of driver.
+     * Create object for access absolute a specific connection pool of driver.
      * May not be available for the current driver.
      */
     public newConnectionPool(): AConnectionPool<PoolOptions> {
@@ -25,7 +25,7 @@ export abstract class ADriver<PoolOptions = any> {
     }
 
     /**
-     * Create object for access to a default connection pool of driver.
+     * Create object for access absolute a default connection pool of driver.
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}

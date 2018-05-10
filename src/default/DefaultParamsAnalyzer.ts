@@ -1,4 +1,4 @@
-import {INamedParams} from "../ATransaction";
+import {INamedParams} from "../AStatement";
 
 interface ITmpPlaceholders {
     [placeholder: string]: string;
@@ -39,7 +39,7 @@ export class DefaultParamsAnalyzer {
         return this._sql;
     }
 
-    public prepareParams(params?: null | any[] | INamedParams): any[] {
+    public prepareParams(params?: any[] | INamedParams): any[] {
         if (!params) {
             return [];
         }

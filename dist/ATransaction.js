@@ -1,7 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const AResultSet_1 = require("./AResultSet");
-const AStatement_1 = require("./AStatement");
 var AccessMode;
 (function (AccessMode) {
     AccessMode[AccessMode["READ_WRITE"] = 0] = "READ_WRITE";
@@ -18,8 +16,16 @@ var Isolation;
  * The transaction object
  */
 class ATransaction {
-    constructor(options = ATransaction.DEFAULT_OPTIONS) {
-        this._options = options;
+    constructor(connection, options) {
+        this._connection = connection;
+        this._options = Object.assign({}, ATransaction.DEFAULT_OPTIONS, options);
+    }
+    get connection() {
+        return this._connection;
+    }
+    /** Transaction type */
+    get options() {
+        return this._options;
     }
     static async executeSelf(selfReceiver, callback) {
         let self;
@@ -35,26 +41,6 @@ class ATransaction {
             }
             throw error;
         }
-    }
-    /**
-     * Example:
-     * <pre>
-     * const result = await ATransaction.executePrepareStatement(transaction, "some sql with params",
-     *      async (statement) => {
-     *          await statement.execute([param1, param2]);
-     *          await statement.execute([param3, param4]);
-     *          return "some value";
-     *      })}
-     * </pre>
-     */
-    static async executePrepareStatement(transaction, sql, callback) {
-        return await AStatement_1.AStatement.executeSelf(() => transaction.prepare(sql), callback);
-    }
-    static async executeQueryResultSet(transaction, sql, params, callback) {
-        if (!callback) {
-            callback = params;
-        }
-        return await AResultSet_1.AResultSet.executeSelf(() => transaction.executeQuery(sql, params), callback);
     }
 }
 ATransaction.DEFAULT_OPTIONS = {

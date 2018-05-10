@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { MessageMetadata, Status } from "node-firebird-native-api";
-import { FirebirdStatement } from "../FirebirdStatement";
+import { Statement } from "../Statement";
 export declare enum SQLTypes {
     SQL_TEXT = 452,
     SQL_VARYING = 448,
@@ -86,15 +86,17 @@ export declare function getPortableInteger(buffer: Uint8Array, length: number): 
 /** Descriptor for a field or parameter. */
 export interface IDescriptor {
     alias?: string;
+    field?: string;
     type: number;
     subType: number;
     length: number;
     scale: number;
     offset: number;
     nullOffset: number;
+    isNullable: boolean;
 }
 export declare function createDescriptors(status: Status, metadata?: MessageMetadata): IDescriptor[];
-export declare function bufferToValue(statement: FirebirdStatement, outDescriptor: IDescriptor, outBuffer: Uint8Array): any;
-export declare function valueToBuffer(statement: FirebirdStatement, inDescriptor: IDescriptor, inBuffer: Uint8Array, value: any): Promise<void>;
-export declare function dataWrite(statement: FirebirdStatement, inDescriptors: IDescriptor[], inBuffer: Uint8Array, values: any[]): Promise<void>;
+export declare function bufferToValue(statement: Statement, outDescriptor: IDescriptor, outBuffer: Uint8Array): any;
+export declare function valueToBuffer(statement: Statement, inDescriptor: IDescriptor, inBuffer: Uint8Array, value: any): Promise<void>;
+export declare function dataWrite(statement: Statement, inDescriptors: IDescriptor[], inBuffer: Uint8Array, values: any[]): Promise<void>;
 export declare function fixMetadata(status: Status, metadata?: MessageMetadata): MessageMetadata | undefined;

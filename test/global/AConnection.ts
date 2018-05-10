@@ -7,19 +7,66 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
         it("lifecycle", async () => {
             const connection = driver.newConnection();
             await connection.connect(dbOptions);
-            expect(await connection.isConnected()).to.equal(true);
+            expect(connection.connected).to.equal(true);
 
             await connection.disconnect();
-            expect(await connection.isConnected()).to.equal(false);
+            expect(connection.connected).to.equal(false);
         });
 
         it("create connection", async () => {
-            await AConnection.executeConnection(driver.newConnection(), dbOptions,
-                async (connection) => {
-                    const transaction = await connection.createTransaction();
+            await AConnection.executeConnection({
+                connection: driver.newConnection(),
+                options: dbOptions,
+                callback: async (connection) => {
+                    const transaction = await connection.startTransaction();
                     should().exist(transaction);
-                    expect(await transaction.isActive()).to.equal(false);
-                });
+                    expect(transaction.finished).to.equal(true);
+                }
+            });
+        });
+
+        it("prepare", async () => {
+            await AConnection.executeConnection({
+                connection: driver.newConnection(),
+                options: dbOptions,
+                callback: (connection) => AConnection.executeTransaction({
+                    connection,
+                    callback: (transaction) => AConnection.executePrepareStatement({
+                        connection, transaction,
+                        sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
+                        callback: (statement) => should().exist(statement)
+                    })
+                })
+            });
+        });
+
+        it("execute", async () => {
+            await AConnection.executeConnection({
+                connection: driver.newConnection(),
+                options: dbOptions,
+                callback: (connection) => AConnection.executeTransaction({
+                    connection,
+                    callback: async (transaction) => {
+                        const result = await connection.execute(transaction, "SELECT FIRST 1 * FROM RDB$FIELDS");
+                        should().not.exist(result);
+                    }
+                })
+            });
+        });
+
+        it("executeQuery", async () => {
+            await AConnection.executeConnection({
+                connection: driver.newConnection(),
+                options: dbOptions,
+                callback: (connection) => AConnection.executeTransaction({
+                    connection,
+                    callback: (transaction) => AConnection.executeQueryResultSet({
+                        connection, transaction,
+                        sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
+                        callback: (resultSet) => should().exist(resultSet)
+                    })
+                })
+            });
         });
     });
 }

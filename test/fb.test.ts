@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {existsSync, unlinkSync} from "fs";
 import {DefaultParamsAnalyzer, Factory, IConnectionOptions} from "../src";
-import {FirebirdTransaction} from "../src/fb/FirebirdTransaction";
+import {Transaction} from "../src/fb/Transaction";
 import {connectionTest} from "./global/AConnection";
 import {connectionPoolTest} from "./global/AConnectionPool";
 import {resultSetTest} from "./global/AResultSet";
@@ -29,26 +29,26 @@ describe("Firebird driver tests", async function tests(): Promise<void> {
         const connection = Factory.FBDriver.newConnection();
 
         await connection.createDatabase(dbOptions);
-        expect(await connection.isConnected()).to.equal(true);
+        expect(connection.connected).to.equal(true);
 
         await connection.disconnect();
-        expect(await connection.isConnected()).to.equal(false);
+        expect(connection.connected).to.equal(false);
 
         await globalConnectionPool.create(dbOptions, {min: 1, max: 1});
-        expect(await globalConnectionPool.isCreated()).to.equal(true);
+        expect(globalConnectionPool.created).to.equal(true);
     });
 
     after(async () => {
         await globalConnectionPool.destroy();
-        expect(await globalConnectionPool.isCreated()).to.equal(false);
+        expect(globalConnectionPool.created).to.equal(false);
 
         const connection = Factory.FBDriver.newConnection();
 
         await connection.connect(dbOptions);
-        expect(await connection.isConnected()).to.equal(true);
+        expect(connection.connected).to.equal(true);
 
         await connection.dropDatabase();
-        expect(await connection.isConnected()).to.equal(false);
+        expect(connection.connected).to.equal(false);
     });
 
     it(path + " exists", async () => {
@@ -62,7 +62,7 @@ describe("Firebird driver tests", async function tests(): Promise<void> {
     statementTest(globalConnectionPool);
     resultSetTest(globalConnectionPool);
 
-    defaultParamsAnalyzerTest(FirebirdTransaction.EXCLUDE_PATTERNS, FirebirdTransaction.PLACEHOLDER_PATTERN);
+    defaultParamsAnalyzerTest(Transaction.EXCLUDE_PATTERNS, Transaction.PLACEHOLDER_PATTERN);
 });
 
 function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern: RegExp): void {

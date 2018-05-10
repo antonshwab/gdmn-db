@@ -8,6 +8,7 @@ __export(require("./AConnection"));
 __export(require("./ATransaction"));
 __export(require("./AStatement"));
 __export(require("./AResultSet"));
+__export(require("./AResultSetMetadata"));
 __export(require("./ABlob"));
 __export(require("./ADriver"));
 __export(require("./Factory"));

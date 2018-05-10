@@ -1,9 +1,9 @@
 import {MessageMetadata, Status} from "node-firebird-native-api";
 import {endianness} from "os";
 import {StringDecoder} from "string_decoder";
-import {FirebirdBlobLink} from "../FirebirdBlobLink";
-import {FirebirdBlobStream} from "../FirebirdBlobStream";
-import {FirebirdStatement} from "../FirebirdStatement";
+import {BlobLink} from "../BlobLink";
+import {BlobStream} from "../BlobStream";
+import {Statement} from "../Statement";
 import {decodeDate, decodeTime, encodeDate, encodeTime} from "./date-time";
 
 const littleEndian = endianness() === "LE";
@@ -214,12 +214,14 @@ export function getPortableInteger(buffer: Uint8Array, length: number): number {
 /** Descriptor for a field or parameter. */
 export interface IDescriptor {
     alias?: string;
+    field?: string;
     type: number;
     subType: number;
     length: number;
     scale: number;
     offset: number;
     nullOffset: number;
+    isNullable: boolean;
 }
 
 export function createDescriptors(status: Status, metadata?: MessageMetadata): IDescriptor[] {
@@ -233,19 +235,21 @@ export function createDescriptors(status: Status, metadata?: MessageMetadata): I
     for (let i = 0; i < count; ++i) {
         ret.push({
             alias: metadata.getAliasSync(status, i),
+            field: metadata.getFieldSync(status, i),
             type: metadata.getTypeSync(status, i),
             subType: metadata.getSubTypeSync(status, i),
-            nullOffset: metadata.getNullOffsetSync(status, i),
-            offset: metadata.getOffsetSync(status, i),
             length: metadata.getLengthSync(status, i),
             scale: metadata.getScaleSync(status, i),
+            offset: metadata.getOffsetSync(status, i),
+            nullOffset: metadata.getNullOffsetSync(status, i),
+            isNullable: metadata.isNullableSync(status, i)
         });
     }
 
     return ret;
 }
 
-export function bufferToValue(statement: FirebirdStatement,
+export function bufferToValue(statement: Statement,
                               outDescriptor: IDescriptor,
                               outBuffer: Uint8Array): any {
     const dataView = new DataView(outBuffer.buffer);
@@ -300,7 +304,7 @@ export function bufferToValue(statement: FirebirdStatement,
             return dataView.getInt8(outDescriptor.offset) !== 0;
 
         case SQLTypes.SQL_BLOB:
-            return new FirebirdBlobLink(statement.parent.parent,
+            return new BlobLink(statement.transaction.connection,
                 outBuffer.slice(outDescriptor.offset, outDescriptor.offset + 8));
 
         case SQLTypes.SQL_NULL:
@@ -311,7 +315,7 @@ export function bufferToValue(statement: FirebirdStatement,
     }
 }
 
-export async function valueToBuffer(statement: FirebirdStatement,
+export async function valueToBuffer(statement: Statement,
                                     inDescriptor: IDescriptor,
                                     inBuffer: Uint8Array,
                                     value: any): Promise<void> {
@@ -396,7 +400,7 @@ export async function valueToBuffer(statement: FirebirdStatement,
         case SQLTypes.SQL_BLOB: {
             const targetBlobId = inBuffer.subarray(inDescriptor.offset, inDescriptor.offset + 8);
 
-            if (value instanceof FirebirdBlobStream) {
+            if (value instanceof BlobStream) {
                 value = value.blobLink;
             }
 
@@ -405,7 +409,7 @@ export async function valueToBuffer(statement: FirebirdStatement,
             }
 
             if (value instanceof Buffer) {
-                const blobStream = await FirebirdBlobStream.create(statement.parent);
+                const blobStream = await BlobStream.create(statement.transaction);
                 try {
                     await blobStream.write(value);
                 } catch (e) {
@@ -417,15 +421,15 @@ export async function valueToBuffer(statement: FirebirdStatement,
 
                 targetBlobId.set(blobStream.blobLink.id);
 
-            } else if (value instanceof FirebirdBlobLink) {
-                if (value.connection === statement.parent.parent) {
+            } else if (value instanceof BlobLink) {
+                if (value.connection === statement.transaction.connection) {
                     targetBlobId.set(value.id);
                 } else {
                     throw new Error("Cannot pass a BLOB from another handler as parameter.");
                     //// TODO: add support for it
                 }
             } else {
-                throw new Error("Unrecognized type used as BLOB. Must be: Buffer or FirebirdBlobLink.");
+                throw new Error("Unrecognized type used as BLOB. Must be: Buffer or BlobLink.");
             }
             break;
         }
@@ -438,7 +442,7 @@ export async function valueToBuffer(statement: FirebirdStatement,
     }
 }
 
-export async function dataWrite(statement: FirebirdStatement,
+export async function dataWrite(statement: Statement,
                                 inDescriptors: IDescriptor[],
                                 inBuffer: Uint8Array,
                                 values: any[]): Promise<void> {

@@ -1,41 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const AResultSet_1 = require("./AResultSet");
+const AStatement_1 = require("./AStatement");
 const ATransaction_1 = require("./ATransaction");
-/**
- * Example:
- * <pre>
- * (async () => {
- *      const connection = Factory.XXModule.newConnection();
- *      try {
- *          await connection.connect({...});
- *
- *          const transaction = await connection.createTransaction();
- *          try {
- *              await transaction.start();
- *
- *              const resultSet = await transaction.executeQuery("some sql");
- *              await resultSet.getArrays();
- *              await resultSet.close();
- *
- *              await transaction.commit();
- *          } catch (error) {
- *              try {
- *                  await transaction.rollback();
- *              } catch (error) {
- *                  console.warn(error);
- *              }
- *              throw error;
- *          }
- *      } finally {
- *          try {
- *              await connection.disconnect();
- *          } catch (err) {
- *              console.warn(err);
- *          }
- *      }
- * })()
- * </pre>
- */
 class AConnection {
     static async executeSelf(selfReceiver, callback) {
         let self;
@@ -49,31 +16,20 @@ class AConnection {
             }
         }
     }
-    /**
-     * Example:
-     * <pre>
-     * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (connection) => {
-     *      return await AConnection.executeTransaction(parent, {}, async (transaction) => {
-     *          return ...
-     *      });
-     * })}
-     * </pre>
-     */
-    static async executeConnection(connection, options, callback) {
+    static async executeConnection({ connection, callback, options }) {
         return await AConnection.executeSelf(async () => {
             await connection.connect(options);
             return connection;
         }, callback);
     }
-    static async executeTransaction(connection, options, callback) {
-        if (!callback) {
-            callback = options;
-        }
-        return await ATransaction_1.ATransaction.executeSelf(async () => {
-            const transaction = await connection.createTransaction(options);
-            await transaction.start();
-            return transaction;
-        }, callback);
+    static async executeTransaction({ connection, callback, options }) {
+        return await ATransaction_1.ATransaction.executeSelf(() => connection.startTransaction(options), callback);
+    }
+    static async executePrepareStatement({ connection, transaction, callback, sql }) {
+        return await AStatement_1.AStatement.executeSelf(() => connection.prepare(transaction, sql), callback);
+    }
+    static async executeQueryResultSet({ connection, transaction, callback, sql, params, type }) {
+        return await AResultSet_1.AResultSet.executeSelf(() => connection.executeQuery(transaction, sql, params), callback);
     }
 }
 exports.AConnection = AConnection;

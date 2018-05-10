@@ -1,4 +1,16 @@
+import {AResultSet} from "./AResultSet";
+
 export abstract class ABlob {
+
+    private readonly _resultSet: AResultSet;
+
+    protected constructor(resultSet: AResultSet) {
+        this._resultSet = resultSet;
+    }
+
+    get resultSet(): AResultSet {
+        return this._resultSet;
+    }
 
     /**
      * Retrieves the blob value as a string

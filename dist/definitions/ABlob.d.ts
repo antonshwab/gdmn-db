@@ -1,5 +1,9 @@
 /// <reference types="node" />
+import { AResultSet } from "./AResultSet";
 export declare abstract class ABlob {
+    private readonly _resultSet;
+    protected constructor(resultSet: AResultSet);
+    readonly resultSet: AResultSet;
     /**
      * Retrieves the blob value as a string
      *

@@ -1,8 +1,7 @@
-import {ABlob} from "./ABlob";
-import {AResultSet} from "./AResultSet";
-import {AStatement} from "./AStatement";
+import {AResultSet, CursorType} from "./AResultSet";
+import {AStatement, INamedParams} from "./AStatement";
 import {ATransaction, ITransactionOptions} from "./ATransaction";
-import {TExecutor} from "./types";
+import {IBaseExecuteOptions, TExecutor} from "./types";
 
 export interface IConnectionOptions {
     host: string;
@@ -12,46 +11,40 @@ export interface IConnectionOptions {
     path: string;
 }
 
-/**
- * Example:
- * <pre>
- * (async () => {
- *      const connection = Factory.XXModule.newConnection();
- *      try {
- *          await connection.connect({...});
- *
- *          const transaction = await connection.createTransaction();
- *          try {
- *              await transaction.start();
- *
- *              const resultSet = await transaction.executeQuery("some sql");
- *              await resultSet.getArrays();
- *              await resultSet.close();
- *
- *              await transaction.commit();
- *          } catch (error) {
- *              try {
- *                  await transaction.rollback();
- *              } catch (error) {
- *                  console.warn(error);
- *              }
- *              throw error;
- *          }
- *      } finally {
- *          try {
- *              await connection.disconnect();
- *          } catch (err) {
- *              console.warn(err);
- *          }
- *      }
- * })()
- * </pre>
- */
-export abstract class AConnection<Options extends IConnectionOptions = IConnectionOptions,
-    B extends ABlob = ABlob,
-    RS extends AResultSet<B> = AResultSet<B>,
-    S extends AStatement<B, RS> = AStatement<B, RS>,
-    T extends ATransaction<B, RS, S> = ATransaction<B, RS, S>> {
+export interface IExecuteConnectionOptions<R> extends IBaseExecuteOptions<AConnection, R> {
+    connection: AConnection;
+    options: IConnectionOptions;
+}
+
+export interface IExecuteTransactionOptions<R> extends IBaseExecuteOptions<ATransaction, R> {
+    connection: AConnection;
+    options?: ITransactionOptions;
+}
+
+export interface IExecutePrepareStatementOptions<R> extends IBaseExecuteOptions<AStatement, R> {
+    connection: AConnection;
+    transaction: ATransaction;
+    sql: string;
+}
+
+export interface IExecuteQueryResultSetOptions<R> extends IBaseExecuteOptions<AResultSet, R> {
+    connection: AConnection;
+    transaction: ATransaction;
+    sql: string;
+    params?: any[] | INamedParams;
+    type?: CursorType;
+}
+
+export abstract class AConnection<Options extends IConnectionOptions = IConnectionOptions> {
+
+    /**
+     * Is the database connected.
+     *
+     * @returns {boolean}
+     * true if the database connected;
+     * false if the database was disconnected or not connected yet
+     */
+    abstract get connected(): boolean;
 
     public static async executeSelf<Opt, R>(selfReceiver: TExecutor<null, AConnection>,
                                             callback: TExecutor<AConnection, R>): Promise<R> {
@@ -66,20 +59,8 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
         }
     }
 
-    /**
-     * Example:
-     * <pre>
-     * const result = await AConnection.executeConnection(Factory.XXModule.newConnection()), {}, async (connection) => {
-     *      return await AConnection.executeTransaction(parent, {}, async (transaction) => {
-     *          return ...
-     *      });
-     * })}
-     * </pre>
-     */
     public static async executeConnection<R>(
-        connection: AConnection,
-        options: IConnectionOptions,
-        callback: TExecutor<AConnection, R>
+        {connection, callback, options}: IExecuteConnectionOptions<R>
     ): Promise<R> {
         return await AConnection.executeSelf(async () => {
             await connection.connect(options);
@@ -87,57 +68,29 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
         }, callback);
     }
 
-    /**
-     * Example:
-     * <pre>
-     * const result = await AConnection.executeTransaction(connection, async transaction => {
-     *      return await transaction.executePrepareStatement("some sql", async statement => {
-     *          return ...
-     *      });
-     * })}
-     * </pre>
-     */
     public static async executeTransaction<R>(
-        connection: AConnection,
-        callback: TExecutor<ATransaction, R>
-    ): Promise<R>;
-
-    /**
-     * Example:
-     * <pre>
-     * const result = await AConnection.executeTransaction(connection, {}, async transaction => {
-     *      return await transaction.executePrepareStatement("some sql", async statement => {
-     *          return ...
-     *      });
-     * })}
-     * </pre>
-     */
-    public static async executeTransaction<R>(
-        connection: AConnection,
-        options: ITransactionOptions,
-        callback: TExecutor<ATransaction, R>
-    ): Promise<R>;
-
-    public static async executeTransaction<R>(
-        connection: AConnection,
-        options: ITransactionOptions | TExecutor<ATransaction, R>,
-        callback?: TExecutor<ATransaction, R>
+        {connection, callback, options}: IExecuteTransactionOptions<R>
     ): Promise<R> {
-        if (!callback) {
-            callback = options as TExecutor<ATransaction, R>;
-        }
-        return await ATransaction.executeSelf(async () => {
-            const transaction = await connection.createTransaction(options as ITransactionOptions);
-            await transaction.start();
-            return transaction;
-        }, callback);
+        return await ATransaction.executeSelf(() => connection.startTransaction(options), callback);
+    }
+
+    public static async executePrepareStatement<R>(
+        {connection, transaction, callback, sql}: IExecutePrepareStatementOptions<R>
+    ): Promise<R> {
+        return await AStatement.executeSelf(() => connection.prepare(transaction, sql), callback);
+    }
+
+    public static async executeQueryResultSet<R>(
+        {connection, transaction, callback, sql, params, type}: IExecuteQueryResultSetOptions<R>
+    ): Promise<R> {
+        return await AResultSet.executeSelf(() => connection.executeQuery(transaction, sql, params), callback);
     }
 
     /**
-     * Create database and connect to them.
+     * Create database and connect absolute them.
      *
      * @param {Options} options
-     * the options for creating database and connection to them
+     * the type for creating database and connection absolute them
      */
     public abstract async createDatabase(options: Options): Promise<void>;
 
@@ -145,10 +98,10 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
     public abstract async dropDatabase(): Promise<void>;
 
     /**
-     * Connect to the database.
+     * Connect absolute the database.
      *
      * @param {Options} options
-     * the options for opening database connection
+     * the type for opening database connection
      */
     public abstract async connect(options: Options): Promise<void>;
 
@@ -156,23 +109,57 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
     public abstract async disconnect(): Promise<void>;
 
     /**
-     * Create connection.
+     * Start transaction.
      * @see {@link ATransaction.DEFAULT_OPTIONS}
      *
      * @param {ITransactionOptions} [options=DEFAULT_OPTIONS]
-     * the options for transaction; optional
-     * @returns {Promise<T extends ATransaction<RS, S>>}
+     * the type for transaction; optional
+     * @returns {Promise<ATransaction>}
      * a Transaction object;
      * never null
      */
-    public abstract async createTransaction(options?: ITransactionOptions): Promise<T>;
+    public abstract async startTransaction(options?: ITransactionOptions): Promise<ATransaction>;
 
     /**
-     * Is the database connected.
+     * Creates a Statement object for sending parameterized SQL statements
+     * absolute the database.
      *
-     * @returns {Promise<boolean>}
-     * true if the database connected;
-     * false if the database was disconnected or not connected yet
+     * @param {ATransaction} transaction
+     * @param {string} sql
+     * an SQL statement that may contain one or more parameter placeholders
+     * @returns {Promise<AStatement>}
+     * a Statement object containing the pre-compiled SQL statement
      */
-    public abstract async isConnected(): Promise<boolean>;
+    public abstract async prepare(transaction: ATransaction, sql: string): Promise<AStatement>;
+
+    /**
+     * Executes the SQL query and returns the ResultSet object generated by the query.
+     *
+     * @param {ATransaction} transaction
+     * @param {string} sql
+     * an SQL statement that may contain one or more parameter placeholders
+     * @param {any[] | INamedParams} params
+     * array of parameters or object containing placeholders as keys and parameters as values; optional
+     * @param {CursorType} type
+     * @returns {Promise<AResultSet>}
+     * a ResultSet object that contains the data produced by the given query;
+     * never null
+     */
+    public abstract async executeQuery(transaction: ATransaction,
+                                       sql: string,
+                                       params?: any[] | INamedParams,
+                                       type?: CursorType): Promise<AResultSet>;
+
+    /**
+     * Executes the SQL query.
+     *
+     * @param {ATransaction} transaction
+     * @param {string} sql
+     * an SQL statement that may contain one or more parameter placeholders
+     * @param {any[] | INamedParams} params
+     * array of parameters or object containing placeholders as keys and parameters as values; optional
+     */
+    public abstract async execute(transaction: ATransaction,
+                                  sql: string,
+                                  params?: any[] | INamedParams): Promise<void>;
 }

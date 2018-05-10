@@ -14,34 +14,13 @@ class AConnectionPool {
             }
         }
     }
-    /**
-     * Example:
-     * <pre>
-     * const result = await AConnectionPool.executeConnectionPool(Factory.XXModule.newDefaultConnectionPool(),
-     *      async (connectionPool) => {
-     *          return await AConnectionPool.executeConnection(connectionPool, async (connection) => {
-     *              return ...
-     *          });
-     *      })}
-     * </pre>
-     */
-    static async executeConnectionPool(connectionPool, connectionOptions, options, callback) {
+    static async executeConnectionPool({ connectionPool, callback, connectionOptions, options }) {
         return await AConnectionPool.executeSelf(async () => {
             await connectionPool.create(connectionOptions, options);
             return connectionPool;
         }, callback);
     }
-    /**
-     * Example:
-     * <pre>
-     * const result = await AConnectionPool.executeConnection(connectionPool, async (connection) => {
-     *      return await AConnection.executeTransaction(transaction, {}, async (transaction) => {
-     *          return ...
-     *      });
-     * })}
-     * </pre>
-     */
-    static async executeConnection(connectionPool, callback) {
+    static async executeConnection({ connectionPool, callback }) {
         return await AConnection_1.AConnection.executeSelf(() => connectionPool.get(), callback);
     }
 }

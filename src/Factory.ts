@@ -1,10 +1,10 @@
 import {ADriver} from "./ADriver";
-import {FirebirdDriver} from "./fb/FirebirdDriver";
+import {Driver} from "./fb/Driver";
 
 export abstract class Factory {
 
     /** Firebird driver */
     static get FBDriver(): ADriver {
-        return new FirebirdDriver();
+        return new Driver();
     }
 }

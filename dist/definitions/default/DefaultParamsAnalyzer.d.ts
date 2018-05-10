@@ -1,4 +1,4 @@
-import { INamedParams } from "../ATransaction";
+import { INamedParams } from "../AStatement";
 export declare class DefaultParamsAnalyzer {
     private readonly _originalSql;
     private readonly _placeholdersNames;
@@ -7,6 +7,6 @@ export declare class DefaultParamsAnalyzer {
     constructor(originalSql: string, excludePatterns: RegExp[], placeholderPattern: RegExp);
     readonly originalSql: string;
     readonly sql: string;
-    prepareParams(params?: null | any[] | INamedParams): any[];
+    prepareParams(params?: any[] | INamedParams): any[];
     private _generateName(count?);
 }

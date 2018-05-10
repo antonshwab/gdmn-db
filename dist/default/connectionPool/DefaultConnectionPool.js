@@ -9,6 +9,9 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
         this._connectionPool = null;
         this._connectionCreator = connectionCreator;
     }
+    get created() {
+        return Boolean(this._connectionPool);
+    }
     async create(dbOptions, options) {
         if (this._connectionPool) {
             throw new Error("Connection pool already created");
@@ -26,7 +29,7 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
                 await proxy.disconnect();
                 return undefined;
             },
-            validate: async (proxy) => await proxy.isConnected()
+            validate: async (proxy) => proxy.connected
         }, options);
     }
     async destroy() {
@@ -42,9 +45,6 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
             throw new Error("Connection pool need created");
         }
         return await this._connectionPool.acquire();
-    }
-    async isCreated() {
-        return Boolean(this._connectionPool);
     }
 }
 exports.DefaultConnectionPool = DefaultConnectionPool;

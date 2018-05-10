@@ -1,6 +1,8 @@
 import {Pool} from "generic-pool";
 import {AConnection, IConnectionOptions} from "../../AConnection";
-import {ATransaction} from "../../ATransaction";
+import {AResultSet} from "../../AResultSet";
+import {AStatement, INamedParams} from "../../AStatement";
+import {ATransaction, ITransactionOptions} from "../../ATransaction";
 
 export class ConnectionProxy extends AConnection {
 
@@ -12,6 +14,13 @@ export class ConnectionProxy extends AConnection {
         super();
         this._pool = pool;
         this._connectionCreator = connectionCreator;
+    }
+
+    get connected(): boolean {
+        if (!this._connection || !this.isBorrowed()) {
+            return false;
+        }
+        return this._connection.connected;
     }
 
     public async createDatabase(options: IConnectionOptions): Promise<void> {
@@ -43,18 +52,34 @@ export class ConnectionProxy extends AConnection {
         }
     }
 
-    public async createTransaction(): Promise<ATransaction> {
+    public async startTransaction(options?: ITransactionOptions): Promise<ATransaction> {
         if (!this._connection || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }
-        return this._connection.createTransaction();
+        return await this._connection.startTransaction(options);
     }
 
-    public async isConnected(): Promise<boolean> {
+    public async prepare(transaction: ATransaction, sql: string): Promise<AStatement> {
         if (!this._connection || !this.isBorrowed()) {
-            return false;
+            throw new Error("Need database connection");
         }
-        return this._connection.isConnected();
+        return await this._connection.prepare(transaction, sql);
+    }
+
+    public async executeQuery(transaction: ATransaction,
+                              sql: string,
+                              params?: any[] | INamedParams): Promise<AResultSet> {
+        if (!this._connection || !this.isBorrowed()) {
+            throw new Error("Need database connection");
+        }
+        return await this._connection.executeQuery(transaction, sql);
+    }
+
+    public async execute(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<void> {
+        if (!this._connection || !this.isBorrowed()) {
+            throw new Error("Need database connection");
+        }
+        await this._connection.execute(transaction, sql);
     }
 
     private isBorrowed(): boolean {

@@ -4,6 +4,7 @@ export * from "./AConnection";
 export * from "./ATransaction";
 export * from "./AStatement";
 export * from "./AResultSet";
+export * from "./AResultSetMetadata";
 export * from "./ABlob";
 export * from "./ADriver";
 export * from "./Factory";

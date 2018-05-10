@@ -9,8 +9,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
 
         before(async () => {
             globalConnection = await connectionPool.get();
-            globalTransaction = await globalConnection.createTransaction();
-            await globalTransaction.start();
+            globalTransaction = await globalConnection.startTransaction();
         });
 
         after(async () => {
@@ -19,26 +18,34 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
         });
 
         it("lifecycle", async () => {
-            const statement = await globalTransaction.prepare("SELECT FIRST 1 * FROM RDB$FIELDS");
+            const statement = await globalConnection.prepare(globalTransaction, "SELECT FIRST 1 * FROM RDB$FIELDS");
             await statement.dispose();
         });
 
         it("execute", async () => {
-            await ATransaction.executePrepareStatement(globalTransaction, "SELECT FIRST 1 * FROM RDB$FIELDS",
-                async (statement) => {
+            await AConnection.executePrepareStatement({
+                connection: globalConnection,
+                transaction: globalTransaction,
+                sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
+                callback: async (statement) => {
                     const result = await statement.execute();
                     should().not.exist(result);
-                });
+                }
+            });
         });
 
         it("executeQuery", async () => {
-            await ATransaction.executePrepareStatement(globalTransaction, "SELECT FIRST 1 * FROM RDB$FIELDS",
-                async (statement) => {
+            await AConnection.executePrepareStatement({
+                connection: globalConnection,
+                transaction: globalTransaction,
+                sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
+                callback: async (statement) => {
                     const resultSet = await statement.executeQuery();
                     should().exist(resultSet);
 
                     await resultSet.close();
-                });
+                }
+            });
         });
     });
 }
