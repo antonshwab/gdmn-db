@@ -29,7 +29,7 @@ class AConnection {
         return await AStatement_1.AStatement.executeSelf(() => connection.prepare(transaction, sql), callback);
     }
     static async executeQueryResultSet({ connection, transaction, callback, sql, params, type }) {
-        return await AResultSet_1.AResultSet.executeSelf(() => connection.executeQuery(transaction, sql, params), callback);
+        return await AResultSet_1.AResultSet.executeSelf(() => connection.executeQuery(transaction, sql, params, type), callback);
     }
 }
 exports.AConnection = AConnection;

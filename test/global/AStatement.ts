@@ -34,6 +34,30 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
             });
         });
 
+        it("execute with placeholder params", async () => {
+            await AConnection.executePrepareStatement({
+                connection: globalConnection,
+                transaction: globalTransaction,
+                sql: "SELECT FIRST :count * FROM RDB$FIELDS",
+                callback: async (statement) => {
+                    const result = await statement.execute({count: 1});
+                    should().not.exist(result);
+                }
+            });
+        });
+
+        it("execute with params", async () => {
+            await AConnection.executePrepareStatement({
+                connection: globalConnection,
+                transaction: globalTransaction,
+                sql: "SELECT FIRST ? * FROM RDB$FIELDS",
+                callback: async (statement) => {
+                    const result = await statement.execute([1]);
+                    should().not.exist(result);
+                }
+            });
+        });
+
         it("executeQuery", async () => {
             await AConnection.executePrepareStatement({
                 connection: globalConnection,
@@ -41,6 +65,34 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const resultSet = await statement.executeQuery();
+                    should().exist(resultSet);
+
+                    await resultSet.close();
+                }
+            });
+        });
+
+        it("executeQuery with placeholder params", async () => {
+            await AConnection.executePrepareStatement({
+                connection: globalConnection,
+                transaction: globalTransaction,
+                sql: "SELECT FIRST :count * FROM RDB$FIELDS",
+                callback: async (statement) => {
+                    const resultSet = await statement.executeQuery({count: 1});
+                    should().exist(resultSet);
+
+                    await resultSet.close();
+                }
+            });
+        });
+
+        it("executeQuery with params", async () => {
+            await AConnection.executePrepareStatement({
+                connection: globalConnection,
+                transaction: globalTransaction,
+                sql: "SELECT FIRST ? * FROM RDB$FIELDS",
+                callback: async (statement) => {
+                    const resultSet = await statement.executeQuery([1]);
                     should().exist(resultSet);
 
                     await resultSet.close();

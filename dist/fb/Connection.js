@@ -80,7 +80,7 @@ class Connection extends AConnection_1.AConnection {
     }
     async executeQuery(transaction, sql, params, type) {
         if (transaction.finished) {
-            throw new Error("Need absolute open transaction");
+            throw new Error("Need to open transaction");
         }
         const statement = await Statement_1.Statement.prepare(transaction, sql);
         const resultSet = await statement.executeQuery(params, type);
@@ -89,7 +89,7 @@ class Connection extends AConnection_1.AConnection {
     }
     async prepare(transaction, sql) {
         if (transaction.finished) {
-            throw new Error("Need absolute open transaction");
+            throw new Error("Need to open transaction");
         }
         return await Statement_1.Statement.prepare(transaction, sql);
     }

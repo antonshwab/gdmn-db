@@ -54,7 +54,7 @@ class ConnectionProxy extends AConnection_1.AConnection {
         if (!this._connection || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }
-        return await this._connection.executeQuery(transaction, sql);
+        return await this._connection.executeQuery(transaction, sql, params);
     }
     async execute(transaction, sql, params) {
         if (!this._connection || !this.isBorrowed()) {

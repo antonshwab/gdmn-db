@@ -26,7 +26,7 @@ export class Transaction extends ATransaction {
     }
 
     get finished(): boolean {
-        return !this.handler!;
+        return !this.handler;
     }
 
     public static async create(

@@ -72,7 +72,7 @@ export class ConnectionProxy extends AConnection {
         if (!this._connection || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }
-        return await this._connection.executeQuery(transaction, sql);
+        return await this._connection.executeQuery(transaction, sql, params);
     }
 
     public async execute(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<void> {

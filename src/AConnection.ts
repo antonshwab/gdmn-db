@@ -83,7 +83,7 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
     public static async executeQueryResultSet<R>(
         {connection, transaction, callback, sql, params, type}: IExecuteQueryResultSetOptions<R>
     ): Promise<R> {
-        return await AResultSet.executeSelf(() => connection.executeQuery(transaction, sql, params), callback);
+        return await AResultSet.executeSelf(() => connection.executeQuery(transaction, sql, params, type), callback);
     }
 
     /**

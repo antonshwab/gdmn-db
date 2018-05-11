@@ -1,5 +1,12 @@
 import {expect, should} from "chai";
-import {AConnection, AConnectionPool, AResultSet, ATransaction, IDefaultConnectionPoolOptions} from "../../src";
+import {
+    AConnection,
+    AConnectionPool,
+    AResultSet,
+    ATransaction,
+    CursorType,
+    IDefaultConnectionPoolOptions
+} from "../../src";
 
 export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
     describe("AResultSet", async () => {
@@ -62,6 +69,27 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
 
             await resultSet.close();
             expect(resultSet.closed).to.equal(true);
+        });
+
+        it("read data (isNull) with params", async () => {
+            await AConnection.executeQueryResultSet({
+                connection: globalConnection,
+                transaction: globalTransaction,
+                sql: "SELECT FIRST :count * FROM TEST_TABLE",
+                params: {count: 1000},
+                type: CursorType.FORWARD_ONLY,
+                callback: async (resultSet) => {
+                    while (await resultSet.next()) {
+                        expect(resultSet.isNull("ID")).to.equal(false);
+                        expect(resultSet.isNull("NAME")).to.equal(false);
+                        expect(resultSet.isNull("DATETIME")).to.equal(false);
+                        expect(resultSet.isNull("ONLYDATE")).to.equal(false);
+                        expect(resultSet.isNull("ONLYTIME")).to.equal(false);
+                        expect(resultSet.isNull("NULLVALUE")).to.equal(true);
+                        expect(resultSet.isNull("TEXTBLOB")).to.equal(false);
+                    }
+                }
+            });
         });
 
         it("read data (isNull)", async () => {

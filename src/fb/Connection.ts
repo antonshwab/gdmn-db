@@ -105,7 +105,7 @@ export class Connection extends AConnection {
                               params?: any[] | INamedParams,
                               type?: CursorType): Promise<AResultSet> {
         if (transaction.finished) {
-            throw new Error("Need absolute open transaction");
+            throw new Error("Need to open transaction");
         }
 
         const statement = await Statement.prepare(transaction, sql);
@@ -116,7 +116,7 @@ export class Connection extends AConnection {
 
     public async prepare(transaction: Transaction, sql: string): Promise<AStatement> {
         if (transaction.finished) {
-            throw new Error("Need absolute open transaction");
+            throw new Error("Need to open transaction");
         }
 
         return await Statement.prepare(transaction, sql);

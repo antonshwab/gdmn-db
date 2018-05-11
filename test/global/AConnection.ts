@@ -55,6 +55,36 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
             });
         });
 
+        it("execute with placeholder params", async () => {
+            await AConnection.executeConnection({
+                connection: driver.newConnection(),
+                options: dbOptions,
+                callback: (connection) => AConnection.executeTransaction({
+                    connection,
+                    callback: async (transaction) => {
+                        const result = await connection.execute(transaction,
+                            "SELECT FIRST :count * FROM RDB$DATABASE", {count: 1});
+                        should().not.exist(result);
+                    }
+                })
+            });
+        });
+
+        it("execute with params", async () => {
+            await AConnection.executeConnection({
+                connection: driver.newConnection(),
+                options: dbOptions,
+                callback: (connection) => AConnection.executeTransaction({
+                    connection,
+                    callback: async (transaction) => {
+                        const result = await connection.execute(transaction,
+                            "SELECT FIRST ? * FROM RDB$DATABASE", [1]);
+                        should().not.exist(result);
+                    }
+                })
+            });
+        });
+
         it("executeQuery", async () => {
             await AConnection.executeConnection({
                 connection: driver.newConnection(),
@@ -65,6 +95,46 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                         connection,
                         transaction,
                         sql: "SELECT FIRST 1 * FROM RDB$DATABASE",
+                        callback: async (resultSet) => {
+                            await resultSet.next();
+                            should().exist(resultSet);
+                        }
+                    })
+                })
+            });
+        });
+
+        it("executeQuery with placeholder params", async () => {
+            await AConnection.executeConnection({
+                connection: driver.newConnection(),
+                options: dbOptions,
+                callback: (connection) => AConnection.executeTransaction({
+                    connection,
+                    callback: (transaction) => AConnection.executeQueryResultSet({
+                        connection,
+                        transaction,
+                        sql: "SELECT FIRST :count * FROM RDB$DATABASE",
+                        params: {count: 1},
+                        callback: async (resultSet) => {
+                            await resultSet.next();
+                            should().exist(resultSet);
+                        }
+                    })
+                })
+            });
+        });
+
+        it("executeQuery with params", async () => {
+            await AConnection.executeConnection({
+                connection: driver.newConnection(),
+                options: dbOptions,
+                callback: (connection) => AConnection.executeTransaction({
+                    connection,
+                    callback: (transaction) => AConnection.executeQueryResultSet({
+                        connection,
+                        transaction,
+                        sql: "SELECT FIRST ? * FROM RDB$DATABASE",
+                        params: [1],
                         callback: async (resultSet) => {
                             await resultSet.next();
                             should().exist(resultSet);
