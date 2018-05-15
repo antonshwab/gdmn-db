@@ -5,14 +5,6 @@ import {createTpb, ITransactionOpt, TransactionIsolation} from "./utils/fb-utils
 
 export class Transaction extends ATransaction {
 
-    public static EXCLUDE_PATTERNS = [
-        /-{2}.*/g,                  // in-line comments
-        /\/\*[\s\S]*?\*\//g,        // block comments
-        /'[\s\S]*?'/g,              // values
-        /BEGIN[\s\S]*END/gi         // begin ... end
-    ];
-    public static PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
-
     public handler?: NativeTransaction;
 
     constructor(connection: Connection, options: ITransactionOptions, handler: NativeTransaction) {

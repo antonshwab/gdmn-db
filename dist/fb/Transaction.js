@@ -68,12 +68,5 @@ class Transaction extends ATransaction_1.ATransaction {
         this.connection.transactions.delete(this);
     }
 }
-Transaction.EXCLUDE_PATTERNS = [
-    /-{2}.*/g,
-    /\/\*[\s\S]*?\*\//g,
-    /'[\s\S]*?'/g,
-    /BEGIN[\s\S]*END/gi // begin ... end
-];
-Transaction.PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_]+)/g;
 exports.Transaction = Transaction;
 //# sourceMappingURL=Transaction.js.map

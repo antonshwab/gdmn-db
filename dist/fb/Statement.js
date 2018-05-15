@@ -4,7 +4,6 @@ const node_firebird_native_api_1 = require("node-firebird-native-api");
 const AStatement_1 = require("../AStatement");
 const DefaultParamsAnalyzer_1 = require("../default/DefaultParamsAnalyzer");
 const ResultSet_1 = require("./ResultSet");
-const Transaction_1 = require("./Transaction");
 const fb_utils_1 = require("./utils/fb-utils");
 class Statement extends AStatement_1.AStatement {
     constructor(transaction, paramsAnalyzer, source) {
@@ -21,7 +20,7 @@ class Statement extends AStatement_1.AStatement {
         return !this.source;
     }
     static async prepare(transaction, sql) {
-        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, Transaction_1.Transaction.EXCLUDE_PATTERNS, Transaction_1.Transaction.PLACEHOLDER_PATTERN);
+        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, Statement.EXCLUDE_PATTERNS, Statement.PLACEHOLDER_PATTERN);
         const source = await transaction.connection.context.statusAction(async (status) => {
             const handler = await transaction.connection.handler.prepareAsync(status, transaction.handler, 0, paramsAnalyzer.sql, 3, node_firebird_native_api_1.Statement.PREPARE_PREFETCH_ALL);
             const inMetadata = fb_utils_1.fixMetadata(status, await handler.getInputMetadataAsync(status));
@@ -76,5 +75,12 @@ class Statement extends AStatement_1.AStatement {
         }, []));
     }
 }
+Statement.EXCLUDE_PATTERNS = [
+    /-{2}.*/g,
+    /\/\*[\s\S]*?\*\//g,
+    /'[\s\S]*?'/g,
+    /BEGIN[\s\S]*END/gi // begin ... end
+];
+Statement.PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_$]+)/g;
 exports.Statement = Statement;
 //# sourceMappingURL=Statement.js.map

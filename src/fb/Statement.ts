@@ -6,7 +6,7 @@ import {ResultSet} from "./ResultSet";
 import {Transaction} from "./Transaction";
 import {createDescriptors, dataWrite, fixMetadata, IDescriptor} from "./utils/fb-utils";
 
-export interface IStatmentSource {
+export interface IStatementSource {
     handler: NativeStatement;
     inMetadata: MessageMetadata;
     inDescriptors: IDescriptor[];
@@ -14,13 +14,21 @@ export interface IStatmentSource {
 
 export class Statement extends AStatement {
 
+    public static EXCLUDE_PATTERNS = [
+        /-{2}.*/g,                  // in-line comments
+        /\/\*[\s\S]*?\*\//g,        // block comments
+        /'[\s\S]*?'/g,              // values
+        /BEGIN[\s\S]*END/gi         // begin ... end
+    ];
+    public static PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_$]+)/g;
+
     public resultSets = new Set<ResultSet>();
-    public source?: IStatmentSource;
+    public source?: IStatementSource;
     private readonly _paramsAnalyzer: DefaultParamsAnalyzer;
 
     protected constructor(transaction: Transaction,
                           paramsAnalyzer: DefaultParamsAnalyzer,
-                          source?: IStatmentSource) {
+                          source?: IStatementSource) {
         super(transaction, paramsAnalyzer.sql);
         this._paramsAnalyzer = paramsAnalyzer;
         this.source = source;
@@ -38,9 +46,9 @@ export class Statement extends AStatement {
 
     public static async prepare(transaction: Transaction,
                                 sql: string): Promise<Statement> {
-        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, Transaction.EXCLUDE_PATTERNS,
-            Transaction.PLACEHOLDER_PATTERN);
-        const source: IStatmentSource = await transaction.connection.context.statusAction(async (status) => {
+        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, Statement.EXCLUDE_PATTERNS,
+            Statement.PLACEHOLDER_PATTERN);
+        const source: IStatementSource = await transaction.connection.context.statusAction(async (status) => {
             const handler = await transaction.connection.handler!.prepareAsync(status, transaction.handler,
                 0, paramsAnalyzer.sql, 3, NativeStatement.PREPARE_PREFETCH_ALL);
 
