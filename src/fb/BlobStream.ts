@@ -17,7 +17,7 @@ export class BlobStream {
     }
 
     get length(): Promise<number> {
-        return this.connection.context.statusAction(async (status) => {
+        return this.connection.client.statusAction(async (status) => {
             const infoReq = new Uint8Array([blobInfo.totalLength]);
             const infoRet = new Uint8Array(20);
             await this.handler!.getInfoAsync(status, infoReq.byteLength, infoReq, infoRet.byteLength, infoRet);
@@ -31,7 +31,7 @@ export class BlobStream {
     }
 
     public static async create(transaction: Transaction): Promise<BlobStream> {
-        return await transaction.connection.context.statusAction(async (status) => {
+        return await transaction.connection.client.statusAction(async (status) => {
             const blobId = new Uint8Array(8);
             const blobHandler = await transaction.connection.handler!.createBlobAsync(
                 status, transaction.handler, blobId, 0, undefined);
@@ -44,7 +44,7 @@ export class BlobStream {
 
     public static async open(transaction: Transaction,
                              blobLink: BlobLink): Promise<BlobStream> {
-        return await transaction.connection.context.statusAction(async (status) => {
+        return await transaction.connection.client.statusAction(async (status) => {
             const blobHandler = await transaction.connection.handler!.openBlobAsync(
                 status, transaction.handler, blobLink.id, 0, undefined);
             return new BlobStream(transaction.connection, blobLink, blobHandler);
@@ -52,17 +52,17 @@ export class BlobStream {
     }
 
     public async close(): Promise<void> {
-        await this.connection.context.statusAction((status) => this.handler!.closeAsync(status));
+        await this.connection.client.statusAction((status) => this.handler!.closeAsync(status));
         this.handler = undefined;
     }
 
     public async cancel(): Promise<void> {
-        await this.connection.context.statusAction((status) => this.handler!.cancelAsync(status));
+        await this.connection.client.statusAction((status) => this.handler!.cancelAsync(status));
         this.handler = undefined;
     }
 
     public async read(buffer: Buffer): Promise<number> {
-        return await this.connection.context.statusAction(async (status) => {
+        return await this.connection.client.statusAction(async (status) => {
             const segLength = new Uint32Array(1);
             const result = await this.handler!.getSegmentAsync(status, buffer.length, buffer, segLength);
 
@@ -75,7 +75,7 @@ export class BlobStream {
     }
 
     public async write(buffer: Buffer): Promise<void> {
-        await this.connection.context.statusAction((status) =>
+        await this.connection.client.statusAction((status) =>
             this.handler!.putSegmentAsync(status, buffer.length, buffer));
     }
 }

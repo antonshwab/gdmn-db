@@ -1,10 +1,12 @@
 import {Transaction as NativeTransaction} from "node-firebird-native-api";
 import {AccessMode, ATransaction, Isolation, ITransactionOptions} from "../ATransaction";
 import {Connection} from "./Connection";
+import {Statement} from "./Statement";
 import {createTpb, ITransactionOpt, TransactionIsolation} from "./utils/fb-utils";
 
 export class Transaction extends ATransaction {
 
+    public statements = new Set<Statement>();
     public handler?: NativeTransaction;
 
     constructor(connection: Connection, options: ITransactionOptions, handler: NativeTransaction) {
@@ -58,7 +60,7 @@ export class Transaction extends ATransaction {
                 apiOptions.accessMode = "READ_WRITE";
         }
 
-        const handler = await connection.context.statusAction(async (status) => {
+        const handler = await connection.client.statusAction(async (status) => {
             const tpb = createTpb(apiOptions);
             return await connection.handler!.startTransactionAsync(status, tpb.length, tpb);
         });
@@ -71,7 +73,9 @@ export class Transaction extends ATransaction {
             throw new Error("Need absolute open transaction");
         }
 
-        await this.connection.context.statusAction((status) => this.handler!.commitAsync(status));
+        await this._closeChildren();
+
+        await this.connection.client.statusAction((status) => this.handler!.commitAsync(status));
         this.handler = undefined;
         this.connection.transactions.delete(this);
     }
@@ -81,8 +85,20 @@ export class Transaction extends ATransaction {
             throw new Error("Need absolute open transaction");
         }
 
-        await this.connection.context.statusAction((status) => this.handler!.rollbackAsync(status));
+        await this._closeChildren();
+
+        await this.connection.client.statusAction((status) => this.handler!.rollbackAsync(status));
         this.handler = undefined;
         this.connection.transactions.delete(this);
+    }
+
+    private async _closeChildren(): Promise<void> {
+        if (this.statements.size) {
+            console.warn("Not all statements disposed, they will be disposed");
+        }
+        await Promise.all(Array.from(this.statements).reduceRight((promises, statement) => {
+            promises.push(statement.dispose());
+            return promises;
+        }, [] as Array<Promise<void>>));
     }
 }

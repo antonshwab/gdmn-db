@@ -35,7 +35,7 @@ export class ResultSetMetadata extends AResultSetMetadata {
     }
 
     public static async getMetadata(statement: Statement): Promise<ResultSetMetadata> {
-        const result: IResultSetMetadataSource = await statement.transaction.connection.context
+        const result: IResultSetMetadataSource = await statement.transaction.connection.client
             .statusAction(async (status) => {
                 const metadata = await statement.source!.handler.getOutputMetadataAsync(status);
                 const descriptors = createDescriptors(status, metadata!);

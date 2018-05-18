@@ -3,7 +3,7 @@ import {AConnection, IConnectionOptions} from "../AConnection";
 import {AResultSet, CursorType} from "../AResultSet";
 import {AStatement, INamedParams} from "../AStatement";
 import {ATransaction, ITransactionOptions} from "../ATransaction";
-import {Context} from "./Context";
+import {Client} from "./Client";
 import {Statement} from "./Statement";
 import {Transaction} from "./Transaction";
 import {createDpb} from "./utils/fb-utils";
@@ -12,9 +12,8 @@ export type FirebirdOptions = IConnectionOptions;
 
 export class Connection extends AConnection {
 
-    public context: Context = new Context();
+    public client = new Client();
     public transactions = new Set<Transaction>();
-    public statements = new Set<Statement>();
     public handler?: NativeConnection;
 
     get connected(): boolean {
@@ -41,10 +40,10 @@ export class Connection extends AConnection {
             throw new Error("Database already connected");
         }
 
-        this.context.create();
-        this.handler = await this.context.statusAction(async (status) => {
+        await this.client.create();
+        this.handler = await this.client.statusAction(async (status) => {
             const dpb = createDpb(options);
-            return await this.context!.client!.dispatcher!.createDatabaseAsync(status,
+            return await this.client!.client!.dispatcher!.createDatabaseAsync(status,
                 Connection._optionsToUri(options), dpb.length, dpb);
         });
     }
@@ -56,9 +55,9 @@ export class Connection extends AConnection {
 
         await this._closeChildren();
 
-        await this.context.statusAction((status) => this.handler!.dropDatabaseAsync(status));
+        await this.client.statusAction((status) => this.handler!.dropDatabaseAsync(status));
         this.handler = undefined;
-        this.context.destroy();
+        await this.client.destroy();
     }
 
     public async connect(options: FirebirdOptions): Promise<void> {
@@ -66,10 +65,10 @@ export class Connection extends AConnection {
             throw new Error("Database already connected");
         }
 
-        this.context.create();
-        this.handler = await this.context.statusAction(async (status) => {
+        await this.client.create();
+        this.handler = await this.client.statusAction(async (status) => {
             const dpb = createDpb(options);
-            return await this.context!.client!.dispatcher!.attachDatabaseAsync(status,
+            return await this.client!.client!.dispatcher!.attachDatabaseAsync(status,
                 Connection._optionsToUri(options), dpb.length, dpb);
         });
     }
@@ -89,9 +88,9 @@ export class Connection extends AConnection {
 
         await this._closeChildren();
 
-        await this.context.statusAction((status) => this.handler!.detachAsync(status));
+        await this.client.statusAction((status) => this.handler!.detachAsync(status));
+        await this.client.destroy();
         this.handler = undefined;
-        this.context.destroy();
     }
 
     public async execute(transaction: Transaction, sql: string, params?: any[] | INamedParams): Promise<void> {
@@ -123,14 +122,6 @@ export class Connection extends AConnection {
     }
 
     private async _closeChildren(): Promise<void> {
-        if (this.statements.size) {
-            console.warn("Not all statements disposed, they will be disposed");
-        }
-        await Promise.all(Array.from(this.statements).reduceRight((promises, statement) => {
-            promises.push(statement.dispose());
-            return promises;
-        }, [] as Array<Promise<void>>));
-
         if (this.transactions.size) {
             console.warn("Not all transactions finished, they will be rollbacked");
         }

@@ -46,7 +46,7 @@ export class ResultSet extends AResultSet {
     }
 
     public static async open(statement: Statement, params: any[], type?: CursorType): Promise<ResultSet> {
-        const source: IResultSetSource = await statement.transaction.connection.context.statusAction(async (status) => {
+        const source: IResultSetSource = await statement.transaction.connection.client.statusAction(async (status) => {
             const metadata = await ResultSetMetadata.getMetadata(statement);
             const inBuffer = new Uint8Array(statement.source!.inMetadata.getMessageLengthSync(status));
             const buffer = new Uint8Array(metadata.handler.getMessageLengthSync(status));
@@ -123,7 +123,7 @@ export class ResultSet extends AResultSet {
     public async close(): Promise<void> {
         this._checkClosed();
 
-        await this.statement.transaction.connection.context
+        await this.statement.transaction.connection.client
             .statusAction(async (status) => {
                 await this.source!.handler.closeAsync(status);
                 await this.source!.metadata.release();
@@ -139,7 +139,7 @@ export class ResultSet extends AResultSet {
     public async isBof(): Promise<boolean> {
         this._checkClosed();
 
-        return await this.statement.transaction.connection.context.statusAction(async (status) => {
+        return await this.statement.transaction.connection.client.statusAction(async (status) => {
             return await this.source!.handler.isBofAsync(status);
         });
     }
@@ -147,7 +147,7 @@ export class ResultSet extends AResultSet {
     public async isEof(): Promise<boolean> {
         this._checkClosed();
 
-        return await this.statement.transaction.connection.context.statusAction(async (status) => {
+        return await this.statement.transaction.connection.client.statusAction(async (status) => {
             return await this.source!.handler.isEofAsync(status);
         });
     }
@@ -266,7 +266,7 @@ export class ResultSet extends AResultSet {
     private async _executeMove(callback: (status: any) => Promise<ResultStatus>): Promise<boolean> {
         let result = ResultStatus.ERROR;
         try {
-            result = await this.statement.transaction.connection.context.statusAction(async (status) => {
+            result = await this.statement.transaction.connection.client.statusAction(async (status) => {
                 return await callback(status);
             });
         } catch (error) {

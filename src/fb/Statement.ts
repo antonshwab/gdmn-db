@@ -33,7 +33,7 @@ export class Statement extends AStatement {
         this._paramsAnalyzer = paramsAnalyzer;
         this.source = source;
 
-        this.transaction.connection.statements.add(this);
+        this.transaction.statements.add(this);
     }
 
     get transaction(): Transaction {
@@ -48,7 +48,7 @@ export class Statement extends AStatement {
                                 sql: string): Promise<Statement> {
         const paramsAnalyzer = new DefaultParamsAnalyzer(sql, Statement.EXCLUDE_PATTERNS,
             Statement.PLACEHOLDER_PATTERN);
-        const source: IStatementSource = await transaction.connection.context.statusAction(async (status) => {
+        const source: IStatementSource = await transaction.connection.client.statusAction(async (status) => {
             const handler = await transaction.connection.handler!.prepareAsync(status, transaction.handler,
                 0, paramsAnalyzer.sql, 3, NativeStatement.PREPARE_PREFETCH_ALL);
 
@@ -73,9 +73,9 @@ export class Statement extends AStatement {
         await this._closeChildren();
 
         this.source.inMetadata.releaseSync();
-        await this.transaction.connection.context.statusAction((status) => this.source!.handler.freeAsync(status));
+        await this.transaction.connection.client.statusAction((status) => this.source!.handler.freeAsync(status));
         this.source = undefined;
-        this.transaction.connection.statements.delete(this);
+        this.transaction.statements.delete(this);
     }
 
     public async execute(params?: any[] | INamedParams): Promise<void> {
@@ -83,7 +83,7 @@ export class Statement extends AStatement {
             throw new Error("Statement already disposed");
         }
 
-        await this.transaction.connection.context.statusAction(async (status) => {
+        await this.transaction.connection.client.statusAction(async (status) => {
             const inBuffer = new Uint8Array(this.source!.inMetadata.getMessageLengthSync(status));
 
             await dataWrite(this, this.source!.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
