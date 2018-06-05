@@ -17,5 +17,5 @@ export declare class ConnectionProxy extends AConnection {
     prepare(transaction: ATransaction, sql: string): Promise<AStatement>;
     executeQuery(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<AResultSet>;
     execute(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<void>;
-    private isBorrowed();
+    private isBorrowed;
 }

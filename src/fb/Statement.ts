@@ -15,10 +15,10 @@ export interface IStatementSource {
 export class Statement extends AStatement {
 
     public static EXCLUDE_PATTERNS = [
-        /-{2}.*/g,                  // in-line comments
-        /\/\*[\s\S]*?\*\//g,        // block comments
-        /'[\s\S]*?'/g,              // values
-        /BEGIN[\s\S]*END/gi         // begin ... end
+        /-{2}.*/g,                      // in-line comments
+        /\/\*[\s\S]*?\*\//g,            // block comments
+        /'[\s\S]*?'/g,                  // values
+        /\bBEGIN\b[\s\S]*\bEND\b/gi     // begin ... end
     ];
     public static PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_$]+)/g;
 

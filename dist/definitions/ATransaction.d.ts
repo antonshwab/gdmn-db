@@ -1,14 +1,14 @@
 import { AConnection } from "./AConnection";
 import { TExecutor } from "./types";
 export declare enum AccessMode {
-    READ_WRITE = 0,
-    READ_ONLY = 1,
+    READ_WRITE = "READ_WRITE",
+    READ_ONLY = "READ_ONLY"
 }
 export declare enum Isolation {
-    READ_COMMITED = 0,
-    READ_UNCOMMITED = 1,
-    REPEATABLE_READ = 2,
-    SERIALIZABLE = 3,
+    READ_COMMITED = "READ_COMMITED",
+    READ_UNCOMMITED = "READ_UNCOMMITED",
+    REPEATABLE_READ = "REPEATABLE_READ",
+    SERIALIZABLE = "SERIALIZABLE"
 }
 export interface ITransactionOptions {
     isolation?: Isolation;
@@ -31,7 +31,7 @@ export declare abstract class ATransaction {
      * @returns {boolean}
      * true if the transaction was commited or rollbacked
      */
-    readonly abstract finished: boolean;
+    abstract readonly finished: boolean;
     static executeSelf<R>(selfReceiver: TExecutor<null, ATransaction>, callback: TExecutor<ATransaction, R>): Promise<R>;
     /** Commit the transaction. */
     abstract commit(): Promise<void>;

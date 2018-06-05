@@ -12,10 +12,10 @@ export declare enum Types {
     DOUBLE = 10,
     FLOAT = 11,
     NULL = 12,
-    OTHER = 13,
+    OTHER = 13
 }
 export declare abstract class AResultSetMetadata {
-    readonly abstract columnCount: number;
+    abstract readonly columnCount: number;
     abstract getColumnLabel(i: number): string;
     abstract getColumnName(i: number): string;
     abstract getColumnType(i: number): Types;

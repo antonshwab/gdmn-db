@@ -17,6 +17,7 @@ class DefaultParamsAnalyzer {
             return "?".padEnd(placeholder.length); // for correct position sql errors
         });
         this._sql = Object.entries(this._tmpPlaceholders)
+            .reverse()
             .reduce((sql, [key, value]) => sql.replace(key, value), shortSql);
     }
     get originalSql() {

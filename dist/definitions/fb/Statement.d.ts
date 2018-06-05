@@ -23,5 +23,5 @@ export declare class Statement extends AStatement {
     dispose(): Promise<void>;
     execute(params?: any[] | INamedParams): Promise<void>;
     executeQuery(params?: any[] | INamedParams, type?: CursorType): Promise<ResultSet>;
-    private _closeChildren();
+    private _closeChildren;
 }

@@ -37,12 +37,12 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
      * true if the database connected;
      * false if the database was disconnected or not connected yet
      */
-    readonly abstract connected: boolean;
+    abstract readonly connected: boolean;
     static executeSelf<Opt, R>(selfReceiver: TExecutor<null, AConnection>, callback: TExecutor<AConnection, R>): Promise<R>;
-    static executeConnection<R>({connection, callback, options}: IExecuteConnectionOptions<R>): Promise<R>;
-    static executeTransaction<R>({connection, callback, options}: IExecuteTransactionOptions<R>): Promise<R>;
-    static executePrepareStatement<R>({connection, transaction, callback, sql}: IExecutePrepareStatementOptions<R>): Promise<R>;
-    static executeQueryResultSet<R>({connection, transaction, callback, sql, params, type}: IExecuteQueryResultSetOptions<R>): Promise<R>;
+    static executeConnection<R>({ connection, callback, options }: IExecuteConnectionOptions<R>): Promise<R>;
+    static executeTransaction<R>({ connection, callback, options }: IExecuteTransactionOptions<R>): Promise<R>;
+    static executePrepareStatement<R>({ connection, transaction, callback, sql }: IExecutePrepareStatementOptions<R>): Promise<R>;
+    static executeQueryResultSet<R>({ connection, transaction, callback, sql, params, type }: IExecuteQueryResultSetOptions<R>): Promise<R>;
     /**
      * Create database and connect absolute them.
      *

@@ -28,6 +28,7 @@ export class DefaultParamsAnalyzer {
         });
 
         this._sql = Object.entries(this._tmpPlaceholders)
+            .reverse()
             .reduce((sql, [key, value]) => sql.replace(key, value), shortSql);
     }
 

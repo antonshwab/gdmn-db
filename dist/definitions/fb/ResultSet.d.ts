@@ -17,7 +17,7 @@ export declare class ResultSet extends AResultSet {
     readonly closed: boolean;
     readonly metadata: AResultSetMetadata;
     static open(statement: Statement, params: any[], type?: CursorType): Promise<ResultSet>;
-    private static _throwIfBlob(value);
+    private static _throwIfBlob;
     next(): Promise<boolean>;
     previous(): Promise<boolean>;
     absolute(i: number): Promise<boolean>;
@@ -41,8 +41,8 @@ export declare class ResultSet extends AResultSet {
     getAny(name: string): Promise<any>;
     isNull(i: number): boolean;
     isNull(name: string): boolean;
-    private _getValue(field);
-    private getOutDescriptor(field);
-    private _checkClosed();
-    private _executeMove(callback);
+    private _getValue;
+    private getOutDescriptor;
+    private _checkClosed;
+    private _executeMove;
 }

@@ -10,5 +10,5 @@ export declare class DBStructureReader {
      * @returns {Promise<DBStructure>}
      */
     static readStructure(connection: Connection, transaction?: Transaction): Promise<DBStructure>;
-    private static read(connection, transaction);
+    private static read;
 }

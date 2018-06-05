@@ -11,7 +11,7 @@ export declare class Connection extends AConnection {
     transactions: Set<Transaction>;
     handler?: NativeConnection;
     readonly connected: boolean;
-    private static _optionsToUri(options);
+    private static _optionsToUri;
     createDatabase(options: FirebirdOptions): Promise<void>;
     dropDatabase(): Promise<void>;
     connect(options: FirebirdOptions): Promise<void>;
@@ -20,5 +20,5 @@ export declare class Connection extends AConnection {
     execute(transaction: Transaction, sql: string, params?: any[] | INamedParams): Promise<void>;
     executeQuery(transaction: Transaction, sql: string, params?: any[] | INamedParams, type?: CursorType): Promise<AResultSet>;
     prepare(transaction: Transaction, sql: string): Promise<AStatement>;
-    private _closeChildren();
+    private _closeChildren;
 }

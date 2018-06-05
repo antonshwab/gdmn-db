@@ -8,5 +8,5 @@ export declare class DefaultParamsAnalyzer {
     readonly originalSql: string;
     readonly sql: string;
     prepareParams(params?: any[] | INamedParams): any[];
-    private _generateName(count?);
+    private _generateName;
 }

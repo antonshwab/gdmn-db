@@ -11,5 +11,5 @@ export declare class Transaction extends ATransaction {
     static create(connection: Connection, options?: ITransactionOptions): Promise<Transaction>;
     commit(): Promise<void>;
     rollback(): Promise<void>;
-    private _closeChildren();
+    private _closeChildren;
 }

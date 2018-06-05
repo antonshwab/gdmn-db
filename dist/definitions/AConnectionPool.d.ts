@@ -16,10 +16,10 @@ export declare abstract class AConnectionPool<Options, ConOptions extends IConne
      * true if the connection pool created;
      * false if the connection pool destroyed or not created
      */
-    readonly abstract created: boolean;
+    abstract readonly created: boolean;
     static executeSelf<Opt, ConOpt, R>(selfReceiver: TExecutor<null, AConnectionPool<Opt>>, callback: TExecutor<AConnectionPool<Opt>, R>): Promise<R>;
-    static executeConnectionPool<Opt, R>({connectionPool, callback, connectionOptions, options}: IExecuteConnectionPoolOptions<Opt, R>): Promise<R>;
-    static executeConnection<Opt, R>({connectionPool, callback}: IExecuteGetConnectionOptions<Opt, R>): Promise<R>;
+    static executeConnectionPool<Opt, R>({ connectionPool, callback, connectionOptions, options }: IExecuteConnectionPoolOptions<Opt, R>): Promise<R>;
+    static executeConnection<Opt, R>({ connectionPool, callback }: IExecuteGetConnectionOptions<Opt, R>): Promise<R>;
     /**
      * Prepare the connection pool for use with some database.
      * After work you need absolute call {@link AConnectionPool.destroy()} method.

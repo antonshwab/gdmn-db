@@ -79,7 +79,7 @@ Statement.EXCLUDE_PATTERNS = [
     /-{2}.*/g,
     /\/\*[\s\S]*?\*\//g,
     /'[\s\S]*?'/g,
-    /BEGIN[\s\S]*END/gi // begin ... end
+    /\bBEGIN\b[\s\S]*\bEND\b/gi // begin ... end
 ];
 Statement.PLACEHOLDER_PATTERN = /(:[a-zA-Z0-9_$]+)/g;
 exports.Statement = Statement;

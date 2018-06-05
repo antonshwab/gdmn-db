@@ -128,8 +128,12 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
                 "EXECUTE BLOCK (id int = :id)\n" +
                 "AS /*comment :id :key*/\n" +
                 "BEGIN\n" +
-                "   --comment :key --:id comment" +
-                "   SELECT * FROM TABLE WHERE ID = :id" +
+                "   --comment :key --:id comment\n" +
+                "   FOR SELECT * FROM TABLE\n" +
+                "       WHERE ID = :id\n" +
+                "   BEGIN\n" +
+                "       --comment :key --:id comment\n" +
+                "   END\n" +
                 "end\n";
             const values = {
                 id: "id"
@@ -140,8 +144,12 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
                 "EXECUTE BLOCK (id int = ?  )\n" +
                 "AS /*comment :id :key*/\n" +
                 "BEGIN\n" +
-                "   --comment :key --:id comment" +
-                "   SELECT * FROM TABLE WHERE ID = :id" +
+                "   --comment :key --:id comment\n" +
+                "   FOR SELECT * FROM TABLE\n" +
+                "       WHERE ID = :id\n" +
+                "   BEGIN\n" +
+                "       --comment :key --:id comment\n" +
+                "   END\n" +
                 "end\n");
             expect(analyzer.prepareParams(values)).to.deep.equal([values.id]);
         });

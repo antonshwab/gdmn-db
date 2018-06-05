@@ -2,14 +2,15 @@ import {AConnection} from "./AConnection";
 import {TExecutor} from "./types";
 
 export enum AccessMode {
-    READ_WRITE, READ_ONLY
+    READ_WRITE = "READ_WRITE",
+    READ_ONLY = "READ_ONLY"
 }
 
 export enum Isolation {
-    READ_COMMITED,
-    READ_UNCOMMITED,
-    REPEATABLE_READ,
-    SERIALIZABLE
+    READ_COMMITED = "READ_COMMITED",
+    READ_UNCOMMITED = "READ_UNCOMMITED",
+    REPEATABLE_READ = "REPEATABLE_READ",
+    SERIALIZABLE = "SERIALIZABLE"
 }
 
 export interface ITransactionOptions {

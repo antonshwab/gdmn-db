@@ -19,5 +19,5 @@ export declare class ResultSetMetadata extends AResultSetMetadata {
     getColumnType(i: number): Types;
     isNullable(i: number): boolean;
     release(): Promise<void>;
-    private _checkClosed();
+    private _checkClosed;
 }

@@ -4,7 +4,7 @@ import { AStatement } from "./AStatement";
 import { TExecutor } from "./types";
 export declare enum CursorType {
     FORWARD_ONLY = 0,
-    SCROLLABLE = 1,
+    SCROLLABLE = 1
 }
 export declare abstract class AResultSet {
     static DEFAULT_TYPE: CursorType;
@@ -22,8 +22,8 @@ export declare abstract class AResultSet {
      * true if this ResultSet object is closed;
      * false if it is still open
      */
-    readonly abstract closed: boolean;
-    readonly abstract metadata: AResultSetMetadata;
+    abstract readonly closed: boolean;
+    abstract readonly metadata: AResultSetMetadata;
     static executeSelf<R>(selfReceiver: TExecutor<null, AResultSet>, callback: TExecutor<AResultSet, R>): Promise<R>;
     abstract next(): Promise<boolean>;
     abstract previous(): Promise<boolean>;

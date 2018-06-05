@@ -2,15 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var AccessMode;
 (function (AccessMode) {
-    AccessMode[AccessMode["READ_WRITE"] = 0] = "READ_WRITE";
-    AccessMode[AccessMode["READ_ONLY"] = 1] = "READ_ONLY";
+    AccessMode["READ_WRITE"] = "READ_WRITE";
+    AccessMode["READ_ONLY"] = "READ_ONLY";
 })(AccessMode = exports.AccessMode || (exports.AccessMode = {}));
 var Isolation;
 (function (Isolation) {
-    Isolation[Isolation["READ_COMMITED"] = 0] = "READ_COMMITED";
-    Isolation[Isolation["READ_UNCOMMITED"] = 1] = "READ_UNCOMMITED";
-    Isolation[Isolation["REPEATABLE_READ"] = 2] = "REPEATABLE_READ";
-    Isolation[Isolation["SERIALIZABLE"] = 3] = "SERIALIZABLE";
+    Isolation["READ_COMMITED"] = "READ_COMMITED";
+    Isolation["READ_UNCOMMITED"] = "READ_UNCOMMITED";
+    Isolation["REPEATABLE_READ"] = "REPEATABLE_READ";
+    Isolation["SERIALIZABLE"] = "SERIALIZABLE";
 })(Isolation = exports.Isolation || (exports.Isolation = {}));
 /**
  * The transaction object

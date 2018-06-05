@@ -14,19 +14,19 @@ export declare enum SQLTypes {
     SQL_TYPE_DATE = 570,
     SQL_INT64 = 580,
     SQL_BOOLEAN = 32764,
-    SQL_NULL = 32766,
+    SQL_NULL = 32766
 }
 export declare enum SQL_BLOB_SUB_TYPE {
     BINARY = 0,
     TEXT = 1,
-    BLR = 2,
+    BLR = 2
 }
 export declare enum dpb {
     isc_dpb_version1 = 1,
     isc_dpb_set_db_sql_dialect = 65,
     lc_ctype = 48,
     user_name = 28,
-    password = 29,
+    password = 29
 }
 export declare enum tpb {
     isc_tpb_version1 = 1,
@@ -42,10 +42,10 @@ export declare enum tpb {
     isc_tpb_rec_version = 17,
     isc_tpb_no_rec_version = 18,
     isc_tpb_restart_requests = 19,
-    isc_tpb_no_auto_undo = 20,
+    isc_tpb_no_auto_undo = 20
 }
 export declare enum blobInfo {
-    totalLength = 6,
+    totalLength = 6
 }
 export declare function createDpb(options?: {
     username?: string;
@@ -54,7 +54,7 @@ export declare function createDpb(options?: {
 export declare enum TransactionIsolation {
     CONSISTENCY = "CONSISTENCY",
     READ_COMMITTED = "READ_COMMITTED",
-    SNAPSHOT = "SNAPSHOT",
+    SNAPSHOT = "SNAPSHOT"
 }
 /** ITransactionOpt interface. */
 export interface ITransactionOpt {

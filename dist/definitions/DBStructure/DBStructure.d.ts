@@ -11,7 +11,7 @@ export declare enum FieldType {
     DOUBLE = 27,
     TIMESTAMP = 35,
     VARCHAR = 37,
-    BLOB = 261,
+    BLOB = 261
 }
 export declare type NullFlag = 0 | 1;
 export declare type ConstraintType = "PRIMARY KEY" | "FOREIGN KEY" | "UNIQUE";
@@ -89,7 +89,7 @@ export declare class DBStructure {
     forEachRelation(f: (r: Relation) => void, hasPK?: boolean): void;
     findRelation(f: (r: Relation) => boolean): Relation | null;
     relationByUqConstraint(constraintName: string): Relation;
-    private loadFields(fields);
-    private loadRelations(relationFields);
-    private loadRelationConstraints(constraints);
+    private loadFields;
+    private loadRelations;
+    private loadRelationConstraints;
 }
