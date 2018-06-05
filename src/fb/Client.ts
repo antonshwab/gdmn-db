@@ -30,10 +30,8 @@ export class Client {
             throw new Error("Need created client");
         }
 
-        // TODO ???
-        // await this.statusAction((status) => this._client!.dispatcher.shutdownAsync(status, 0, -3));
         this._client.dispatcher!.releaseSync();
-        disposeMaster(this._client.master);
+        disposeMaster(this._client.master);      // FIXME
         this._client = undefined;
     }
 

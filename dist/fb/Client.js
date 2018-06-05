@@ -19,8 +19,6 @@ class Client {
         if (!this._client) {
             throw new Error("Need created client");
         }
-        // TODO ???
-        // await this.statusAction((status) => this._client!.dispatcher.shutdownAsync(status, 0, -3));
         this._client.dispatcher.releaseSync();
         node_firebird_native_api_1.disposeMaster(this._client.master);
         this._client = undefined;
