@@ -12,7 +12,11 @@ class Connection extends AConnection_1.AConnection {
         this.transactions = new Set();
     }
     get connected() {
-        return Boolean(this.handler);
+        if (this.handler) {
+            this.client.statusActionSync((status) => this.handler.pingSync(status));
+            return true;
+        }
+        return false;
     }
     static _optionsToUri(options) {
         let url = "";

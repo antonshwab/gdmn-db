@@ -20,7 +20,7 @@ class Client {
             throw new Error("Need created client");
         }
         this._client.dispatcher.releaseSync();
-        node_firebird_native_api_1.disposeMaster(this._client.master);
+        node_firebird_native_api_1.disposeMaster(this._client.master); // FIXME mac os
         this._client = undefined;
     }
     async statusAction(action) {
@@ -30,6 +30,15 @@ class Client {
         }
         finally {
             await status.disposeAsync();
+        }
+    }
+    statusActionSync(action) {
+        const status = this.client.master.getStatusSync();
+        try {
+            return action(status);
+        }
+        finally {
+            status.disposeSync();
         }
     }
 }

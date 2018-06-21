@@ -17,7 +17,11 @@ export class Connection extends AConnection {
     public handler?: NativeConnection;
 
     get connected(): boolean {
-        return Boolean(this.handler);
+        if (this.handler) {
+            this.client.statusActionSync((status) => this.handler!.pingSync(status));
+            return true;
+        }
+        return false;
     }
 
     private static _optionsToUri(options: FirebirdOptions): string {

@@ -9,4 +9,5 @@ export declare class Client {
     create(): Promise<void>;
     destroy(): Promise<void>;
     statusAction<T>(action: (status: Status) => Promise<T>): Promise<T>;
+    statusActionSync<T>(action: (status: Status) => T): T;
 }

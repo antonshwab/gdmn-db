@@ -31,7 +31,7 @@ export class Client {
         }
 
         this._client.dispatcher!.releaseSync();
-        disposeMaster(this._client.master);      // FIXME
+        disposeMaster(this._client.master);      // FIXME mac os
         this._client = undefined;
     }
 
@@ -41,6 +41,15 @@ export class Client {
             return await action(status);
         } finally {
             await status.disposeAsync();
+        }
+    }
+
+    public statusActionSync<T>(action: (status: Status) => T): T {
+        const status = this.client!.master.getStatusSync()!;
+        try {
+            return action(status);
+        } finally {
+            status.disposeSync();
         }
     }
 }

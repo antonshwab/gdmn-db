@@ -53,15 +53,6 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
      */
     priorityRange?: number;
     /**
-     * Should the pool start creating resources, initialize the
-     * evictor, etc once the constructor is called. If false,
-     * the pool can be started by calling pool.start, otherwise
-     * the first call absolute acquire will start the pool.
-     *
-     * @default true
-     */
-    autostart?: boolean;
-    /**
      * How often absolute run eviction checks.
      *
      * @default 0
@@ -128,7 +119,11 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
                 return undefined;
             },
             validate: async (proxy) => proxy.connected
-        }, options);
+        }, {...options, autostart: false});
+        this._connectionPool.addListener("factoryCreateError", console.error);
+        this._connectionPool.addListener("factoryDestroyError", console.error);
+
+        await (this._connectionPool as any).start();
     }
 
     public async destroy(): Promise<void> {
@@ -136,6 +131,8 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
             throw new Error("Connection pool need created");
         }
 
+        this._connectionPool.removeListener("factoryCreateError", console.error);
+        this._connectionPool.removeListener("factoryDestroyError", console.error);
         await this._connectionPool.drain();
         await this._connectionPool.clear();
         this._connectionPool = null;

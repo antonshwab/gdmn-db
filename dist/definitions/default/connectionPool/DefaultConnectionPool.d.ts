@@ -50,15 +50,6 @@ export interface IDefaultConnectionPoolOptions {
      */
     priorityRange?: number;
     /**
-     * Should the pool start creating resources, initialize the
-     * evictor, etc once the constructor is called. If false,
-     * the pool can be started by calling pool.start, otherwise
-     * the first call absolute acquire will start the pool.
-     *
-     * @default true
-     */
-    autostart?: boolean;
-    /**
      * How often absolute run eviction checks.
      *
      * @default 0
