@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const stream_1 = require("stream");
 const ABlob_1 = require("../ABlob");
 const BlobLink_1 = require("./BlobLink");
 const BlobStream_1 = require("./BlobStream");
@@ -12,18 +11,16 @@ class BlobImpl extends ABlob_1.ABlob {
     get resultSet() {
         return super.resultSet;
     }
-    async asBuffer() {
+    async sequentially(callback) {
         if (this.blobLink && this.blobLink instanceof BlobLink_1.BlobLink) {
             const blobStream = await BlobStream_1.BlobStream.open(this.resultSet.statement.transaction, this.blobLink);
             try {
                 const length = await blobStream.length;
-                const buffers = [];
-                for (let i = 0; i < length; i++) { // TODO
+                for (let i = 0; i < length; i++) {
                     const buffer = Buffer.alloc(1);
-                    buffers.push(buffer);
                     await blobStream.read(buffer);
+                    await callback(buffer);
                 }
-                return Buffer.concat(buffers, length);
             }
             catch (error) {
                 if (blobStream) {
@@ -37,24 +34,19 @@ class BlobImpl extends ABlob_1.ABlob {
                 }
             }
         }
-        return null;
     }
-    async asStream() {
+    async asBuffer() {
         if (this.blobLink && this.blobLink instanceof BlobLink_1.BlobLink) {
-            const stream = new stream_1.Readable({ read: () => null });
             const blobStream = await BlobStream_1.BlobStream.open(this.resultSet.statement.transaction, this.blobLink);
             try {
                 const length = await blobStream.length;
                 const buffers = [];
-                for (let i = 0; i < length; i++) { // TODO
-                    buffers.push(Buffer.alloc(1));
-                }
-                const promises = buffers.map(async (buffer) => {
+                for (let i = 0; i < length; i++) {
+                    const buffer = Buffer.alloc(1);
+                    buffers.push(buffer);
                     await blobStream.read(buffer);
-                    stream.push(buffer);
-                });
-                Promise.all(promises).then(() => stream.push(null)).catch(console.warn);
-                return stream;
+                }
+                return Buffer.concat(buffers, length);
             }
             catch (error) {
                 if (blobStream) {
