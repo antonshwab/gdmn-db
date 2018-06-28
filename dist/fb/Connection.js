@@ -13,7 +13,7 @@ class Connection extends AConnection_1.AConnection {
     }
     get connected() {
         if (this.handler) {
-            this.client.statusActionSync((status) => this.handler.pingSync(status));
+            // this.client.statusActionSync((status) => this.handler!.pingSync(status));
             return true;
         }
         return false;
