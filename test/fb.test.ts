@@ -18,7 +18,7 @@ export const dbOptions: IConnectionOptions = {
 };
 
 describe("Firebird driver tests", async function tests(): Promise<void> {
-    this.timeout(5000);
+    this.timeout(15000);
 
     const globalConnectionPool = Factory.FBDriver.newDefaultConnectionPool();
 
