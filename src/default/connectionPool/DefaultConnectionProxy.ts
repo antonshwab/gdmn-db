@@ -4,7 +4,7 @@ import {AResultSet} from "../../AResultSet";
 import {AStatement, INamedParams} from "../../AStatement";
 import {ATransaction, ITransactionOptions} from "../../ATransaction";
 
-export class ConnectionProxy extends AConnection {
+export class DefaultConnectionProxy extends AConnection {
 
     private readonly _pool: Pool<AConnection>;
     private readonly _connectionCreator: () => AConnection;
@@ -24,10 +24,16 @@ export class ConnectionProxy extends AConnection {
     }
 
     public async createDatabase(options: IConnectionOptions): Promise<void> {
+        if (!this._connection || !this.isBorrowed()) {
+            throw new Error("Need database connection");
+        }
         throw new Error("Invalid operation for connection from the pool");
     }
 
     public async dropDatabase(): Promise<void> {
+        if (!this._connection || !this.isBorrowed()) {
+            throw new Error("Need database connection");
+        }
         throw new Error("Invalid operation for connection from the pool");
     }
 

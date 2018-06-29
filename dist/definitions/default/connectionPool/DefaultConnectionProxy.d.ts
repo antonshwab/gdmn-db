@@ -3,7 +3,7 @@ import { AConnection, IConnectionOptions } from "../../AConnection";
 import { AResultSet } from "../../AResultSet";
 import { AStatement, INamedParams } from "../../AStatement";
 import { ATransaction, ITransactionOptions } from "../../ATransaction";
-export declare class ConnectionProxy extends AConnection {
+export declare class DefaultConnectionProxy extends AConnection {
     private readonly _pool;
     private readonly _connectionCreator;
     private _connection;

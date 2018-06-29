@@ -21,7 +21,7 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
                 if (!this._connectionPool) {
                     throw new Error("This error should never been happen");
                 }
-                const proxy = new DefaultConnectionProxy_1.ConnectionProxy(this._connectionPool, this._connectionCreator);
+                const proxy = new DefaultConnectionProxy_1.DefaultConnectionProxy(this._connectionPool, this._connectionCreator);
                 await proxy.connect(dbOptions);
                 return proxy;
             },
@@ -33,16 +33,18 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
         }, Object.assign({}, options, { autostart: false }));
         this._connectionPool.addListener("factoryCreateError", console.error);
         this._connectionPool.addListener("factoryDestroyError", console.error);
-        await this._connectionPool.start();
+        this._connectionPool.start();
     }
     async destroy() {
         if (!this._connectionPool) {
             throw new Error("Connection pool need created");
         }
+        await this._connectionPool.drain();
+        // workaround; Wait until quantity minimum connections is established
+        await Promise.all(Array.from(this._connectionPool._factoryCreateOperations).map(reflector));
+        await this._connectionPool.clear();
         this._connectionPool.removeListener("factoryCreateError", console.error);
         this._connectionPool.removeListener("factoryDestroyError", console.error);
-        await this._connectionPool.drain();
-        await this._connectionPool.clear();
         this._connectionPool = null;
     }
     async get() {
@@ -53,4 +55,16 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
     }
 }
 exports.DefaultConnectionPool = DefaultConnectionPool;
+function noop() {
+    // ignore
+}
+/**
+ * Reflects a promise but does not expose any
+ * underlying value or rejection from that promise.
+ * @param  {Promise} promise [description]
+ * @return {Promise}         [description]
+ */
+const reflector = (promise) => {
+    return promise.then(noop, noop);
+};
 //# sourceMappingURL=DefaultConnectionPool.js.map

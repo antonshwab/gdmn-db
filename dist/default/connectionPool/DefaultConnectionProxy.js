@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const AConnection_1 = require("../../AConnection");
-class ConnectionProxy extends AConnection_1.AConnection {
+class DefaultConnectionProxy extends AConnection_1.AConnection {
     constructor(pool, connectionCreator) {
         super();
         this._connection = null;
@@ -15,9 +15,15 @@ class ConnectionProxy extends AConnection_1.AConnection {
         return this._connection.connected;
     }
     async createDatabase(options) {
+        if (!this._connection || !this.isBorrowed()) {
+            throw new Error("Need database connection");
+        }
         throw new Error("Invalid operation for connection from the pool");
     }
     async dropDatabase() {
+        if (!this._connection || !this.isBorrowed()) {
+            throw new Error("Need database connection");
+        }
         throw new Error("Invalid operation for connection from the pool");
     }
     async connect(options) {
@@ -66,5 +72,5 @@ class ConnectionProxy extends AConnection_1.AConnection {
         return this._pool.isBorrowedResource(this); // there is no method in the file in .d.ts
     }
 }
-exports.ConnectionProxy = ConnectionProxy;
+exports.DefaultConnectionProxy = DefaultConnectionProxy;
 //# sourceMappingURL=DefaultConnectionProxy.js.map
