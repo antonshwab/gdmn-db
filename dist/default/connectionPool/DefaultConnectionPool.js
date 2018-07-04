@@ -30,7 +30,7 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
                 return undefined;
             },
             validate: async (proxy) => proxy.connected
-        }, Object.assign({}, options, { autostart: false }));
+        }, Object.assign({}, options, { autostart: false, testOnBorrow: true }));
         this._connectionPool.addListener("factoryCreateError", console.error);
         this._connectionPool.addListener("factoryDestroyError", console.error);
         this._connectionPool.start();

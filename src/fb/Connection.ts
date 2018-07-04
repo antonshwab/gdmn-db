@@ -6,7 +6,7 @@ import {ATransaction, ITransactionOptions} from "../ATransaction";
 import {Client} from "./Client";
 import {Statement} from "./Statement";
 import {Transaction} from "./Transaction";
-import {createDpb} from "./utils/fb-utils";
+import {blobInfo, createDpb} from "./utils/fb-utils";
 
 export type FirebirdOptions = IConnectionOptions;
 
@@ -19,6 +19,15 @@ export class Connection extends AConnection {
     get connected(): boolean {
         if (this.handler) {
             // this.client.statusActionSync((status) => this.handler!.pingSync(status));
+            try {
+                this.client.statusActionSync((status) => {  // hack for checking the lost connections
+                    const infoReq = new Uint8Array([blobInfo.totalLength]);
+                    const infoRet = new Uint8Array(20);
+                    this.handler!.getInfoSync(status, infoReq.byteLength, infoReq, infoRet.byteLength, infoRet);
+                });
+            } catch (error) {
+                return false;
+            }
             return true;
         }
         return false;

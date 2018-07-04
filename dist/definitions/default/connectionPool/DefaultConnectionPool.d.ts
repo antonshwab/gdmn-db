@@ -22,12 +22,6 @@ export interface IDefaultConnectionPoolOptions {
      */
     maxWaitingClients?: number;
     /**
-     * Should the pool validate resources before giving them absolute
-     * clients. Requires that either factory.validate or
-     * factory.validateAsync absolute be specified
-     */
-    testOnBorrow?: boolean;
-    /**
      * Max milliseconds an acquire call will wait for a resource
      * before timing out. (default no limit), if supplied should
      * non-zero positive integer.

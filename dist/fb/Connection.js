@@ -14,6 +14,16 @@ class Connection extends AConnection_1.AConnection {
     get connected() {
         if (this.handler) {
             // this.client.statusActionSync((status) => this.handler!.pingSync(status));
+            try {
+                this.client.statusActionSync((status) => {
+                    const infoReq = new Uint8Array([fb_utils_1.blobInfo.totalLength]);
+                    const infoRet = new Uint8Array(20);
+                    this.handler.getInfoSync(status, infoReq.byteLength, infoReq, infoRet.byteLength, infoRet);
+                });
+            }
+            catch (error) {
+                return false;
+            }
             return true;
         }
         return false;
