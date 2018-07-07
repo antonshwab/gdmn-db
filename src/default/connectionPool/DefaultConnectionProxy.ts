@@ -85,7 +85,7 @@ export class DefaultConnectionProxy extends AConnection {
         if (!this._connection || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }
-        await this._connection.execute(transaction, sql);
+        await this._connection.execute(transaction, sql, params);
     }
 
     private isBorrowed(): boolean {
