@@ -53,11 +53,15 @@ class Statement extends AStatement_1.AStatement {
             const inBuffer = new Uint8Array(this.source.inMetadata.getMessageLengthSync(status));
             await fb_utils_1.dataWrite(this, this.source.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
             const outMetadata = fb_utils_1.fixMetadata(status, await this.source.handler.getOutputMetadataAsync(status));
-            const newTransaction = await this.source.handler.executeAsync(status, this.transaction.handler, this.source.inMetadata, inBuffer, outMetadata, undefined);
-            if (newTransaction && this.transaction.handler !== newTransaction) {
-                //// FIXME: newTransaction.releaseSync();
+            try {
+                const newTransaction = await this.source.handler.executeAsync(status, this.transaction.handler, this.source.inMetadata, inBuffer, outMetadata, undefined);
+                if (newTransaction && this.transaction.handler !== newTransaction) {
+                    //// FIXME: newTransaction.releaseSync();
+                }
             }
-            await outMetadata.releaseAsync();
+            finally {
+                await outMetadata.releaseAsync();
+            }
         });
     }
     async executeReturning(params) {
@@ -65,12 +69,12 @@ class Statement extends AStatement_1.AStatement {
             const inBuffer = new Uint8Array(this.source.inMetadata.getMessageLengthSync(status));
             await fb_utils_1.dataWrite(this, this.source.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
             const outMetadata = fb_utils_1.fixMetadata(status, await this.source.handler.getOutputMetadataAsync(status));
-            const outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
-            const newTransaction = await this.source.handler.executeAsync(status, this.transaction.handler, this.source.inMetadata, inBuffer, outMetadata, outBuffer);
-            if (newTransaction && this.transaction.handler !== newTransaction) {
-                //// FIXME: newTransaction.releaseSync();
-            }
             try {
+                const outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
+                const newTransaction = await this.source.handler.executeAsync(status, this.transaction.handler, this.source.inMetadata, inBuffer, outMetadata, outBuffer);
+                if (newTransaction && this.transaction.handler !== newTransaction) {
+                    //// FIXME: newTransaction.releaseSync();
+                }
                 if (!outMetadata) {
                     return [];
                 }

@@ -91,14 +91,16 @@ export class Statement extends AStatement {
             await dataWrite(this, this.source!.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
 
             const outMetadata = fixMetadata(status, await this.source!.handler.getOutputMetadataAsync(status))!;
-            const newTransaction = await this.source!.handler.executeAsync(status, this.transaction.handler,
-                this.source!.inMetadata, inBuffer, outMetadata, undefined);
+            try {
+                const newTransaction = await this.source!.handler.executeAsync(status, this.transaction.handler,
+                    this.source!.inMetadata, inBuffer, outMetadata, undefined);
 
-            if (newTransaction && this.transaction.handler !== newTransaction) {
-                //// FIXME: newTransaction.releaseSync();
+                if (newTransaction && this.transaction.handler !== newTransaction) {
+                    //// FIXME: newTransaction.releaseSync();
+                }
+            } finally {
+                await outMetadata.releaseAsync();
             }
-
-            await outMetadata.releaseAsync();
         });
     }
 
@@ -109,15 +111,14 @@ export class Statement extends AStatement {
             await dataWrite(this, this.source!.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
 
             const outMetadata = fixMetadata(status, await this.source!.handler.getOutputMetadataAsync(status))!;
-            const outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
-            const newTransaction = await this.source!.handler.executeAsync(status, this.transaction.handler,
-                this.source!.inMetadata, inBuffer, outMetadata, outBuffer);
-
-            if (newTransaction && this.transaction.handler !== newTransaction) {
-                //// FIXME: newTransaction.releaseSync();
-            }
-
             try {
+                const outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
+                const newTransaction = await this.source!.handler.executeAsync(status, this.transaction.handler,
+                    this.source!.inMetadata, inBuffer, outMetadata, outBuffer);
+
+                if (newTransaction && this.transaction.handler !== newTransaction) {
+                    //// FIXME: newTransaction.releaseSync();
+                }
                 if (!outMetadata) {
                     return [];
                 }
