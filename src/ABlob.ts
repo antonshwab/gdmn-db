@@ -1,17 +1,17 @@
-import {AResultSet} from "./AResultSet";
+import {ATransaction} from "./ATransaction";
 
 export type SequentiallyCallback = ((buffer: Buffer) => Promise<void>) | ((buffer: Buffer) => void);
 
 export abstract class ABlob {
 
-    private readonly _resultSet: AResultSet;
+    private readonly _transaction: ATransaction;
 
-    protected constructor(resultSet: AResultSet) {
-        this._resultSet = resultSet;
+    protected constructor(transaction: ATransaction) {
+        this._transaction = transaction;
     }
 
-    get resultSet(): AResultSet {
-        return this._resultSet;
+    get transaction(): ATransaction {
+        return this._transaction;
     }
 
     /**

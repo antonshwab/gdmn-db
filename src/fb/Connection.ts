@@ -108,8 +108,22 @@ export class Connection extends AConnection {
 
     public async execute(transaction: Transaction, sql: string, params?: any[] | INamedParams): Promise<void> {
         const statement = await Statement.prepare(transaction, sql);
-        await statement.execute(params);
-        await statement.dispose();
+        try {
+            await statement.execute(params);
+        } finally {
+            await statement.dispose();
+        }
+    }
+
+    public async executeReturning(transaction: Transaction,
+                                  sql: string,
+                                  params?: any[] | INamedParams): Promise<any[]> {
+        const statement = await Statement.prepare(transaction, sql);
+        try {
+            return await statement.executeReturning(params);
+        } finally {
+            await statement.dispose();
+        }
     }
 
     public async executeQuery(transaction: Transaction,

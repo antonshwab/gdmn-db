@@ -1,24 +1,24 @@
 import {ABlob, SequentiallyCallback} from "../ABlob";
-import {BlobLink} from "./BlobLink";
-import {BlobStream} from "./BlobStream";
-import {ResultSet} from "./ResultSet";
+import {BlobLink} from "./utils/BlobLink";
+import {Transaction} from "./Transaction";
+import {BlobStream} from "./utils/BlobStream";
 
 export class BlobImpl extends ABlob {
 
     public readonly blobLink: any;
 
-    constructor(resultSet: ResultSet, value: any) {
-        super(resultSet);
+    constructor(transaction: Transaction, value: any) {
+        super(transaction);
         this.blobLink = value;
     }
 
-    get resultSet(): ResultSet {
-        return super.resultSet as ResultSet;
+    get transaction(): Transaction {
+        return super.transaction as Transaction;
     }
 
     public async sequentially(callback: SequentiallyCallback): Promise<void> {
         if (this.blobLink && this.blobLink instanceof BlobLink) {
-            const blobStream = await BlobStream.open(this.resultSet.statement.transaction, this.blobLink);
+            const blobStream = await BlobStream.open(this.transaction, this.blobLink);
             try {
                 const length = await blobStream.length;
 
@@ -43,7 +43,7 @@ export class BlobImpl extends ABlob {
 
     public async asBuffer(): Promise<null | Buffer> {
         if (this.blobLink && this.blobLink instanceof BlobLink) {
-            const blobStream = await BlobStream.open(this.resultSet.statement.transaction, this.blobLink);
+            const blobStream = await BlobStream.open(this.transaction, this.blobLink);
             try {
                 const length = await blobStream.length;
 

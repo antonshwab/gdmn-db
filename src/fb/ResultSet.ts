@@ -2,7 +2,7 @@ import {ResultSet as NativeResultSet, Statement as NativeStatement, Status} from
 import {AResultSet, CursorType} from "../AResultSet";
 import {AResultSetMetadata} from "../AResultSetMetadata";
 import {BlobImpl} from "./BlobImpl";
-import {BlobLink} from "./BlobLink";
+import {BlobLink} from "./utils/BlobLink";
 import {ResultSetMetadata} from "./ResultSetMetadata";
 import {Statement} from "./Statement";
 import {bufferToValue, dataWrite, IDescriptor, SQL_BLOB_SUB_TYPE} from "./utils/fb-utils";
@@ -155,7 +155,7 @@ export class ResultSet extends AResultSet {
     public getBlob(i: number): BlobImpl;
     public getBlob(name: string): BlobImpl;
     public getBlob(field: any): BlobImpl {
-        return new BlobImpl(this, this._getValue(field));
+        return new BlobImpl(this.statement.transaction, this._getValue(field));
     }
 
     public getBoolean(i: number): boolean;

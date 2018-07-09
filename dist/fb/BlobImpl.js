@@ -1,19 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const ABlob_1 = require("../ABlob");
-const BlobLink_1 = require("./BlobLink");
-const BlobStream_1 = require("./BlobStream");
+const BlobLink_1 = require("./utils/BlobLink");
+const BlobStream_1 = require("./utils/BlobStream");
 class BlobImpl extends ABlob_1.ABlob {
-    constructor(resultSet, value) {
-        super(resultSet);
+    constructor(transaction, value) {
+        super(transaction);
         this.blobLink = value;
     }
-    get resultSet() {
-        return super.resultSet;
+    get transaction() {
+        return super.transaction;
     }
     async sequentially(callback) {
         if (this.blobLink && this.blobLink instanceof BlobLink_1.BlobLink) {
-            const blobStream = await BlobStream_1.BlobStream.open(this.resultSet.statement.transaction, this.blobLink);
+            const blobStream = await BlobStream_1.BlobStream.open(this.transaction, this.blobLink);
             try {
                 const length = await blobStream.length;
                 for (let i = 0; i < length; i++) {
@@ -37,7 +37,7 @@ class BlobImpl extends ABlob_1.ABlob {
     }
     async asBuffer() {
         if (this.blobLink && this.blobLink instanceof BlobLink_1.BlobLink) {
-            const blobStream = await BlobStream_1.BlobStream.open(this.resultSet.statement.transaction, this.blobLink);
+            const blobStream = await BlobStream_1.BlobStream.open(this.transaction, this.blobLink);
             try {
                 const length = await blobStream.length;
                 const buffers = [];

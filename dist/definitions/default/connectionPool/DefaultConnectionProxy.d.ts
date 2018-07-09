@@ -20,5 +20,6 @@ export declare class DefaultConnectionProxy extends AConnection {
     prepare(transaction: ATransaction, sql: string): Promise<AStatement>;
     executeQuery(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<AResultSet>;
     execute(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<void>;
+    executeReturning(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<any[]>;
     private isBorrowed;
 }

@@ -98,5 +98,6 @@ export interface IDescriptor {
 export declare function createDescriptors(status: Status, metadata?: MessageMetadata): IDescriptor[];
 export declare function bufferToValue(statement: Statement, outDescriptor: IDescriptor, outBuffer: Uint8Array): any;
 export declare function valueToBuffer(statement: Statement, inDescriptor: IDescriptor, inBuffer: Uint8Array, value: any): Promise<void>;
+export declare function dataRead(statement: Statement, outDescriptors: IDescriptor[], outBuffer: Uint8Array): Promise<any[]>;
 export declare function dataWrite(statement: Statement, inDescriptors: IDescriptor[], inBuffer: Uint8Array, values: any[]): Promise<void>;
 export declare function fixMetadata(status: Status, metadata?: MessageMetadata): MessageMetadata | undefined;

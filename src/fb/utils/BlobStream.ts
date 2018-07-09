@@ -1,8 +1,8 @@
 import {Blob, Status} from "node-firebird-native-api";
 import {BlobLink} from "./BlobLink";
-import {Connection} from "./Connection";
-import {Transaction} from "./Transaction";
-import {blobInfo, getPortableInteger} from "./utils/fb-utils";
+import {Connection} from "../Connection";
+import {Transaction} from "../Transaction";
+import {blobInfo, getPortableInteger} from "./fb-utils";
 
 export class BlobStream {
 

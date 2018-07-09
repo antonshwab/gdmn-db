@@ -88,8 +88,21 @@ class Connection extends AConnection_1.AConnection {
     }
     async execute(transaction, sql, params) {
         const statement = await Statement_1.Statement.prepare(transaction, sql);
-        await statement.execute(params);
-        await statement.dispose();
+        try {
+            await statement.execute(params);
+        }
+        finally {
+            await statement.dispose();
+        }
+    }
+    async executeReturning(transaction, sql, params) {
+        const statement = await Statement_1.Statement.prepare(transaction, sql);
+        try {
+            return await statement.executeReturning(params);
+        }
+        finally {
+            await statement.dispose();
+        }
     }
     async executeQuery(transaction, sql, params, type) {
         if (transaction.finished) {

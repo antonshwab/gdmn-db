@@ -18,6 +18,7 @@ export declare class Connection extends AConnection {
     startTransaction(options?: ITransactionOptions): Promise<ATransaction>;
     disconnect(): Promise<void>;
     execute(transaction: Transaction, sql: string, params?: any[] | INamedParams): Promise<void>;
+    executeReturning(transaction: Transaction, sql: string, params?: any[] | INamedParams): Promise<any[]>;
     executeQuery(transaction: Transaction, sql: string, params?: any[] | INamedParams, type?: CursorType): Promise<AResultSet>;
     prepare(transaction: Transaction, sql: string): Promise<AStatement>;
     private _closeChildren;

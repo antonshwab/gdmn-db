@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const os_1 = require("os");
 const string_decoder_1 = require("string_decoder");
-const BlobLink_1 = require("../BlobLink");
-const BlobStream_1 = require("../BlobStream");
+const BlobLink_1 = require("./BlobLink");
+const BlobStream_1 = require("./BlobStream");
 const date_time_1 = require("./date-time");
 const littleEndian = os_1.endianness() === "LE";
 var SQLTypes;
@@ -340,6 +340,10 @@ async function valueToBuffer(statement, inDescriptor, inBuffer, value) {
     }
 }
 exports.valueToBuffer = valueToBuffer;
+async function dataRead(statement, outDescriptors, outBuffer) {
+    return await Promise.all(outDescriptors.map((descriptor) => (bufferToValue(statement, descriptor, outBuffer))));
+}
+exports.dataRead = dataRead;
 async function dataWrite(statement, inDescriptors, inBuffer, values) {
     if (values.length !== inDescriptors.length) {
         throw new Error("Incorrect number of parameters: expected " + inDescriptors.length +

@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class ABlob {
-    constructor(resultSet) {
-        this._resultSet = resultSet;
+    constructor(transaction) {
+        this._transaction = transaction;
     }
-    get resultSet() {
-        return this._resultSet;
+    get transaction() {
+        return this._transaction;
     }
 }
 exports.ABlob = ABlob;

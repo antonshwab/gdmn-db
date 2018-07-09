@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_native_api_1 = require("node-firebird-native-api");
 const AResultSet_1 = require("../AResultSet");
 const BlobImpl_1 = require("./BlobImpl");
-const BlobLink_1 = require("./BlobLink");
+const BlobLink_1 = require("./utils/BlobLink");
 const ResultSetMetadata_1 = require("./ResultSetMetadata");
 const fb_utils_1 = require("./utils/fb-utils");
 var ResultStatus;
@@ -100,7 +100,7 @@ class ResultSet extends AResultSet_1.AResultSet {
         });
     }
     getBlob(field) {
-        return new BlobImpl_1.BlobImpl(this, this._getValue(field));
+        return new BlobImpl_1.BlobImpl(this.statement.transaction, this._getValue(field));
     }
     getBoolean(field) {
         const value = this._getValue(field);

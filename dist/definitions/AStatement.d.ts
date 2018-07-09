@@ -42,6 +42,16 @@ export declare abstract class AStatement {
      * array of parameters or object containing placeholders as keys and parameters as values; optional
      */
     abstract execute(params?: any[] | INamedParams): Promise<void>;
+    /**
+     * Executes the SQL query in this Statement object and returns the result array.
+     *
+     * @param {any[] | INamedParams} params
+     * array of parameters or object containing placeholders as keys and parameters as values; optional
+     * @returns {Promise<any[]>}
+     * a result array;
+     * never null
+     */
+    abstract executeReturning(params?: any[] | INamedParams): Promise<any[]>;
     /**  Releases this Statement object's database and resources */
     abstract dispose(): Promise<void>;
 }

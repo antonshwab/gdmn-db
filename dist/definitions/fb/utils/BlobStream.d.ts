@@ -1,8 +1,8 @@
 /// <reference types="node" />
 import { Blob } from "node-firebird-native-api";
 import { BlobLink } from "./BlobLink";
-import { Connection } from "./Connection";
-import { Transaction } from "./Transaction";
+import { Connection } from "../Connection";
+import { Transaction } from "../Transaction";
 export declare class BlobStream {
     connection: Connection;
     blobLink: BlobLink;

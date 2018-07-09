@@ -162,4 +162,20 @@ export abstract class AConnection<Options extends IConnectionOptions = IConnecti
     public abstract async execute(transaction: ATransaction,
                                   sql: string,
                                   params?: any[] | INamedParams): Promise<void>;
+
+    /**
+     * Executes the SQL query and returns the result array.
+     *
+     * @param {ATransaction} transaction
+     * @param {string} sql
+     * an SQL statement that may contain one or more parameter placeholders
+     * @param {any[] | INamedParams} params
+     * array of parameters or object containing placeholders as keys and parameters as values; optional
+     * @returns {Promise<any[]>}
+     * a result array;
+     * never null
+     */
+    public abstract async executeReturning(transaction: ATransaction,
+                                           sql: string,
+                                           params?: any[] | INamedParams): Promise<any[]>;
 }

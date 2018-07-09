@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_native_api_1 = require("node-firebird-native-api");
 const BlobLink_1 = require("./BlobLink");
-const fb_utils_1 = require("./utils/fb-utils");
+const fb_utils_1 = require("./fb-utils");
 class BlobStream {
     constructor(connection, blobLink, handler) {
         this.connection = connection;

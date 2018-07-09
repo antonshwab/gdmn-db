@@ -1,10 +1,10 @@
 /// <reference types="node" />
-import { AResultSet } from "./AResultSet";
+import { ATransaction } from "./ATransaction";
 export declare type SequentiallyCallback = ((buffer: Buffer) => Promise<void>) | ((buffer: Buffer) => void);
 export declare abstract class ABlob {
-    private readonly _resultSet;
-    protected constructor(resultSet: AResultSet);
-    readonly resultSet: AResultSet;
+    private readonly _transaction;
+    protected constructor(transaction: ATransaction);
+    readonly transaction: ATransaction;
     /**
      * Retrieves the blob value as a sequentially buffers
      *

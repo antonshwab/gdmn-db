@@ -22,16 +22,16 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 connection: globalConnection,
                 callback: async (transaction) => {
                     await globalConnection.execute(transaction, `
-                    CREATE TABLE TEST_TABLE (
-                        id              INT NOT NULL PRIMARY KEY,
-                        name            VARCHAR(20)  NOT NULL,
-                        dateTime        TIMESTAMP NOT NULL,
-                        onlyDate        DATE NOT NULL,
-                        onlyTime        TIME NOT NULL,
-                        nullValue       VARCHAR(20),
-                        textBlob        BLOB SUB_TYPE TEXT NOT NULL
-                    )
-                `);
+                        CREATE TABLE TEST_TABLE (
+                            id              INT NOT NULL PRIMARY KEY,
+                            name            VARCHAR(20)  NOT NULL,
+                            dateTime        TIMESTAMP NOT NULL,
+                            onlyDate        DATE NOT NULL,
+                            onlyTime        TIME NOT NULL,
+                            nullValue       VARCHAR(20),
+                            textBlob        BLOB SUB_TYPE TEXT NOT NULL
+                        )
+                    `);
                 }
             });
 
@@ -42,11 +42,19 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                         connection: globalConnection,
                         transaction,
                         sql: `
-                        INSERT INTO TEST_TABLE (id, name, dateTime, onlyDate, onlyTime, nullValue, textBlob)
-                        VALUES(:id, :name, :dateTime, :onlyDate, :onlyTime, :nullValue, :textBlob)
-                    `, callback: async (statement) => {
+                            INSERT INTO TEST_TABLE (id, name, dateTime, onlyDate, onlyTime, nullValue, textBlob)
+                            VALUES(:id, :name, :dateTime, :onlyDate, :onlyTime, :nullValue, :textBlob)
+                            RETURNING id, name, dateTime, onlyDate, onlyTime, nullValue, textBlob
+                        `, callback: async (statement) => {
                             for (const item of arrayData) {
-                                await statement.execute(item);
+                                const result = await statement.executeReturning(item);
+                                expect(result[0]).to.equal(item.id);
+                                expect(result[1]).to.equal(item.name);
+                                expect(result[2]!.getTime()).to.equal(item.dateTime.getTime());
+                                expect(result[3]!.getTime()).to.equal(item.onlyDate.getTime());
+                                expect(result[4]!.getTime()).to.equal(item.onlyTime.getTime());
+                                expect(result[5]).to.equal(item.nullValue);
+                                expect(await result[6].asString()).to.equal(item.textBlob);
                             }
                         }
                     });

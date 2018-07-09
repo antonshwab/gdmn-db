@@ -1,4 +1,4 @@
-import { Connection } from "./Connection";
+import { Connection } from "../Connection";
 export declare class BlobLink {
     connection: Connection;
     /** Gets the blob's id. */

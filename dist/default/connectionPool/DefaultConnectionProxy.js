@@ -74,6 +74,12 @@ class DefaultConnectionProxy extends AConnection_1.AConnection {
         }
         await this._connection.execute(transaction, sql, params);
     }
+    async executeReturning(transaction, sql, params) {
+        if (!this._connection || !this.isBorrowed()) {
+            throw new Error("Need database connection");
+        }
+        return await this._connection.executeReturning(transaction, sql, params);
+    }
     isBorrowed() {
         return this._pool.isBorrowedResource(this); // there is no method in the file in .d.ts
     }

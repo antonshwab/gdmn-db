@@ -1,9 +1,9 @@
 import {MessageMetadata, Status} from "node-firebird-native-api";
 import {endianness} from "os";
 import {StringDecoder} from "string_decoder";
-import {BlobLink} from "../BlobLink";
-import {BlobStream} from "../BlobStream";
+import {BlobLink} from "./BlobLink";
 import {Statement} from "../Statement";
+import {BlobStream} from "./BlobStream";
 import {decodeDate, decodeTime, encodeDate, encodeTime} from "./date-time";
 
 const littleEndian = endianness() === "LE";
@@ -440,6 +440,14 @@ export async function valueToBuffer(statement: Statement,
         default:
             throw new Error(`Unrecognized Firebird type number ${inDescriptor.type}`);
     }
+}
+
+export async function dataRead(statement: Statement,
+                               outDescriptors: IDescriptor[],
+                               outBuffer: Uint8Array): Promise<any[]> {
+    return await Promise.all(outDescriptors.map((descriptor) => (
+        bufferToValue(statement, descriptor, outBuffer))
+    ));
 }
 
 export async function dataWrite(statement: Statement,
