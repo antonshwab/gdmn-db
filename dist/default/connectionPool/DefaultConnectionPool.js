@@ -22,14 +22,14 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
                     throw new Error("This error should never been happen");
                 }
                 const proxy = new DefaultConnectionProxy_1.DefaultConnectionProxy(this._connectionPool, this._connectionCreator);
-                await proxy.connect(dbOptions);
+                await proxy.create(dbOptions);
                 return proxy;
             },
             destroy: async (proxy) => {
-                await proxy.disconnect();
+                await proxy.destroy();
                 return undefined;
             },
-            validate: async (proxy) => proxy.connected
+            validate: async (proxy) => proxy.validate
         }, Object.assign({}, options, { autostart: false, testOnBorrow: true }));
         this._connectionPool.addListener("factoryCreateError", console.error);
         this._connectionPool.addListener("factoryDestroyError", console.error);

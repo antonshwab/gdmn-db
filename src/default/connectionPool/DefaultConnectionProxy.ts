@@ -23,27 +23,38 @@ export class DefaultConnectionProxy extends AConnection {
         return this._connection.connected;
     }
 
-    public async createDatabase(options: IConnectionOptions): Promise<void> {
-        if (!this._connection || !this.isBorrowed()) {
+    get validate(): boolean {
+        if (!this._connection) {
+            return false;
+        }
+        return this._connection.connected;
+    }
+
+    public async create(options: IConnectionOptions): Promise<void> {
+        if (this._connection) {
+            throw new Error("Database already connected");
+        }
+        this._connection = this._connectionCreator();
+        await this._connection.connect(options);
+    }
+
+    public async destroy(): Promise<void> {
+        if (!this._connection) {
             throw new Error("Need database connection");
         }
+        await this._connection.disconnect();
+    }
+
+    public async createDatabase(options: IConnectionOptions): Promise<void> {
         throw new Error("Invalid operation for connection from the pool");
     }
 
     public async dropDatabase(): Promise<void> {
-        if (!this._connection || !this.isBorrowed()) {
-            throw new Error("Need database connection");
-        }
         throw new Error("Invalid operation for connection from the pool");
     }
 
     public async connect(options: IConnectionOptions): Promise<void> {
-        if (this._connection) {
-            throw new Error("Invalid operation for connection from the pool");
-        }
-
-        this._connection = this._connectionCreator();
-        await this._connection.connect(options);
+        throw new Error("Invalid operation for connection from the pool");
     }
 
     public async disconnect(): Promise<void> {
@@ -53,8 +64,6 @@ export class DefaultConnectionProxy extends AConnection {
 
         if (this.isBorrowed()) {
             this._pool.release(this);
-        } else {
-            await this._connection.disconnect();
         }
     }
 

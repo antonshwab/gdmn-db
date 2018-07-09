@@ -9,6 +9,9 @@ export declare class DefaultConnectionProxy extends AConnection {
     private _connection;
     constructor(pool: Pool<AConnection>, connectionCreator: () => AConnection);
     readonly connected: boolean;
+    readonly validate: boolean;
+    create(options: IConnectionOptions): Promise<void>;
+    destroy(): Promise<void>;
     createDatabase(options: IConnectionOptions): Promise<void>;
     dropDatabase(): Promise<void>;
     connect(options: IConnectionOptions): Promise<void>;
