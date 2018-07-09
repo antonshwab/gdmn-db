@@ -20,7 +20,9 @@ class Client {
             throw new Error("Need created client");
         }
         this._client.dispatcher.releaseSync();
-        node_firebird_native_api_1.disposeMaster(this._client.master); // FIXME mac os
+        if (process.platform !== "darwin") { // FIXME mac os
+            node_firebird_native_api_1.disposeMaster(this._client.master);
+        }
         this._client = undefined;
     }
     async statusAction(action) {

@@ -31,7 +31,9 @@ export class Client {
         }
 
         this._client.dispatcher!.releaseSync();
-        disposeMaster(this._client.master);      // FIXME mac os
+        if (process.platform !== "darwin") {    // FIXME mac os
+            disposeMaster(this._client.master);
+        }
         this._client = undefined;
     }
 
