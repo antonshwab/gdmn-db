@@ -3,9 +3,9 @@ import {CursorType} from "../AResultSet";
 import {AStatement, INamedParams} from "../AStatement";
 import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
 import {BlobImpl} from "./BlobImpl";
-import {BlobLink} from "./utils/BlobLink";
 import {ResultSet} from "./ResultSet";
 import {Transaction} from "./Transaction";
+import {BlobLink} from "./utils/BlobLink";
 import {createDescriptors, dataRead, dataWrite, fixMetadata, IDescriptor} from "./utils/fb-utils";
 
 export interface IStatementSource {

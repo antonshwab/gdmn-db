@@ -1,8 +1,8 @@
 import {MessageMetadata, Status} from "node-firebird-native-api";
 import {endianness} from "os";
 import {StringDecoder} from "string_decoder";
-import {BlobLink} from "./BlobLink";
 import {Statement} from "../Statement";
+import {BlobLink} from "./BlobLink";
 import {BlobStream} from "./BlobStream";
 import {decodeDate, decodeTime, encodeDate, encodeTime} from "./date-time";
 

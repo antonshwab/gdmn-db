@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_native_api_1 = require("node-firebird-native-api");
 const AResultSet_1 = require("../AResultSet");
 const BlobImpl_1 = require("./BlobImpl");
-const BlobLink_1 = require("./utils/BlobLink");
 const ResultSetMetadata_1 = require("./ResultSetMetadata");
+const BlobLink_1 = require("./utils/BlobLink");
 const fb_utils_1 = require("./utils/fb-utils");
 var ResultStatus;
 (function (ResultStatus) {

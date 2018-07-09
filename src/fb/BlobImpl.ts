@@ -1,6 +1,6 @@
 import {ABlob, SequentiallyCallback} from "../ABlob";
-import {BlobLink} from "./utils/BlobLink";
 import {Transaction} from "./Transaction";
+import {BlobLink} from "./utils/BlobLink";
 import {BlobStream} from "./utils/BlobStream";
 
 export class BlobImpl extends ABlob {

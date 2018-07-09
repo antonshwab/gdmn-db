@@ -4,8 +4,8 @@ const node_firebird_native_api_1 = require("node-firebird-native-api");
 const AStatement_1 = require("../AStatement");
 const DefaultParamsAnalyzer_1 = require("../default/DefaultParamsAnalyzer");
 const BlobImpl_1 = require("./BlobImpl");
-const BlobLink_1 = require("./utils/BlobLink");
 const ResultSet_1 = require("./ResultSet");
+const BlobLink_1 = require("./utils/BlobLink");
 const fb_utils_1 = require("./utils/fb-utils");
 class Statement extends AStatement_1.AStatement {
     constructor(transaction, paramsAnalyzer, source) {

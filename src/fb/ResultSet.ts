@@ -2,9 +2,9 @@ import {ResultSet as NativeResultSet, Statement as NativeStatement, Status} from
 import {AResultSet, CursorType} from "../AResultSet";
 import {AResultSetMetadata} from "../AResultSetMetadata";
 import {BlobImpl} from "./BlobImpl";
-import {BlobLink} from "./utils/BlobLink";
 import {ResultSetMetadata} from "./ResultSetMetadata";
 import {Statement} from "./Statement";
+import {BlobLink} from "./utils/BlobLink";
 import {bufferToValue, dataWrite, IDescriptor, SQL_BLOB_SUB_TYPE} from "./utils/fb-utils";
 
 export interface IResultSetSource {
