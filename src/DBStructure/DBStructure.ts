@@ -38,6 +38,7 @@ export interface IRDB$RELATIONFIELD {
     RDB$FIELD_SOURCE: string;
     RDB$NULL_FLAG: NullFlag;
     RDB$DEFAULT_VALUE: string | null;
+    RDB$DEFAULT_SOURCE: string | null;
 }
 
 export interface IRDB$RELATIONCONSTRAINT {

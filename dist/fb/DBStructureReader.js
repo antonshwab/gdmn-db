@@ -66,7 +66,8 @@ class DBStructureReader {
                     TRIM(rf.RDB$FIELD_NAME)         AS "fieldName",
                     TRIM(rf.RDB$FIELD_SOURCE)       AS "fieldSource",
                     rf.RDB$NULL_FLAG                AS "nullFlag",
-                    rf.RDB$DEFAULT_VALUE            AS "defaultValue"
+                    rf.RDB$DEFAULT_VALUE            AS "defaultValue",
+                    rf.RDB$DEFAULT_SOURCE           AS "defaultSource"
                 FROM RDB$RELATION_FIELDS rf
                 ORDER BY RDB$RELATION_NAME, RDB$FIELD_POSITION
             `,
@@ -79,7 +80,9 @@ class DBStructureReader {
                         RDB$FIELD_SOURCE: resultSet.getString("fieldSource"),
                         RDB$NULL_FLAG: resultSet.getNumber("nullFlag"),
                         RDB$DEFAULT_VALUE: resultSet.isNull("defaultValue") ? null
-                            : await resultSet.getBlob("defaultValue").asString()
+                            : await resultSet.getBlob("defaultValue").asString(),
+                        RDB$DEFAULT_SOURCE: resultSet.isNull("defaultSource") ? null
+                            : await resultSet.getBlob("defaultSource").asString()
                     });
                 }
                 return array;
@@ -93,10 +96,10 @@ class DBStructureReader {
                     TRIM(rc.RDB$RELATION_NAME)      AS "relationName",
                     TRIM(rc.RDB$CONSTRAINT_NAME)    AS "constraintName",
                     TRIM(rc.RDB$CONSTRAINT_TYPE)    AS "constraintType",
-                   TRIM(s.RDB$INDEX_NAME)          AS "indexName",
-                   TRIM(s.RDB$FIELD_NAME)          AS "fieldName",
-                   TRIM(rfc.RDB$CONST_NAME_UQ)     AS "constNameUq",
-                   TRIM(rfc.RDB$UPDATE_RULE)       AS "updateRule",
+                    TRIM(s.RDB$INDEX_NAME)          AS "indexName",
+                    TRIM(s.RDB$FIELD_NAME)          AS "fieldName",
+                    TRIM(rfc.RDB$CONST_NAME_UQ)     AS "constNameUq",
+                    TRIM(rfc.RDB$UPDATE_RULE)       AS "updateRule",
                     TRIM(rfc.RDB$DELETE_RULE)       AS "deleteRule"
                 FROM RDB$RELATION_CONSTRAINTS rc
                    JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = rc.RDB$INDEX_NAME
