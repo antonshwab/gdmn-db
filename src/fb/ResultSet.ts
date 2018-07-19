@@ -1,16 +1,15 @@
 import {ResultSet as NativeResultSet, Statement as NativeStatement, Status} from "node-firebird-native-api";
+import {AResultMetadata} from "../AResultMetadata";
 import {AResultSet, CursorType} from "../AResultSet";
-import {AResultSetMetadata} from "../AResultSetMetadata";
 import {BlobImpl} from "./BlobImpl";
-import {ResultSetMetadata} from "./ResultSetMetadata";
+import {Result} from "./Result";
+import {ResultMetadata} from "./ResultMetadata";
 import {Statement} from "./Statement";
-import {BlobLink} from "./utils/BlobLink";
-import {bufferToValue, dataWrite, IDescriptor, SQL_BLOB_SUB_TYPE} from "./utils/fb-utils";
+import {dataWrite, fixMetadata} from "./utils/fb-utils";
 
 export interface IResultSetSource {
     handler: NativeResultSet;
-    metadata: ResultSetMetadata;
-    buffer: Uint8Array;
+    result: Result;
 }
 
 enum ResultStatus {
@@ -39,44 +38,42 @@ export class ResultSet extends AResultSet {
         return !this.source;
     }
 
-    get metadata(): AResultSetMetadata {
-        this._checkClosed();
-
-        return this.source!.metadata;
+    get metadata(): AResultMetadata {
+        return this.source!.result.metadata;
     }
 
     public static async open(statement: Statement, params: any[], type?: CursorType): Promise<ResultSet> {
         const source: IResultSetSource = await statement.transaction.connection.client.statusAction(async (status) => {
-            const metadata = await ResultSetMetadata.getMetadata(statement);
+            const outMetadata = fixMetadata(status, await statement.source!.handler.getOutputMetadataAsync(status));
             const inBuffer = new Uint8Array(statement.source!.inMetadata.getMessageLengthSync(status));
-            const buffer = new Uint8Array(metadata.handler.getMessageLengthSync(status));
+            const buffer = new Uint8Array(outMetadata!.getMessageLengthSync(status));
 
-            await dataWrite(statement, statement.source!.inDescriptors, inBuffer, params);
+            try {
+                await dataWrite(statement, statement.source!.inDescriptors, inBuffer, params);
 
-            const handler = await statement.source!.handler.openCursorAsync(status, statement.transaction.handler,
-                statement.source!.inMetadata, inBuffer, metadata.handler,
-                type || AResultSet.DEFAULT_TYPE === CursorType.SCROLLABLE ? NativeStatement.CURSOR_TYPE_SCROLLABLE : 0);
+                const handler = await statement.source!.handler.openCursorAsync(status, statement.transaction.handler,
+                    statement.source!.inMetadata, inBuffer, outMetadata,
+                    type || AResultSet.DEFAULT_TYPE === CursorType.SCROLLABLE
+                        ? NativeStatement.CURSOR_TYPE_SCROLLABLE : 0);
 
-            return {
-                handler: handler!,
-                metadata,
-                buffer
-            };
+                return {
+                    handler: handler!,
+                    result: await Result.get(statement, {metadata: await ResultMetadata.getMetadata(statement), buffer})
+                };
+            } finally {
+                if (outMetadata) {
+                    await outMetadata.releaseAsync();
+                }
+            }
         });
         return new ResultSet(statement, source, type);
-    }
-
-    private static _throwIfBlob(value: any): void {
-        if (value instanceof BlobLink) {
-            throw new Error("Invalid typecasting");
-        }
     }
 
     public async next(): Promise<boolean> {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchNextAsync(status, this.source!.buffer)
+            this.source!.handler.fetchNextAsync(status, this.source!.result.source.buffer)
         ));
     }
 
@@ -84,7 +81,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchPriorAsync(status, this.source!.buffer)
+            this.source!.handler.fetchPriorAsync(status, this.source!.result.source.buffer)
         ));
     }
 
@@ -92,7 +89,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchAbsoluteAsync(status, i, this.source!.buffer)
+            this.source!.handler.fetchAbsoluteAsync(status, i, this.source!.result.source.buffer)
         ));
     }
 
@@ -100,7 +97,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchRelativeAsync(status, i, this.source!.buffer)
+            this.source!.handler.fetchRelativeAsync(status, i, this.source!.result.source.buffer)
         ));
     }
 
@@ -108,7 +105,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchFirstAsync(status, this.source!.buffer)
+            this.source!.handler.fetchFirstAsync(status, this.source!.result.source.buffer)
         ));
     }
 
@@ -116,7 +113,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         return await this._executeMove((status) => (
-            this.source!.handler.fetchLastAsync(status, this.source!.buffer)
+            this.source!.handler.fetchLastAsync(status, this.source!.result.source.buffer)
         ));
     }
 
@@ -124,10 +121,7 @@ export class ResultSet extends AResultSet {
         this._checkClosed();
 
         await this.statement.transaction.connection.client
-            .statusAction(async (status) => {
-                await this.source!.handler.closeAsync(status);
-                await this.source!.metadata.release();
-            });
+            .statusAction((status) => this.source!.handler.closeAsync(status));
         this.source = undefined;
         this.statement.resultSets.delete(this);
 
@@ -155,106 +149,55 @@ export class ResultSet extends AResultSet {
     public getBlob(i: number): BlobImpl;
     public getBlob(name: string): BlobImpl;
     public getBlob(field: any): BlobImpl {
-        return new BlobImpl(this.statement.transaction, this._getValue(field));
+        this._checkClosed();
+        return this.source!.result.getBlob(field);
     }
 
     public getBoolean(i: number): boolean;
     public getBoolean(name: string): boolean;
     public getBoolean(field: any): boolean {
-        const value = this._getValue(field);
-        ResultSet._throwIfBlob(value);
-
-        if (value === null || value === undefined) {
-            return false;
-        }
-        return Boolean(this._getValue(field));
+        this._checkClosed();
+        return this.source!.result.getBoolean(field);
     }
 
     public getDate(i: number): null | Date;
     public getDate(name: string): null | Date;
     public getDate(field: any): null | Date {
-        const value = this._getValue(field);
-        ResultSet._throwIfBlob(value);
-
-        if (value === null || value === undefined) {
-            return null;
-        }
-        if (value instanceof Date) {
-            return value;
-        }
-        const date = new Date(value);
-        return isNaN(date.getTime()) ? null : date;
+        this._checkClosed();
+        return this.source!.result.getDate(field);
     }
 
     public getNumber(i: number): number;
     public getNumber(name: string): number;
     public getNumber(field: any): number {
-        const value = this._getValue(field);
-        ResultSet._throwIfBlob(value);
-
-        if (value === null || value === undefined) {
-            return 0;
-        }
-        return Number.parseFloat(this._getValue(field));
+        this._checkClosed();
+        return this.source!.result.getNumber(field);
     }
 
     public getString(i: number): string;
     public getString(name: string): string;
     public getString(field: any): string {
-        const value = this._getValue(field);
-        ResultSet._throwIfBlob(value);
-
-        if (value === null || value === undefined) {
-            return "";
-        }
-        return String(this._getValue(field));
+        this._checkClosed();
+        return this.source!.result.getString(field);
     }
 
     public async getAny(i: number): Promise<any>;
     public async getAny(name: string): Promise<any>;
     public async getAny(field: any): Promise<any> {
-        const value = this._getValue(field);
-        if (value instanceof BlobLink) {
-            const descriptor = this.getOutDescriptor(field);
-            if (descriptor.subType === SQL_BLOB_SUB_TYPE.TEXT) {
-                return await this.getBlob(field).asString();
-            } else {
-                return await this.getBlob(field).asBuffer();
-            }
-        }
-        return value;
+        this._checkClosed();
+        return this.source!.result.getAny(field);
+    }
+
+    public async getAll(): Promise<any[]> {
+        this._checkClosed();
+        return this.source!.result.getAll();
     }
 
     public isNull(i: number): boolean;
     public isNull(name: string): boolean;
     public isNull(field: any): boolean {
-        const value = this._getValue(field);
-        return value === null || value === undefined;
-    }
-
-    private _getValue(field: number | string): any {
         this._checkClosed();
-
-        const descriptor = this.getOutDescriptor(field);
-        return bufferToValue(this.statement, descriptor, this.source!.buffer);
-    }
-
-    private getOutDescriptor(field: number | string): IDescriptor {
-        this._checkClosed();
-
-        const outDescriptors = this.source!.metadata.descriptors;
-        if (typeof field === "number") {
-            if (field >= outDescriptors.length) {
-                throw new Error("Index not found");
-            }
-            return outDescriptors[field];
-        } else {
-            const outDescriptor = outDescriptors.find((item) => item.alias === field);
-            if (!outDescriptor) {
-                throw new Error("Name not found");
-            }
-            return outDescriptor;
-        }
+        return this.source!.result.isNull(field);
     }
 
     private _checkClosed(): void {

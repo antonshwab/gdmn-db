@@ -2,6 +2,7 @@ import { MessageMetadata, Statement as NativeStatement } from "node-firebird-nat
 import { CursorType } from "../AResultSet";
 import { AStatement, INamedParams } from "../AStatement";
 import { DefaultParamsAnalyzer } from "../default/DefaultParamsAnalyzer";
+import { Result } from "./Result";
 import { ResultSet } from "./ResultSet";
 import { Transaction } from "./Transaction";
 import { IDescriptor } from "./utils/fb-utils";
@@ -21,8 +22,8 @@ export declare class Statement extends AStatement {
     readonly disposed: boolean;
     static prepare(transaction: Transaction, sql: string): Promise<Statement>;
     dispose(): Promise<void>;
-    execute(params?: any[] | INamedParams): Promise<void>;
-    executeReturning(params?: any[] | INamedParams): Promise<any[]>;
     executeQuery(params?: any[] | INamedParams, type?: CursorType): Promise<ResultSet>;
+    executeReturning(params?: any[] | INamedParams): Promise<Result>;
+    execute(params?: any[] | INamedParams): Promise<void>;
     private _closeChildren;
 }

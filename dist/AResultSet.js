@@ -1,17 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const AResult_1 = require("./AResult");
 var CursorType;
 (function (CursorType) {
     CursorType[CursorType["FORWARD_ONLY"] = 0] = "FORWARD_ONLY";
     CursorType[CursorType["SCROLLABLE"] = 1] = "SCROLLABLE";
 })(CursorType = exports.CursorType || (exports.CursorType = {}));
-class AResultSet {
+class AResultSet extends AResult_1.AResult {
     constructor(statement, type = AResultSet.DEFAULT_TYPE) {
-        this._statement = statement;
+        super(statement);
         this._type = type;
-    }
-    get statement() {
-        return this._statement;
     }
     get type() {
         return this._type;

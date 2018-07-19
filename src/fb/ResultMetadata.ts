@@ -1,15 +1,13 @@
-import {MessageMetadata} from "node-firebird-native-api";
-import {AResultSetMetadata, Types} from "../AResultSetMetadata";
+import {AResultMetadata, Types} from "../AResultMetadata";
 import {Statement} from "./Statement";
 import {createDescriptors, fixMetadata, IDescriptor, SQLTypes} from "./utils/fb-utils";
 
 export interface IResultSetMetadataSource {
-    fixedHandler: MessageMetadata;
     descriptors: IDescriptor[];
     fixedDescriptors: IDescriptor[];
 }
 
-export class ResultSetMetadata extends AResultSetMetadata {
+export class ResultMetadata extends AResultMetadata {
 
     private _source?: IResultSetMetadataSource;
 
@@ -23,18 +21,10 @@ export class ResultSetMetadata extends AResultSetMetadata {
     }
 
     get columnCount(): number {
-        this._checkClosed();
-
         return this._source!.descriptors.length;
     }
 
-    get handler(): MessageMetadata {
-        this._checkClosed();
-
-        return this._source!.fixedHandler;
-    }
-
-    public static async getMetadata(statement: Statement): Promise<ResultSetMetadata> {
+    public static async getMetadata(statement: Statement): Promise<ResultMetadata> {
         const result: IResultSetMetadataSource = await statement.transaction.connection.client
             .statusAction(async (status) => {
                 const metadata = await statement.source!.handler.getOutputMetadataAsync(status);
@@ -42,31 +32,25 @@ export class ResultSetMetadata extends AResultSetMetadata {
 
                 const fixedHandler = fixMetadata(status, metadata)!;
                 const fixedDescriptors = createDescriptors(status, fixedHandler);
+                await fixedHandler.releaseAsync();
 
                 return {
-                    fixedHandler,
                     descriptors,
                     fixedDescriptors
                 };
             });
-        return new ResultSetMetadata(result);
+        return new ResultMetadata(result);
     }
 
     public getColumnLabel(i: number): string {
-        this._checkClosed();
-
         return this._source!.descriptors[i].alias || "";
     }
 
     public getColumnName(i: number): string {
-        this._checkClosed();
-
         return this._source!.descriptors[i].field || "";
     }
 
     public getColumnType(i: number): Types {
-        this._checkClosed();
-
         switch (this._source!.descriptors[i].type) {
             case SQLTypes.SQL_BLOB:
                 return Types.BLOB;
@@ -100,19 +84,6 @@ export class ResultSetMetadata extends AResultSetMetadata {
     }
 
     public isNullable(i: number): boolean {
-        this._checkClosed();
-
         return this._source!.descriptors[i].isNullable;
-    }
-
-    public async release(): Promise<void> {
-        await this._source!.fixedHandler.releaseAsync();
-        this._source = undefined;
-    }
-
-    private _checkClosed(): void {
-        if (!this._source) {
-            throw new Error("ResultSet is closed");
-        }
     }
 }

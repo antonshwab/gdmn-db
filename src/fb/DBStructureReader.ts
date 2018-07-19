@@ -36,6 +36,7 @@ export class DBStructureReader {
                     f.RDB$FIELD_TYPE                AS "fieldType",
                     f.RDB$NULL_FLAG                 AS "nullFlag",
                     f.RDB$DEFAULT_VALUE             AS "defaultValue",
+                    f.RDB$DEFAULT_SOURCE            AS "defaultSource",
                     f.RDB$FIELD_LENGTH              AS "fieldLength",
                     f.RDB$FIELD_SCALE               AS "fieldScale",
                     f.RDB$VALIDATION_SOURCE         AS "validationSource",
@@ -52,6 +53,8 @@ export class DBStructureReader {
                         RDB$NULL_FLAG: resultSet.getNumber("nullFlag") as NullFlag,
                         RDB$DEFAULT_VALUE: resultSet.isNull("defaultValue") ? null
                             : await resultSet.getBlob("defaultValue").asString(),
+                        RDB$DEFAULT_SOURCE: resultSet.isNull("defaultSource") ? null
+                            : await resultSet.getBlob("defaultSource").asString(),
                         RDB$FIELD_LENGTH: resultSet.getNumber("fieldLength"),
                         RDB$FIELD_SCALE: resultSet.getNumber("fieldScale"),
                         RDB$VALIDATION_SOURCE: resultSet.isNull("validationSource") ? null

@@ -2,11 +2,10 @@ import {MessageMetadata, Statement as NativeStatement} from "node-firebird-nativ
 import {CursorType} from "../AResultSet";
 import {AStatement, INamedParams} from "../AStatement";
 import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
-import {BlobImpl} from "./BlobImpl";
+import {Result} from "./Result";
 import {ResultSet} from "./ResultSet";
 import {Transaction} from "./Transaction";
-import {BlobLink} from "./utils/BlobLink";
-import {createDescriptors, dataRead, dataWrite, fixMetadata, IDescriptor} from "./utils/fb-utils";
+import {createDescriptors, dataWrite, fixMetadata, IDescriptor} from "./utils/fb-utils";
 
 export interface IStatementSource {
     handler: NativeStatement;
@@ -80,18 +79,34 @@ export class Statement extends AStatement {
         this.transaction.statements.delete(this);
     }
 
+    public async executeQuery(params?: any[] | INamedParams, type?: CursorType): Promise<ResultSet> {
+        if (!this.source) {
+            throw new Error("Statement already disposed");
+        }
+
+        return ResultSet.open(this, this._paramsAnalyzer.prepareParams(params), type);
+    }
+
+    public async executeReturning(params?: any[] | INamedParams): Promise<Result> {
+        if (!this.source) {
+            throw new Error("Statement already disposed");
+        }
+
+        return Result.get(this, this._paramsAnalyzer.prepareParams(params));
+    }
+
     public async execute(params?: any[] | INamedParams): Promise<void> {
         if (!this.source) {
             throw new Error("Statement already disposed");
         }
 
         await this.transaction.connection.client.statusAction(async (status) => {
+            const outMetadata = fixMetadata(status, await this.source!.handler.getOutputMetadataAsync(status));
             const inBuffer = new Uint8Array(this.source!.inMetadata.getMessageLengthSync(status));
 
-            await dataWrite(this, this.source!.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
-
-            const outMetadata = fixMetadata(status, await this.source!.handler.getOutputMetadataAsync(status))!;
             try {
+                await dataWrite(this, this.source!.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
+
                 const newTransaction = await this.source!.handler.executeAsync(status, this.transaction.handler,
                     this.source!.inMetadata, inBuffer, outMetadata, undefined);
 
@@ -99,49 +114,11 @@ export class Statement extends AStatement {
                     //// FIXME: newTransaction.releaseSync();
                 }
             } finally {
-                await outMetadata.releaseAsync();
+                if (outMetadata) {
+                    await outMetadata.releaseAsync();
+                }
             }
         });
-    }
-
-    public async executeReturning(params?: any[] | INamedParams): Promise<any[]> {
-        return await this.transaction.connection.client.statusAction(async (status) => {
-            const inBuffer = new Uint8Array(this.source!.inMetadata.getMessageLengthSync(status));
-
-            await dataWrite(this, this.source!.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
-
-            const outMetadata = fixMetadata(status, await this.source!.handler.getOutputMetadataAsync(status))!;
-            try {
-                const outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
-                const newTransaction = await this.source!.handler.executeAsync(status, this.transaction.handler,
-                    this.source!.inMetadata, inBuffer, outMetadata, outBuffer);
-
-                if (newTransaction && this.transaction.handler !== newTransaction) {
-                    //// FIXME: newTransaction.releaseSync();
-                }
-                if (!outMetadata) {
-                    return [];
-                }
-                const outDescriptors = createDescriptors(status, outMetadata);
-                const result = await dataRead(this, outDescriptors, outBuffer);
-                for (let i = 0; i < result.length; i++) {
-                    if (result[i] instanceof BlobLink) {
-                        result[i] = new BlobImpl(this.transaction, result[i]);
-                    }
-                }
-                return result;
-            } finally {
-                await outMetadata.releaseAsync();
-            }
-        });
-    }
-
-    public async executeQuery(params?: any[] | INamedParams, type?: CursorType): Promise<ResultSet> {
-        if (!this.source) {
-            throw new Error("Statement already disposed");
-        }
-
-        return ResultSet.open(this, this._paramsAnalyzer.prepareParams(params), type);
     }
 
     private async _closeChildren(): Promise<void> {

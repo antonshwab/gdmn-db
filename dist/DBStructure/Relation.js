@@ -24,7 +24,7 @@ class Relation {
         return this._unique;
     }
     loadField(field) {
-        this._relationFields[field.RDB$FIELD_NAME] = new RelationField_1.RelationField(field.RDB$FIELD_NAME, field.RDB$FIELD_SOURCE, !!field.RDB$NULL_FLAG, field.RDB$DEFAULT_VALUE);
+        this._relationFields[field.RDB$FIELD_NAME] = new RelationField_1.RelationField(field.RDB$FIELD_NAME, field.RDB$FIELD_SOURCE, !!field.RDB$NULL_FLAG, field.RDB$DEFAULT_VALUE, field.RDB$DEFAULT_SOURCE);
     }
     loadConstraintField(constraint) {
         switch (constraint.RDB$CONSTRAINT_TYPE) {

@@ -1,6 +1,7 @@
 import { AResultSet, CursorType } from "./AResultSet";
 import { AStatement, INamedParams } from "./AStatement";
 import { ATransaction, ITransactionOptions } from "./ATransaction";
+import { Result } from "./fb/Result";
 import { IBaseExecuteOptions, TExecutor } from "./types";
 export interface IConnectionOptions {
     host: string;
@@ -115,9 +116,9 @@ export declare abstract class AConnection<Options extends IConnectionOptions = I
      * an SQL statement that may contain one or more parameter placeholders
      * @param {any[] | INamedParams} params
      * array of parameters or object containing placeholders as keys and parameters as values; optional
-     * @returns {Promise<any[]>}
+     * @returns {Promise<Result>}
      * a result array;
      * never null
      */
-    abstract executeReturning(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<any[]>;
+    abstract executeReturning(transaction: ATransaction, sql: string, params?: any[] | INamedParams): Promise<Result>;
 }

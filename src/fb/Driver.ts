@@ -8,7 +8,7 @@ import {Transaction} from "./Transaction";
 export class Driver extends ADriver {
 
     public async readDBStructure(connection: Connection, transaction: Transaction): Promise<DBStructure> {
-        return DBStructureReader.readStructure(connection, transaction);
+        return await DBStructureReader.readStructure(connection, transaction);
     }
 
     public newConnection(): AConnection {

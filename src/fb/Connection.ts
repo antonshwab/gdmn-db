@@ -4,6 +4,7 @@ import {AResultSet, CursorType} from "../AResultSet";
 import {AStatement, INamedParams} from "../AStatement";
 import {ATransaction, ITransactionOptions} from "../ATransaction";
 import {Client} from "./Client";
+import {Result} from "./Result";
 import {Statement} from "./Statement";
 import {Transaction} from "./Transaction";
 import {blobInfo, createDpb} from "./utils/fb-utils";
@@ -117,7 +118,7 @@ export class Connection extends AConnection {
 
     public async executeReturning(transaction: Transaction,
                                   sql: string,
-                                  params?: any[] | INamedParams): Promise<any[]> {
+                                  params?: any[] | INamedParams): Promise<Result> {
         const statement = await Statement.prepare(transaction, sql);
         try {
             return await statement.executeReturning(params);

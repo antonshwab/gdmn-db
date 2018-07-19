@@ -1,12 +1,5 @@
 import {expect, should} from "chai";
-import {
-    AConnection,
-    AConnectionPool,
-    AResultSet,
-    ATransaction,
-    CursorType,
-    IDefaultConnectionPoolOptions
-} from "../../src";
+import {AConnection, AConnectionPool, ATransaction, CursorType, IDefaultConnectionPoolOptions} from "../../src";
 
 export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
     describe("AResultSet", async () => {
@@ -46,15 +39,18 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                             VALUES(:id, :name, :dateTime, :onlyDate, :onlyTime, :nullValue, :textBlob)
                             RETURNING id, name, dateTime, onlyDate, onlyTime, nullValue, textBlob
                         `, callback: async (statement) => {
-                            for (const item of arrayData) {
-                                const result = await statement.executeReturning(item);
-                                expect(result[0]).to.equal(item.id);
-                                expect(result[1]).to.equal(item.name);
-                                expect(result[2]!.getTime()).to.equal(item.dateTime.getTime());
-                                expect(result[3]!.getTime()).to.equal(item.onlyDate.getTime());
-                                expect(result[4]!.getTime()).to.equal(item.onlyTime.getTime());
-                                expect(result[5]).to.equal(item.nullValue);
-                                expect(await result[6].asString()).to.equal(item.textBlob);
+                            for (const dataItem of arrayData) {
+                                const result = await statement.executeReturning(dataItem);
+                                expect(await result.getAny("ID")).to.equal(dataItem.id);
+                                expect(await result.getAny("NAME")).to.equal(dataItem.name);
+                                expect((await result.getAny("DATETIME"))!.getTime())
+                                    .to.equal(dataItem.dateTime.getTime());
+                                expect((await result.getAny("ONLYDATE"))!.getTime())
+                                    .to.equal(dataItem.onlyDate.getTime());
+                                expect((await result.getAny("ONLYTIME"))!.getTime())
+                                    .to.equal(dataItem.onlyTime.getTime());
+                                should().not.exist(await result.getAny("NULLVALUE"));
+                                expect(await result.getAny("TEXTBLOB")).to.equal(dataItem.textBlob);
                             }
                         }
                     });
@@ -114,6 +110,27 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                         expect(resultSet.isNull("ONLYTIME")).to.equal(false);
                         expect(resultSet.isNull("NULLVALUE")).to.equal(true);
                         expect(resultSet.isNull("TEXTBLOB")).to.equal(false);
+                    }
+                }
+            });
+        });
+
+        it("read data (getAll)", async () => {
+            await AConnection.executeQueryResultSet({
+                connection: globalConnection,
+                transaction: globalTransaction,
+                sql: "SELECT * FROM TEST_TABLE",
+                callback: async (resultSet) => {
+                    for (let i = 0; await resultSet.next(); i++) {
+                        const dataItem = arrayData[i];
+                        const result = await resultSet.getAll();
+                        expect(result[0]).to.equal(dataItem.id);
+                        expect(result[1]).to.equal(dataItem.name);
+                        expect(result[2].getTime()).to.equal(dataItem.dateTime.getTime());
+                        expect(result[3].getTime()).to.equal(dataItem.onlyDate.getTime());
+                        expect(result[4].getTime()).to.equal(dataItem.onlyTime.getTime());
+                        should().not.exist(result[5]);
+                        expect(result[6]).to.equal(dataItem.textBlob);
                     }
                 }
             });

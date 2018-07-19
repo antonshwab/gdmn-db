@@ -14,7 +14,7 @@ export declare enum Types {
     NULL = 12,
     OTHER = 13
 }
-export declare abstract class AResultSetMetadata {
+export declare abstract class AResultMetadata {
     abstract readonly columnCount: number;
     abstract getColumnLabel(i: number): string;
     abstract getColumnName(i: number): string;

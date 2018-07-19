@@ -3,6 +3,7 @@ import {AConnection, IConnectionOptions} from "../../AConnection";
 import {AResultSet} from "../../AResultSet";
 import {AStatement, INamedParams} from "../../AStatement";
 import {ATransaction, ITransactionOptions} from "../../ATransaction";
+import {Result} from "../../fb/Result";
 
 export class DefaultConnectionProxy extends AConnection {
 
@@ -99,7 +100,7 @@ export class DefaultConnectionProxy extends AConnection {
 
     public async executeReturning(transaction: ATransaction,
                                   sql: string,
-                                  params?: any[] | INamedParams): Promise<any[]> {
+                                  params?: any[] | INamedParams): Promise<Result> {
         if (!this._connection || !this.isBorrowed()) {
             throw new Error("Need database connection");
         }

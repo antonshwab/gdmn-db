@@ -17,7 +17,7 @@ var Types;
     Types[Types["NULL"] = 12] = "NULL";
     Types[Types["OTHER"] = 13] = "OTHER";
 })(Types = exports.Types || (exports.Types = {}));
-class AResultSetMetadata {
+class AResultMetadata {
 }
-exports.AResultSetMetadata = AResultSetMetadata;
-//# sourceMappingURL=AResultSetMetadata.js.map
+exports.AResultMetadata = AResultMetadata;
+//# sourceMappingURL=AResultMetadata.js.map

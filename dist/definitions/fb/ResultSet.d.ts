@@ -1,13 +1,12 @@
 import { ResultSet as NativeResultSet } from "node-firebird-native-api";
+import { AResultMetadata } from "../AResultMetadata";
 import { AResultSet, CursorType } from "../AResultSet";
-import { AResultSetMetadata } from "../AResultSetMetadata";
 import { BlobImpl } from "./BlobImpl";
-import { ResultSetMetadata } from "./ResultSetMetadata";
+import { Result } from "./Result";
 import { Statement } from "./Statement";
 export interface IResultSetSource {
     handler: NativeResultSet;
-    metadata: ResultSetMetadata;
-    buffer: Uint8Array;
+    result: Result;
 }
 export declare class ResultSet extends AResultSet {
     disposeStatementOnClose: boolean;
@@ -15,9 +14,8 @@ export declare class ResultSet extends AResultSet {
     protected constructor(statement: Statement, source: IResultSetSource, type?: CursorType);
     readonly statement: Statement;
     readonly closed: boolean;
-    readonly metadata: AResultSetMetadata;
+    readonly metadata: AResultMetadata;
     static open(statement: Statement, params: any[], type?: CursorType): Promise<ResultSet>;
-    private static _throwIfBlob;
     next(): Promise<boolean>;
     previous(): Promise<boolean>;
     absolute(i: number): Promise<boolean>;
@@ -39,10 +37,9 @@ export declare class ResultSet extends AResultSet {
     getString(name: string): string;
     getAny(i: number): Promise<any>;
     getAny(name: string): Promise<any>;
+    getAll(): Promise<any[]>;
     isNull(i: number): boolean;
     isNull(name: string): boolean;
-    private _getValue;
-    private getOutDescriptor;
     private _checkClosed;
     private _executeMove;
 }

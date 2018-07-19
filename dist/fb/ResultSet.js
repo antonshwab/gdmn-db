@@ -2,9 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_native_api_1 = require("node-firebird-native-api");
 const AResultSet_1 = require("../AResultSet");
-const BlobImpl_1 = require("./BlobImpl");
-const ResultSetMetadata_1 = require("./ResultSetMetadata");
-const BlobLink_1 = require("./utils/BlobLink");
+const Result_1 = require("./Result");
+const ResultMetadata_1 = require("./ResultMetadata");
 const fb_utils_1 = require("./utils/fb-utils");
 var ResultStatus;
 (function (ResultStatus) {
@@ -27,60 +26,58 @@ class ResultSet extends AResultSet_1.AResultSet {
         return !this.source;
     }
     get metadata() {
-        this._checkClosed();
-        return this.source.metadata;
+        return this.source.result.metadata;
     }
     static async open(statement, params, type) {
         const source = await statement.transaction.connection.client.statusAction(async (status) => {
-            const metadata = await ResultSetMetadata_1.ResultSetMetadata.getMetadata(statement);
+            const outMetadata = fb_utils_1.fixMetadata(status, await statement.source.handler.getOutputMetadataAsync(status));
             const inBuffer = new Uint8Array(statement.source.inMetadata.getMessageLengthSync(status));
-            const buffer = new Uint8Array(metadata.handler.getMessageLengthSync(status));
-            await fb_utils_1.dataWrite(statement, statement.source.inDescriptors, inBuffer, params);
-            const handler = await statement.source.handler.openCursorAsync(status, statement.transaction.handler, statement.source.inMetadata, inBuffer, metadata.handler, type || AResultSet_1.AResultSet.DEFAULT_TYPE === AResultSet_1.CursorType.SCROLLABLE ? node_firebird_native_api_1.Statement.CURSOR_TYPE_SCROLLABLE : 0);
-            return {
-                handler: handler,
-                metadata,
-                buffer
-            };
+            const buffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
+            try {
+                await fb_utils_1.dataWrite(statement, statement.source.inDescriptors, inBuffer, params);
+                const handler = await statement.source.handler.openCursorAsync(status, statement.transaction.handler, statement.source.inMetadata, inBuffer, outMetadata, type || AResultSet_1.AResultSet.DEFAULT_TYPE === AResultSet_1.CursorType.SCROLLABLE
+                    ? node_firebird_native_api_1.Statement.CURSOR_TYPE_SCROLLABLE : 0);
+                return {
+                    handler: handler,
+                    result: await Result_1.Result.get(statement, { metadata: await ResultMetadata_1.ResultMetadata.getMetadata(statement), buffer })
+                };
+            }
+            finally {
+                if (outMetadata) {
+                    await outMetadata.releaseAsync();
+                }
+            }
         });
         return new ResultSet(statement, source, type);
     }
-    static _throwIfBlob(value) {
-        if (value instanceof BlobLink_1.BlobLink) {
-            throw new Error("Invalid typecasting");
-        }
-    }
     async next() {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchNextAsync(status, this.source.buffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchNextAsync(status, this.source.result.source.buffer)));
     }
     async previous() {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchPriorAsync(status, this.source.buffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchPriorAsync(status, this.source.result.source.buffer)));
     }
     async absolute(i) {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchAbsoluteAsync(status, i, this.source.buffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchAbsoluteAsync(status, i, this.source.result.source.buffer)));
     }
     async relative(i) {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchRelativeAsync(status, i, this.source.buffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchRelativeAsync(status, i, this.source.result.source.buffer)));
     }
     async first() {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchFirstAsync(status, this.source.buffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchFirstAsync(status, this.source.result.source.buffer)));
     }
     async last() {
         this._checkClosed();
-        return await this._executeMove((status) => (this.source.handler.fetchLastAsync(status, this.source.buffer)));
+        return await this._executeMove((status) => (this.source.handler.fetchLastAsync(status, this.source.result.source.buffer)));
     }
     async close() {
         this._checkClosed();
         await this.statement.transaction.connection.client
-            .statusAction(async (status) => {
-            await this.source.handler.closeAsync(status);
-            await this.source.metadata.release();
-        });
+            .statusAction((status) => this.source.handler.closeAsync(status));
         this.source = undefined;
         this.statement.resultSets.delete(this);
         if (this.disposeStatementOnClose) {
@@ -100,82 +97,36 @@ class ResultSet extends AResultSet_1.AResultSet {
         });
     }
     getBlob(field) {
-        return new BlobImpl_1.BlobImpl(this.statement.transaction, this._getValue(field));
+        this._checkClosed();
+        return this.source.result.getBlob(field);
     }
     getBoolean(field) {
-        const value = this._getValue(field);
-        ResultSet._throwIfBlob(value);
-        if (value === null || value === undefined) {
-            return false;
-        }
-        return Boolean(this._getValue(field));
+        this._checkClosed();
+        return this.source.result.getBoolean(field);
     }
     getDate(field) {
-        const value = this._getValue(field);
-        ResultSet._throwIfBlob(value);
-        if (value === null || value === undefined) {
-            return null;
-        }
-        if (value instanceof Date) {
-            return value;
-        }
-        const date = new Date(value);
-        return isNaN(date.getTime()) ? null : date;
+        this._checkClosed();
+        return this.source.result.getDate(field);
     }
     getNumber(field) {
-        const value = this._getValue(field);
-        ResultSet._throwIfBlob(value);
-        if (value === null || value === undefined) {
-            return 0;
-        }
-        return Number.parseFloat(this._getValue(field));
+        this._checkClosed();
+        return this.source.result.getNumber(field);
     }
     getString(field) {
-        const value = this._getValue(field);
-        ResultSet._throwIfBlob(value);
-        if (value === null || value === undefined) {
-            return "";
-        }
-        return String(this._getValue(field));
+        this._checkClosed();
+        return this.source.result.getString(field);
     }
     async getAny(field) {
-        const value = this._getValue(field);
-        if (value instanceof BlobLink_1.BlobLink) {
-            const descriptor = this.getOutDescriptor(field);
-            if (descriptor.subType === fb_utils_1.SQL_BLOB_SUB_TYPE.TEXT) {
-                return await this.getBlob(field).asString();
-            }
-            else {
-                return await this.getBlob(field).asBuffer();
-            }
-        }
-        return value;
+        this._checkClosed();
+        return this.source.result.getAny(field);
+    }
+    async getAll() {
+        this._checkClosed();
+        return this.source.result.getAll();
     }
     isNull(field) {
-        const value = this._getValue(field);
-        return value === null || value === undefined;
-    }
-    _getValue(field) {
         this._checkClosed();
-        const descriptor = this.getOutDescriptor(field);
-        return fb_utils_1.bufferToValue(this.statement, descriptor, this.source.buffer);
-    }
-    getOutDescriptor(field) {
-        this._checkClosed();
-        const outDescriptors = this.source.metadata.descriptors;
-        if (typeof field === "number") {
-            if (field >= outDescriptors.length) {
-                throw new Error("Index not found");
-            }
-            return outDescriptors[field];
-        }
-        else {
-            const outDescriptor = outDescriptors.find((item) => item.alias === field);
-            if (!outDescriptor) {
-                throw new Error("Name not found");
-            }
-            return outDescriptor;
-        }
+        return this.source.result.isNull(field);
     }
     _checkClosed() {
         if (!this.source) {

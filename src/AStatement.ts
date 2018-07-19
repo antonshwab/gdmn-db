@@ -1,5 +1,6 @@
 import {AResultSet, CursorType} from "./AResultSet";
 import {ATransaction} from "./ATransaction";
+import {Result} from "./fb/Result";
 import {IBaseExecuteOptions, TExecutor} from "./types";
 
 export interface INamedParams {
@@ -70,23 +71,23 @@ export abstract class AStatement {
     public abstract async executeQuery(params?: any[] | INamedParams, type?: CursorType): Promise<AResultSet>;
 
     /**
+     * Executes the SQL query in this Statement object and returns the result array.
+     *
+     * @param {any[] | INamedParams} params
+     * array of parameters or object containing placeholders as keys and parameters as values; optional
+     * @returns {Promise<Result>}
+     * a result object;
+     * never null
+     */
+    public abstract async executeReturning(params?: any[] | INamedParams): Promise<Result>;
+
+    /**
      * Executes the SQL query in this Statement object.
      *
      * @param {any[] | INamedParams} params
      * array of parameters or object containing placeholders as keys and parameters as values; optional
      */
     public abstract async execute(params?: any[] | INamedParams): Promise<void>;
-
-    /**
-     * Executes the SQL query in this Statement object and returns the result array.
-     *
-     * @param {any[] | INamedParams} params
-     * array of parameters or object containing placeholders as keys and parameters as values; optional
-     * @returns {Promise<any[]>}
-     * a result array;
-     * never null
-     */
-    public abstract async executeReturning(params?: any[] | INamedParams): Promise<any[]>;
 
     /**  Releases this Statement object's database and resources */
     public abstract async dispose(): Promise<void>;

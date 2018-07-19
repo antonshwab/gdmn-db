@@ -21,7 +21,7 @@ export enum Types {
     OTHER
 }
 
-export abstract class AResultSetMetadata {
+export abstract class AResultMetadata {
 
     abstract get columnCount(): number;
 

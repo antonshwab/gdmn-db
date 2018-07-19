@@ -3,9 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_native_api_1 = require("node-firebird-native-api");
 const AStatement_1 = require("../AStatement");
 const DefaultParamsAnalyzer_1 = require("../default/DefaultParamsAnalyzer");
-const BlobImpl_1 = require("./BlobImpl");
+const Result_1 = require("./Result");
 const ResultSet_1 = require("./ResultSet");
-const BlobLink_1 = require("./utils/BlobLink");
 const fb_utils_1 = require("./utils/fb-utils");
 class Statement extends AStatement_1.AStatement {
     constructor(transaction, paramsAnalyzer, source) {
@@ -45,58 +44,38 @@ class Statement extends AStatement_1.AStatement {
         this.source = undefined;
         this.transaction.statements.delete(this);
     }
+    async executeQuery(params, type) {
+        if (!this.source) {
+            throw new Error("Statement already disposed");
+        }
+        return ResultSet_1.ResultSet.open(this, this._paramsAnalyzer.prepareParams(params), type);
+    }
+    async executeReturning(params) {
+        if (!this.source) {
+            throw new Error("Statement already disposed");
+        }
+        return Result_1.Result.get(this, this._paramsAnalyzer.prepareParams(params));
+    }
     async execute(params) {
         if (!this.source) {
             throw new Error("Statement already disposed");
         }
         await this.transaction.connection.client.statusAction(async (status) => {
-            const inBuffer = new Uint8Array(this.source.inMetadata.getMessageLengthSync(status));
-            await fb_utils_1.dataWrite(this, this.source.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
             const outMetadata = fb_utils_1.fixMetadata(status, await this.source.handler.getOutputMetadataAsync(status));
+            const inBuffer = new Uint8Array(this.source.inMetadata.getMessageLengthSync(status));
             try {
+                await fb_utils_1.dataWrite(this, this.source.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
                 const newTransaction = await this.source.handler.executeAsync(status, this.transaction.handler, this.source.inMetadata, inBuffer, outMetadata, undefined);
                 if (newTransaction && this.transaction.handler !== newTransaction) {
                     //// FIXME: newTransaction.releaseSync();
                 }
             }
             finally {
-                await outMetadata.releaseAsync();
+                if (outMetadata) {
+                    await outMetadata.releaseAsync();
+                }
             }
         });
-    }
-    async executeReturning(params) {
-        return await this.transaction.connection.client.statusAction(async (status) => {
-            const inBuffer = new Uint8Array(this.source.inMetadata.getMessageLengthSync(status));
-            await fb_utils_1.dataWrite(this, this.source.inDescriptors, inBuffer, this._paramsAnalyzer.prepareParams(params));
-            const outMetadata = fb_utils_1.fixMetadata(status, await this.source.handler.getOutputMetadataAsync(status));
-            try {
-                const outBuffer = new Uint8Array(outMetadata.getMessageLengthSync(status));
-                const newTransaction = await this.source.handler.executeAsync(status, this.transaction.handler, this.source.inMetadata, inBuffer, outMetadata, outBuffer);
-                if (newTransaction && this.transaction.handler !== newTransaction) {
-                    //// FIXME: newTransaction.releaseSync();
-                }
-                if (!outMetadata) {
-                    return [];
-                }
-                const outDescriptors = fb_utils_1.createDescriptors(status, outMetadata);
-                const result = await fb_utils_1.dataRead(this, outDescriptors, outBuffer);
-                for (let i = 0; i < result.length; i++) {
-                    if (result[i] instanceof BlobLink_1.BlobLink) {
-                        result[i] = new BlobImpl_1.BlobImpl(this.transaction, result[i]);
-                    }
-                }
-                return result;
-            }
-            finally {
-                await outMetadata.releaseAsync();
-            }
-        });
-    }
-    async executeQuery(params, type) {
-        if (!this.source) {
-            throw new Error("Statement already disposed");
-        }
-        return ResultSet_1.ResultSet.open(this, this._paramsAnalyzer.prepareParams(params), type);
     }
     async _closeChildren() {
         if (this.resultSets.size) {
