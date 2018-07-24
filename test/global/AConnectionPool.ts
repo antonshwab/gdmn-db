@@ -1,4 +1,3 @@
-import {expect} from "chai";
 import {AConnectionPool, ADriver, IConnectionOptions} from "../../src";
 
 export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOptions): void {
@@ -7,10 +6,10 @@ export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOption
         it("lifecycle", async () => {
             const connectionPool = driver.newDefaultConnectionPool();
             await connectionPool.create(dbOptions, {min: 1, max: 1});
-            expect(connectionPool.created).to.equal(true);
+            expect(connectionPool.created).toBeTruthy();
 
             await connectionPool.destroy();
-            expect(connectionPool.created).to.equal(false);
+            expect(connectionPool.created).toBeFalsy();
         });
 
         it("get connection", async () => {
@@ -20,17 +19,17 @@ export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOption
                 options: {min: 1, max: 1},
                 callback: async (connectionPool) => {
                     const con1 = await connectionPool.get();
-                    expect(con1.connected).to.equal(true);
+                    expect(con1.connected).toBeTruthy();
 
                     await con1.disconnect();
-                    expect(con1.connected).to.equal(false);
+                    expect(con1.connected).toBeFalsy();
 
                     const con2 = await connectionPool.get();
-                    expect(con2.connected).to.equal(true);
+                    expect(con2.connected).toBeTruthy();
 
                     await con2.disconnect();
-                    expect(con2.connected).to.equal(false);
-                    expect(con1).to.equal(con2);
+                    expect(con2.connected).toBeFalsy();
+                    expect(con1).toBe(con2);
                 }
             });
         });

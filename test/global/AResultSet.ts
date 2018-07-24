@@ -1,4 +1,3 @@
-import {expect, should} from "chai";
 import {AConnection, AConnectionPool, ATransaction, CursorType, IDefaultConnectionPoolOptions} from "../../src";
 
 export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
@@ -7,7 +6,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
         let globalConnection: AConnection;
         let globalTransaction: ATransaction;
 
-        before(async () => {
+        beforeAll(async () => {
             globalConnection = await connectionPool.get();
             globalTransaction = await globalConnection.startTransaction();
 
@@ -41,16 +40,16 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                         `, callback: async (statement) => {
                             for (const dataItem of arrayData) {
                                 const result = await statement.executeReturning(dataItem);
-                                expect(await result.getAny("ID")).to.equal(dataItem.id);
-                                expect(await result.getAny("NAME")).to.equal(dataItem.name);
+                                expect(await result.getAny("ID")).toBe(dataItem.id);
+                                expect(await result.getAny("NAME")).toBe(dataItem.name);
                                 expect((await result.getAny("DATETIME"))!.getTime())
-                                    .to.equal(dataItem.dateTime.getTime());
+                                    .toBe(dataItem.dateTime.getTime());
                                 expect((await result.getAny("ONLYDATE"))!.getTime())
-                                    .to.equal(dataItem.onlyDate.getTime());
+                                    .toBe(dataItem.onlyDate.getTime());
                                 expect((await result.getAny("ONLYTIME"))!.getTime())
-                                    .to.equal(dataItem.onlyTime.getTime());
-                                should().not.exist(await result.getAny("NULLVALUE"));
-                                expect(await result.getAny("TEXTBLOB")).to.equal(dataItem.textBlob);
+                                    .toBe(dataItem.onlyTime.getTime());
+                                expect(await result.getAny("NULLVALUE")).toBeNull();
+                                expect(await result.getAny("TEXTBLOB")).toBe(dataItem.textBlob);
                             }
                         }
                     });
@@ -58,7 +57,7 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
             });
         });
 
-        after(async () => {
+        afterAll(async () => {
             await globalConnection.execute(globalTransaction, "DROP TABLE TEST_TABLE");
             await globalTransaction.commit();
             await globalConnection.disconnect();
@@ -68,11 +67,11 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
             const resultSet = await globalConnection
                 .executeQuery(globalTransaction, "SELECT FIRST 1 * FROM TEST_TABLE");
 
-            expect(await resultSet.next()).to.equal(true);
-            expect(resultSet.closed).to.equal(false);
+            expect(await resultSet.next()).toBeTruthy();
+            expect(resultSet.closed).toBeFalsy();
 
             await resultSet.close();
-            expect(resultSet.closed).to.equal(true);
+            expect(resultSet.closed).toBeTruthy();
         });
 
         it("read data (isNull) with params", async () => {
@@ -84,13 +83,13 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 type: CursorType.FORWARD_ONLY,
                 callback: async (resultSet) => {
                     while (await resultSet.next()) {
-                        expect(resultSet.isNull("ID")).to.equal(false);
-                        expect(resultSet.isNull("NAME")).to.equal(false);
-                        expect(resultSet.isNull("DATETIME")).to.equal(false);
-                        expect(resultSet.isNull("ONLYDATE")).to.equal(false);
-                        expect(resultSet.isNull("ONLYTIME")).to.equal(false);
-                        expect(resultSet.isNull("NULLVALUE")).to.equal(true);
-                        expect(resultSet.isNull("TEXTBLOB")).to.equal(false);
+                        expect(resultSet.isNull("ID")).toBe(false);
+                        expect(resultSet.isNull("NAME")).toBe(false);
+                        expect(resultSet.isNull("DATETIME")).toBe(false);
+                        expect(resultSet.isNull("ONLYDATE")).toBe(false);
+                        expect(resultSet.isNull("ONLYTIME")).toBe(false);
+                        expect(resultSet.isNull("NULLVALUE")).toBe(true);
+                        expect(resultSet.isNull("TEXTBLOB")).toBe(false);
                     }
                 }
             });
@@ -103,13 +102,13 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT * FROM TEST_TABLE",
                 callback: async (resultSet) => {
                     while (await resultSet.next()) {
-                        expect(resultSet.isNull("ID")).to.equal(false);
-                        expect(resultSet.isNull("NAME")).to.equal(false);
-                        expect(resultSet.isNull("DATETIME")).to.equal(false);
-                        expect(resultSet.isNull("ONLYDATE")).to.equal(false);
-                        expect(resultSet.isNull("ONLYTIME")).to.equal(false);
-                        expect(resultSet.isNull("NULLVALUE")).to.equal(true);
-                        expect(resultSet.isNull("TEXTBLOB")).to.equal(false);
+                        expect(resultSet.isNull("ID")).toBe(false);
+                        expect(resultSet.isNull("NAME")).toBe(false);
+                        expect(resultSet.isNull("DATETIME")).toBe(false);
+                        expect(resultSet.isNull("ONLYDATE")).toBe(false);
+                        expect(resultSet.isNull("ONLYTIME")).toBe(false);
+                        expect(resultSet.isNull("NULLVALUE")).toBe(true);
+                        expect(resultSet.isNull("TEXTBLOB")).toBe(false);
                     }
                 }
             });
@@ -124,13 +123,13 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                     for (let i = 0; await resultSet.next(); i++) {
                         const dataItem = arrayData[i];
                         const result = await resultSet.getAll();
-                        expect(result[0]).to.equal(dataItem.id);
-                        expect(result[1]).to.equal(dataItem.name);
-                        expect(result[2].getTime()).to.equal(dataItem.dateTime.getTime());
-                        expect(result[3].getTime()).to.equal(dataItem.onlyDate.getTime());
-                        expect(result[4].getTime()).to.equal(dataItem.onlyTime.getTime());
-                        should().not.exist(result[5]);
-                        expect(result[6]).to.equal(dataItem.textBlob);
+                        expect(result[0]).toBe(dataItem.id);
+                        expect(result[1]).toBe(dataItem.name);
+                        expect(result[2].getTime()).toBe(dataItem.dateTime.getTime());
+                        expect(result[3].getTime()).toBe(dataItem.onlyDate.getTime());
+                        expect(result[4].getTime()).toBe(dataItem.onlyTime.getTime());
+                        expect(result[5]).toBeNull();
+                        expect(result[6]).toBe(dataItem.textBlob);
                     }
                 }
             });
@@ -144,13 +143,13 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 callback: async (resultSet) => {
                     for (let i = 0; await resultSet.next(); i++) {
                         const dataItem = arrayData[i];
-                        expect(await resultSet.getAny("ID")).to.equal(dataItem.id);
-                        expect(await resultSet.getAny("NAME")).to.equal(dataItem.name);
-                        expect((await resultSet.getAny("DATETIME"))!.getTime()).to.equal(dataItem.dateTime.getTime());
-                        expect((await resultSet.getAny("ONLYDATE"))!.getTime()).to.equal(dataItem.onlyDate.getTime());
-                        expect((await resultSet.getAny("ONLYTIME"))!.getTime()).to.equal(dataItem.onlyTime.getTime());
-                        should().not.exist(await resultSet.getAny("NULLVALUE"));
-                        expect(await resultSet.getAny("TEXTBLOB")).to.equal(dataItem.textBlob);
+                        expect(await resultSet.getAny("ID")).toBe(dataItem.id);
+                        expect(await resultSet.getAny("NAME")).toBe(dataItem.name);
+                        expect((await resultSet.getAny("DATETIME"))!.getTime()).toBe(dataItem.dateTime.getTime());
+                        expect((await resultSet.getAny("ONLYDATE"))!.getTime()).toBe(dataItem.onlyDate.getTime());
+                        expect((await resultSet.getAny("ONLYTIME"))!.getTime()).toBe(dataItem.onlyTime.getTime());
+                        expect(await resultSet.getAny("NULLVALUE")).toBeNull();
+                        expect(await resultSet.getAny("TEXTBLOB")).toBe(dataItem.textBlob);
                     }
                 }
             });
@@ -164,13 +163,13 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 callback: async (resultSet) => {
                     for (let i = 0; await resultSet.next(); i++) {
                         const dataItem = arrayData[i];
-                        expect(await resultSet.getBlob("ID").asString()).to.equal("");
-                        expect(await resultSet.getBlob("NAME").asString()).to.equal("");
-                        expect(await resultSet.getBlob("DATETIME").asString()).to.equal("");
-                        expect(await resultSet.getBlob("ONLYDATE").asString()).to.equal("");
-                        expect(await resultSet.getBlob("ONLYTIME").asString()).to.equal("");
-                        expect(await resultSet.getBlob("NULLVALUE").asString()).to.equal("");
-                        expect(await resultSet.getBlob("TEXTBLOB").asString()).to.equal(dataItem.textBlob);
+                        expect(await resultSet.getBlob("ID").asString()).toBe("");
+                        expect(await resultSet.getBlob("NAME").asString()).toBe("");
+                        expect(await resultSet.getBlob("DATETIME").asString()).toBe("");
+                        expect(await resultSet.getBlob("ONLYDATE").asString()).toBe("");
+                        expect(await resultSet.getBlob("ONLYTIME").asString()).toBe("");
+                        expect(await resultSet.getBlob("NULLVALUE").asString()).toBe("");
+                        expect(await resultSet.getBlob("TEXTBLOB").asString()).toBe(dataItem.textBlob);
                     }
                 }
             });
@@ -184,12 +183,12 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 callback: async (resultSet) => {
                     for (let i = 0; await resultSet.next(); i++) {
                         const dataItem = arrayData[i];
-                        expect(resultSet.getString("ID")).to.equal(dataItem.id.toString());
-                        expect(resultSet.getString("NAME")).to.equal(dataItem.name);
-                        expect(resultSet.getString("DATETIME")).to.equal(dataItem.dateTime.toString());
-                        expect(resultSet.getString("ONLYDATE")).to.equal(dataItem.onlyDate.toString());
-                        expect(resultSet.getString("ONLYTIME")).to.equal(dataItem.onlyTime.toString());
-                        expect(resultSet.getString("NULLVALUE")).to.equal("");
+                        expect(resultSet.getString("ID")).toBe(dataItem.id.toString());
+                        expect(resultSet.getString("NAME")).toBe(dataItem.name);
+                        expect(resultSet.getString("DATETIME")).toBe(dataItem.dateTime.toString());
+                        expect(resultSet.getString("ONLYDATE")).toBe(dataItem.onlyDate.toString());
+                        expect(resultSet.getString("ONLYTIME")).toBe(dataItem.onlyTime.toString());
+                        expect(resultSet.getString("NULLVALUE")).toBe("");
                     }
                 }
             });
@@ -203,12 +202,12 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 callback: async (resultSet) => {
                     for (let i = 0; await resultSet.next(); i++) {
                         const dataItem = arrayData[i];
-                        expect(resultSet.getNumber("ID")).to.equal(dataItem.id);
-                        expect(isNaN(resultSet.getNumber("NAME"))).to.equal(true);
-                        expect(isNaN(resultSet.getNumber("DATETIME"))).to.equal(true);
-                        expect(isNaN(resultSet.getNumber("ONLYDATE"))).to.equal(true);
-                        expect(isNaN(resultSet.getNumber("ONLYTIME"))).to.equal(true);
-                        expect(resultSet.getNumber("NULLVALUE")).to.equal(0);
+                        expect(resultSet.getNumber("ID")).toBe(dataItem.id);
+                        expect(isNaN(resultSet.getNumber("NAME"))).toBe(true);
+                        expect(isNaN(resultSet.getNumber("DATETIME"))).toBe(true);
+                        expect(isNaN(resultSet.getNumber("ONLYDATE"))).toBe(true);
+                        expect(isNaN(resultSet.getNumber("ONLYTIME"))).toBe(true);
+                        expect(resultSet.getNumber("NULLVALUE")).toBe(0);
                     }
                 }
             });
@@ -221,12 +220,12 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT * FROM TEST_TABLE",
                 callback: async (resultSet) => {
                     for (let i = 0; await resultSet.next(); i++) {
-                        expect(resultSet.getBoolean("ID")).to.equal(i !== 0);
-                        expect(resultSet.getBoolean("NAME")).to.equal(true);
-                        expect(resultSet.getBoolean("DATETIME")).to.equal(true);
-                        expect(resultSet.getBoolean("ONLYDATE")).to.equal(true);
-                        expect(resultSet.getBoolean("ONLYTIME")).to.equal(true);
-                        expect(resultSet.getBoolean("NULLVALUE")).to.equal(false);
+                        expect(resultSet.getBoolean("ID")).toBe(i !== 0);
+                        expect(resultSet.getBoolean("NAME")).toBe(true);
+                        expect(resultSet.getBoolean("DATETIME")).toBe(true);
+                        expect(resultSet.getBoolean("ONLYDATE")).toBe(true);
+                        expect(resultSet.getBoolean("ONLYTIME")).toBe(true);
+                        expect(resultSet.getBoolean("NULLVALUE")).toBe(false);
                     }
                 }
             });
@@ -240,12 +239,12 @@ export function resultSetTest(connectionPool: AConnectionPool<IDefaultConnection
                 callback: async (resultSet) => {
                     for (let i = 0; await resultSet.next(); i++) {
                         const dataItem = arrayData[i];
-                        should().exist(resultSet.getDate("ID"));
-                        should().not.exist(resultSet.getDate("NAME"));
-                        expect(resultSet.getDate("DATETIME")!.getTime()).to.equal(dataItem.dateTime.getTime());
-                        expect(resultSet.getDate("ONLYDATE")!.getTime()).to.equal(dataItem.onlyDate.getTime());
-                        expect(resultSet.getDate("ONLYTIME")!.getTime()).to.equal(dataItem.onlyTime.getTime());
-                        should().not.exist(resultSet.getDate("NULLVALUE"));
+                        expect(resultSet.getDate("ID")).toBeTruthy();
+                        expect(resultSet.getDate("NAME")).toBeNull();
+                        expect(resultSet.getDate("DATETIME")!.getTime()).toBe(dataItem.dateTime.getTime());
+                        expect(resultSet.getDate("ONLYDATE")!.getTime()).toBe(dataItem.onlyDate.getTime());
+                        expect(resultSet.getDate("ONLYTIME")!.getTime()).toBe(dataItem.onlyTime.getTime());
+                        expect(resultSet.getDate("NULLVALUE")).toBeNull();
                     }
                 }
             });

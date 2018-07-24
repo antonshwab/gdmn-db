@@ -1,4 +1,3 @@
-import {should} from "chai";
 import {AConnection, AConnectionPool, ATransaction, IDefaultConnectionPoolOptions} from "../../src";
 
 export function statementTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
@@ -7,12 +6,12 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
         let globalConnection: AConnection;
         let globalTransaction: ATransaction;
 
-        before(async () => {
+        beforeAll(async () => {
             globalConnection = await connectionPool.get();
             globalTransaction = await globalConnection.startTransaction();
         });
 
-        after(async () => {
+        afterAll(async () => {
             await globalTransaction.commit();
             await globalConnection.disconnect();
         });
@@ -29,7 +28,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const result = await statement.execute();
-                    should().not.exist(result);
+                    expect(result).toBeFalsy();
                 }
             });
         });
@@ -41,7 +40,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST :count * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const result = await statement.execute({count: 1});
-                    should().not.exist(result);
+                    expect(result).toBeFalsy();
                 }
             });
         });
@@ -53,7 +52,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST ? * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const result = await statement.execute([1]);
-                    should().not.exist(result);
+                    expect(result).toBeFalsy();
                 }
             });
         });
@@ -65,7 +64,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const resultSet = await statement.executeQuery();
-                    should().exist(resultSet);
+                    expect(resultSet).toBeTruthy();
 
                     await resultSet.close();
                 }
@@ -79,7 +78,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST :count * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const resultSet = await statement.executeQuery({count: 1});
-                    should().exist(resultSet);
+                    expect(resultSet).toBeTruthy();
 
                     await resultSet.close();
                 }
@@ -93,7 +92,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST ? * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const resultSet = await statement.executeQuery([1]);
-                    should().exist(resultSet);
+                    expect(resultSet).toBeTruthy();
 
                     await resultSet.close();
                 }
@@ -107,7 +106,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST 1 * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const result = await statement.executeReturning();
-                    should().exist(result);
+                    expect(result).toBeTruthy();
                 }
             });
         });
@@ -119,7 +118,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST :count * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const result = await statement.executeReturning({count: 1});
-                    should().exist(result);
+                    expect(result).toBeTruthy();
                 }
             });
         });
@@ -131,7 +130,7 @@ export function statementTest(connectionPool: AConnectionPool<IDefaultConnection
                 sql: "SELECT FIRST ? * FROM RDB$FIELDS",
                 callback: async (statement) => {
                     const result = await statement.executeReturning([1]);
-                    should().exist(result);
+                    expect(result).toBeTruthy();
                 }
             });
         });

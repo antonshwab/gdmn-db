@@ -1,4 +1,3 @@
-import {expect} from "chai";
 import {AConnection, AConnectionPool, IDefaultConnectionPoolOptions} from "../../src";
 
 export function transactionTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
@@ -6,26 +5,26 @@ export function transactionTest(connectionPool: AConnectionPool<IDefaultConnecti
 
         let globalConnection: AConnection;
 
-        before(async () => {
+        beforeAll(async () => {
             globalConnection = await connectionPool.get();
         });
 
-        after(async () => {
+        afterAll(async () => {
             await globalConnection.disconnect();
         });
 
         it("lifecycle", async () => {
             let transaction = await globalConnection.startTransaction();
-            expect(transaction.finished).to.equal(false);
+            expect(transaction.finished).toBeFalsy();
 
             await transaction.commit();
-            expect(transaction.finished).to.equal(true);
+            expect(transaction.finished).toBeTruthy();
 
             transaction = await globalConnection.startTransaction();
-            expect(transaction.finished).to.equal(false);
+            expect(transaction.finished).toBeFalsy();
 
             await transaction.rollback();
-            expect(transaction.finished).to.equal(true);
+            expect(transaction.finished).toBeTruthy();
         });
     });
 }

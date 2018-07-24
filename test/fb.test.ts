@@ -1,4 +1,3 @@
-import {expect} from "chai";
 import {existsSync, unlinkSync} from "fs";
 import {DefaultParamsAnalyzer, Factory, IConnectionOptions} from "../src";
 import {Statement} from "../src/fb/Statement";
@@ -17,42 +16,40 @@ export const dbOptions: IConnectionOptions = {
     path
 };
 
-describe("Firebird driver tests", async function tests(): Promise<void> {
-    this.timeout(15000);
-
+describe("Firebird driver tests", async () => {
     const globalConnectionPool = Factory.FBDriver.newDefaultConnectionPool();
 
-    before(async () => {
+    beforeAll(async () => {
         if (existsSync(path)) {
             unlinkSync(path);
         }
         const connection = Factory.FBDriver.newConnection();
 
         await connection.createDatabase(dbOptions);
-        expect(connection.connected).to.equal(true);
+        expect(connection.connected).toBeTruthy();
 
         await connection.disconnect();
-        expect(connection.connected).to.equal(false);
+        expect(connection.connected).toBeFalsy();
 
         await globalConnectionPool.create(dbOptions, {min: 1, max: 1});
-        expect(globalConnectionPool.created).to.equal(true);
+        expect(globalConnectionPool.created).toBeTruthy();
     });
 
-    after(async () => {
+    afterAll(async () => {
         await globalConnectionPool.destroy();
-        expect(globalConnectionPool.created).to.equal(false);
+        expect(globalConnectionPool.created).toBeFalsy();
 
         const connection = Factory.FBDriver.newConnection();
 
         await connection.connect(dbOptions);
-        expect(connection.connected).to.equal(true);
+        expect(connection.connected).toBeTruthy();
 
         await connection.dropDatabase();
-        expect(connection.connected).to.equal(false);
+        expect(connection.connected).toBeFalsy();
     });
 
     it(path + " exists", async () => {
-        expect(existsSync(path)).to.equal(true);
+        expect(existsSync(path)).toBeTruthy();
     });
 
     connectionTest(Factory.FBDriver, dbOptions);
@@ -80,12 +77,12 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
             };
 
             const analyzer = new DefaultParamsAnalyzer(sql, excludePatterns, placeholderPattern);
-            expect(analyzer.sql).to.equal(
+            expect(analyzer.sql).toEqual(
                 "SELECT * FROM TABLE\n" +
                 "WHERE FIELD = ?       \n" +
                 "   OR FIELD = ?       \n" +
                 "   OR KEY = ?       \n");
-            expect(analyzer.prepareParams(values)).to.deep.equal([values.field_1, values.field$2, values.field_1]);
+            expect(analyzer.prepareParams(values)).toEqual([values.field_1, values.field$2, values.field_1]);
         });
 
         it("sql query with comments", () => {
@@ -99,11 +96,11 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
             };
 
             const analyzer = new DefaultParamsAnalyzer(sql, excludePatterns, placeholderPattern);
-            expect(analyzer.sql).to.equal(
+            expect(analyzer.sql).toEqual(
                 "SELECT * FROM TABLE --comment with :field\n" +
                 "WHERE FIELD = /* comment with :field */?      \n" +
                 "   OR FIELD = ?      \n");
-            expect(analyzer.prepareParams(values)).to.deep.equal([values.field1, values.field2]);
+            expect(analyzer.prepareParams(values)).toEqual([values.field1, values.field2]);
         });
 
         it("sql query with value similar as named param", () => {
@@ -116,11 +113,11 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
             };
 
             const analyzer = new DefaultParamsAnalyzer(sql, excludePatterns, placeholderPattern);
-            expect(analyzer.sql).to.equal(
+            expect(analyzer.sql).toEqual(
                 "SELECT * FROM TABLE\n" +
                 "WHERE FIELD = ?      \n" +
                 "   OR FIELD = 'text :value text'\n");
-            expect(analyzer.prepareParams(values)).to.deep.equal([values.field1]);
+            expect(analyzer.prepareParams(values)).toEqual([values.field1]);
         });
 
         it("execute block", () => {
@@ -140,7 +137,7 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
             };
 
             const analyzer = new DefaultParamsAnalyzer(sql, excludePatterns, placeholderPattern);
-            expect(analyzer.sql).to.equal(
+            expect(analyzer.sql).toEqual(
                 "EXECUTE BLOCK (id int = ?  )\n" +
                 "AS /*comment :id :key*/\n" +
                 "BEGIN\n" +
@@ -151,7 +148,7 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
                 "       --comment :key --:id comment\n" +
                 "   END\n" +
                 "end\n");
-            expect(analyzer.prepareParams(values)).to.deep.equal([values.id]);
+            expect(analyzer.prepareParams(values)).toEqual([values.id]);
         });
     });
 }

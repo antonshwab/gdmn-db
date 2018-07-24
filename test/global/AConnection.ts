@@ -1,4 +1,3 @@
-import {expect, should} from "chai";
 import {AConnection, ADriver, IConnectionOptions} from "../../src";
 
 export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): void {
@@ -7,10 +6,10 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
         it("lifecycle", async () => {
             const connection = driver.newConnection();
             await connection.connect(dbOptions);
-            expect(connection.connected).to.equal(true);
+            expect(connection.connected).toBeTruthy();
 
             await connection.disconnect();
-            expect(connection.connected).to.equal(false);
+            expect(connection.connected).toBeFalsy();
         });
 
         it("create connection", async () => {
@@ -19,8 +18,8 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                 options: dbOptions,
                 callback: async (connection) => {
                     const transaction = await connection.startTransaction();
-                    should().exist(transaction);
-                    expect(transaction.finished).to.equal(false);
+                    expect(transaction).toBeTruthy();
+                    expect(transaction.finished).toBeFalsy();
                     await transaction.commit();
                 }
             });
@@ -35,7 +34,7 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                     callback: (transaction) => AConnection.executePrepareStatement({
                         connection, transaction,
                         sql: "SELECT FIRST 1 * FROM RDB$DATABASE",
-                        callback: (statement) => should().exist(statement)
+                        callback: (statement) => expect(statement).toBeTruthy()
                     })
                 })
             });
@@ -49,7 +48,7 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                     connection,
                     callback: async (transaction) => {
                         const result = await connection.execute(transaction, "SELECT FIRST 1 * FROM RDB$DATABASE");
-                        should().not.exist(result);
+                        expect(result).toBeFalsy();
                     }
                 })
             });
@@ -64,7 +63,7 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                     callback: async (transaction) => {
                         const result = await connection.execute(transaction,
                             "SELECT FIRST :count * FROM RDB$DATABASE", {count: 1});
-                        should().not.exist(result);
+                        expect(result).toBeFalsy();
                     }
                 })
             });
@@ -79,7 +78,7 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                     callback: async (transaction) => {
                         const result = await connection.execute(transaction,
                             "SELECT FIRST ? * FROM RDB$DATABASE", [1]);
-                        should().not.exist(result);
+                        expect(result).toBeFalsy();
                     }
                 })
             });
@@ -96,8 +95,8 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                         transaction,
                         sql: "SELECT FIRST 1 * FROM RDB$DATABASE",
                         callback: async (resultSet) => {
+                            expect(resultSet).toBeTruthy();
                             await resultSet.next();
-                            should().exist(resultSet);
                         }
                     })
                 })
@@ -116,8 +115,8 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                         sql: "SELECT FIRST :count * FROM RDB$DATABASE",
                         params: {count: 1},
                         callback: async (resultSet) => {
+                            expect(resultSet).toBeTruthy();
                             await resultSet.next();
-                            should().exist(resultSet);
                         }
                     })
                 })
@@ -136,8 +135,8 @@ export function connectionTest(driver: ADriver, dbOptions: IConnectionOptions): 
                         sql: "SELECT FIRST ? * FROM RDB$DATABASE",
                         params: [1],
                         callback: async (resultSet) => {
+                            expect(resultSet).toBeTruthy();
                             await resultSet.next();
-                            should().exist(resultSet);
                         }
                     })
                 })
