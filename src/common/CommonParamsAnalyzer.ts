@@ -4,7 +4,7 @@ interface ITmpPlaceholders {
     [placeholder: string]: string;
 }
 
-export class DefaultParamsAnalyzer {
+export class CommonParamsAnalyzer {
 
     private readonly _originalSql: string;
     private readonly _placeholdersNames: string[] = [];

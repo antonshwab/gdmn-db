@@ -4,7 +4,7 @@ export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOption
     describe("AConnectionPool", async () => {
 
         it("lifecycle", async () => {
-            const connectionPool = driver.newDefaultConnectionPool();
+            const connectionPool = driver.newCommonConnectionPool();
             await connectionPool.create(dbOptions, {min: 1, max: 1});
             expect(connectionPool.created).toBeTruthy();
 
@@ -14,7 +14,7 @@ export function connectionPoolTest(driver: ADriver, dbOptions: IConnectionOption
 
         it("get connection", async () => {
             await AConnectionPool.executeConnectionPool({
-                connectionPool: driver.newDefaultConnectionPool(),
+                connectionPool: driver.newCommonConnectionPool(),
                 connectionOptions: dbOptions,
                 options: {min: 1, max: 1},
                 callback: async (connectionPool) => {

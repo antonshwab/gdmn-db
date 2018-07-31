@@ -1,4 +1,4 @@
-import { IConnectionOptions } from "./AConnection";
+import {IConnectionOptions} from "./AConnection";
 
 export abstract class AService {
 

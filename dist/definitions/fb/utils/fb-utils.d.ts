@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { MessageMetadata, Status, Util, XpbBuilder } from "node-firebird-native-api";
-import { Statement } from "../Statement";
 import { IConnectionOptions } from "../../AConnection";
+import { Statement } from "../Statement";
 export declare enum SQLTypes {
     SQL_TEXT = 452,
     SQL_VARYING = 448,
@@ -48,7 +48,6 @@ export declare enum tpb {
 export declare enum blobInfo {
     totalLength = 6
 }
-export declare const code: (c: number) => string;
 export declare const iscVaxInteger2: (buffer: Buffer, startPos: number) => number;
 export declare const createDpb: (dbOptions: IConnectionOptions, util: Util, status: Status) => XpbBuilder;
 export declare enum TransactionIsolation {

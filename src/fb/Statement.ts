@@ -1,7 +1,7 @@
 import {MessageMetadata, Statement as NativeStatement} from "node-firebird-native-api";
 import {CursorType} from "../AResultSet";
 import {AStatement, INamedParams} from "../AStatement";
-import {DefaultParamsAnalyzer} from "../default/DefaultParamsAnalyzer";
+import {CommonParamsAnalyzer} from "../common/CommonParamsAnalyzer";
 import {Result} from "./Result";
 import {ResultSet} from "./ResultSet";
 import {Transaction} from "./Transaction";
@@ -25,10 +25,10 @@ export class Statement extends AStatement {
 
     public resultSets = new Set<ResultSet>();
     public source?: IStatementSource;
-    private readonly _paramsAnalyzer: DefaultParamsAnalyzer;
+    private readonly _paramsAnalyzer: CommonParamsAnalyzer;
 
     protected constructor(transaction: Transaction,
-                          paramsAnalyzer: DefaultParamsAnalyzer,
+                          paramsAnalyzer: CommonParamsAnalyzer,
                           source?: IStatementSource) {
         super(transaction, paramsAnalyzer.sql);
         this._paramsAnalyzer = paramsAnalyzer;
@@ -47,7 +47,7 @@ export class Statement extends AStatement {
 
     public static async prepare(transaction: Transaction,
                                 sql: string): Promise<Statement> {
-        const paramsAnalyzer = new DefaultParamsAnalyzer(sql, Statement.EXCLUDE_PATTERNS,
+        const paramsAnalyzer = new CommonParamsAnalyzer(sql, Statement.EXCLUDE_PATTERNS,
             Statement.PLACEHOLDER_PATTERN);
         const source: IStatementSource = await transaction.connection.client.statusAction(async (status) => {
             const handler = await transaction.connection.handler!.prepareAsync(status, transaction.handler,

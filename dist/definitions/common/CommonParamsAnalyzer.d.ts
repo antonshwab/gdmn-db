@@ -1,5 +1,5 @@
 import { INamedParams } from "../AStatement";
-export declare class DefaultParamsAnalyzer {
+export declare class CommonParamsAnalyzer {
     private readonly _originalSql;
     private readonly _placeholdersNames;
     private readonly _tmpPlaceholders;

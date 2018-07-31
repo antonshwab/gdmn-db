@@ -1,9 +1,9 @@
 import {createPool, Pool} from "generic-pool";
 import {AConnection, IConnectionOptions} from "../../AConnection";
 import {AConnectionPool} from "../../AConnectionPool";
-import {DefaultConnectionProxy} from "./DefaultConnectionProxy";
+import {CommonConnectionProxy} from "./CommonConnectionProxy";
 
-export interface IDefaultConnectionPoolOptions {    // from require(generic-pool).Options
+export interface ICommonConnectionPoolOptions {    // from require(generic-pool).Options
     /**
      * Maximum number of resources absolute create at any given time.
      *
@@ -70,7 +70,7 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
     /**
      * The minimum amount of time that an object may sit idle in the
      * pool before it is eligible for eviction due absolute idle time.
-     * Supercedes {@link IDefaultConnectionPoolOptions.softIdleTimeoutMillis}
+     * Supercedes {@link ICommonConnectionPoolOptions.softIdleTimeoutMillis}
      *
      * @default 30000
      */
@@ -79,7 +79,7 @@ export interface IDefaultConnectionPoolOptions {    // from require(generic-pool
 
 export type ConnectionCreator<Connection> = () => Connection;
 
-export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoolOptions> {
+export class CommonConnectionPool extends AConnectionPool<ICommonConnectionPoolOptions> {
 
     private readonly _connectionCreator: ConnectionCreator<AConnection>;
     private _connectionPool: null | Pool<AConnection> = null;
@@ -93,7 +93,7 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
         return Boolean(this._connectionPool);
     }
 
-    public async create(dbOptions: IConnectionOptions, options: IDefaultConnectionPoolOptions): Promise<void> {
+    public async create(dbOptions: IConnectionOptions, options: ICommonConnectionPoolOptions): Promise<void> {
         if (this._connectionPool) {
             throw new Error("Connection pool already created");
         }
@@ -104,7 +104,7 @@ export class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoo
                     throw new Error("This error should never been happen");
                 }
 
-                const proxy = new DefaultConnectionProxy(this._connectionPool, this._connectionCreator);
+                const proxy = new CommonConnectionProxy(this._connectionPool, this._connectionCreator);
                 await proxy.create(dbOptions);
                 return proxy;
             },

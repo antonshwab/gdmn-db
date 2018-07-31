@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const generic_pool_1 = require("generic-pool");
 const AConnectionPool_1 = require("../../AConnectionPool");
-const DefaultConnectionProxy_1 = require("./DefaultConnectionProxy");
-class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
+const CommonConnectionProxy_1 = require("./CommonConnectionProxy");
+class CommonConnectionPool extends AConnectionPool_1.AConnectionPool {
     constructor(connectionCreator) {
         super();
         this._connectionPool = null;
@@ -21,7 +21,7 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
                 if (!this._connectionPool) {
                     throw new Error("This error should never been happen");
                 }
-                const proxy = new DefaultConnectionProxy_1.DefaultConnectionProxy(this._connectionPool, this._connectionCreator);
+                const proxy = new CommonConnectionProxy_1.CommonConnectionProxy(this._connectionPool, this._connectionCreator);
                 await proxy.create(dbOptions);
                 return proxy;
             },
@@ -54,7 +54,7 @@ class DefaultConnectionPool extends AConnectionPool_1.AConnectionPool {
         return await this._connectionPool.acquire();
     }
 }
-exports.DefaultConnectionPool = DefaultConnectionPool;
+exports.CommonConnectionPool = CommonConnectionPool;
 function noop() {
     // ignore
 }
@@ -67,4 +67,4 @@ function noop() {
 const reflector = (promise) => {
     return promise.then(noop, noop);
 };
-//# sourceMappingURL=DefaultConnectionPool.js.map
+//# sourceMappingURL=CommonConnectionPool.js.map

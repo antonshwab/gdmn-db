@@ -1,11 +1,11 @@
-import { ADriver, AConnection, IConnectionOptions } from "../../src";
+import fs from "fs";
 import path from "path";
-import * as fs from "fs";
-import { populateDb } from "../fixtures/populateDb";
-import { AService } from "../../src/AService";
+import {AConnection, ADriver, IConnectionOptions} from "../../src";
+import {AService} from "../../src/AService";
+import {IDataItem, populateDb} from "../fixtures/populateDb";
 
 export function serviceTest(driver: ADriver): void {
-    describe("AServiceManager", async () => {
+    describe("AService", async () => {
         const cwd = `${process.cwd()}`;
         const fixturesPath = path.join(cwd, "test", "fixtures");
 
@@ -18,12 +18,12 @@ export function serviceTest(driver: ADriver): void {
             port: 3050,
             username: "SYSDBA",
             password: "masterkey",
-            path: testDbPath,
+            path: testDbPath
         };
 
-        const restoredDbOptions = { ...dbOptions, path: restoredTestDbPath };
+        const restoredDbOptions = {...dbOptions, path: restoredTestDbPath};
 
-        let fixtureArrayData;
+        let fixtureArrayData: IDataItem[];
 
         beforeAll(async () => {
             if (fs.existsSync(testDbPath)) {
@@ -45,24 +45,13 @@ export function serviceTest(driver: ADriver): void {
         it("backup/restore", async () => {
             const svcManager: AService = driver.newService();
 
-            try {
-                await svcManager.attachService(dbOptions);
-            } catch (error) {
-                console.error(error);
-            }
-
-            try {
-                await svcManager.backupDatabase(dbOptions.path, backupTestDbPath);
-            } catch (error) {
-                console.error(error);
-            }
+            await svcManager.attachService(dbOptions);
+            await svcManager.backupDatabase(dbOptions.path, backupTestDbPath);
 
             expect(fs.existsSync(backupTestDbPath)).toBeTruthy();
 
             try {
                 await svcManager.restoreDatabase(restoredTestDbPath, backupTestDbPath);
-            } catch (error) {
-                console.error(error);
             } finally {
                 await svcManager.detachService();
             }
@@ -95,8 +84,6 @@ export function serviceTest(driver: ADriver): void {
                     })
                 })
             });
-
         });
-
     });
 }

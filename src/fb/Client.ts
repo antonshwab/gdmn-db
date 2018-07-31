@@ -5,7 +5,8 @@ import {
     Master,
     Provider,
     Status,
-    Util} from "node-firebird-native-api";
+    Util
+} from "node-firebird-native-api";
 
 export interface IClient {
     master: Master;
@@ -30,7 +31,7 @@ export class Client {
         this._client = {
             master,
             dispatcher: (await master.getDispatcherAsync())!,
-            util: (await master.getUtilInterfaceAsync())!,
+            util: (await master.getUtilInterfaceAsync())!
         };
     }
 

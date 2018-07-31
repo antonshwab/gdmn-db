@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const AConnection_1 = require("../../AConnection");
-class DefaultConnectionProxy extends AConnection_1.AConnection {
+class CommonConnectionProxy extends AConnection_1.AConnection {
     constructor(pool, connectionCreator) {
         super();
         this._connection = null;
@@ -84,5 +84,5 @@ class DefaultConnectionProxy extends AConnection_1.AConnection {
         return this._pool.isBorrowedResource(this); // there is no method in the file in .d.ts
     }
 }
-exports.DefaultConnectionProxy = DefaultConnectionProxy;
-//# sourceMappingURL=DefaultConnectionProxy.js.map
+exports.CommonConnectionProxy = CommonConnectionProxy;
+//# sourceMappingURL=CommonConnectionProxy.js.map

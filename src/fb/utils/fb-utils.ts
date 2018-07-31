@@ -1,12 +1,12 @@
 import {MessageMetadata, Status, Util, XpbBuilder} from "node-firebird-native-api";
 import {endianness} from "os";
 import {StringDecoder} from "string_decoder";
+import {IConnectionOptions} from "../../AConnection";
 import {Statement} from "../Statement";
 import {BlobLink} from "./BlobLink";
 import {BlobStream} from "./BlobStream";
+import {isc_dpb, XpbBuilderParams} from "./constants";
 import {decodeDate, decodeTime, encodeDate, encodeTime} from "./date-time";
-import { IConnectionOptions } from "../../AConnection";
-import { XpbBuilderParams, isc_dpb } from "./constants";
 
 const littleEndian = endianness() === "LE";
 
@@ -64,10 +64,10 @@ export enum blobInfo {
     totalLength = 6
 }
 
-export const code = (c: number) => String.fromCharCode(c);
-
 export const iscVaxInteger2 = (buffer: Buffer, startPos: number) => {
+    /* tslint:disable */
     return (buffer[startPos] & 0xff) | ((buffer[startPos + 1] & 0xff) << 8);
+    /* tslint:enable */
 };
 
 export const createDpb = (dbOptions: IConnectionOptions, util: Util, status: Status): XpbBuilder => {

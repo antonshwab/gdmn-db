@@ -5,7 +5,7 @@ import {AStatement, INamedParams} from "../../AStatement";
 import {ATransaction, ITransactionOptions} from "../../ATransaction";
 import {Result} from "../../fb/Result";
 
-export class DefaultConnectionProxy extends AConnection {
+export class CommonConnectionProxy extends AConnection {
 
     private readonly _pool: Pool<AConnection>;
     private readonly _connectionCreator: () => AConnection;

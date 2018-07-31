@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_firebird_native_api_1 = require("node-firebird-native-api");
 const AStatement_1 = require("../AStatement");
-const DefaultParamsAnalyzer_1 = require("../default/DefaultParamsAnalyzer");
+const CommonParamsAnalyzer_1 = require("../common/CommonParamsAnalyzer");
 const Result_1 = require("./Result");
 const ResultSet_1 = require("./ResultSet");
 const fb_utils_1 = require("./utils/fb-utils");
@@ -21,7 +21,7 @@ class Statement extends AStatement_1.AStatement {
         return !this.source;
     }
     static async prepare(transaction, sql) {
-        const paramsAnalyzer = new DefaultParamsAnalyzer_1.DefaultParamsAnalyzer(sql, Statement.EXCLUDE_PATTERNS, Statement.PLACEHOLDER_PATTERN);
+        const paramsAnalyzer = new CommonParamsAnalyzer_1.CommonParamsAnalyzer(sql, Statement.EXCLUDE_PATTERNS, Statement.PLACEHOLDER_PATTERN);
         const source = await transaction.connection.client.statusAction(async (status) => {
             const handler = await transaction.connection.handler.prepareAsync(status, transaction.handler, 0, paramsAnalyzer.sql, 3, node_firebird_native_api_1.Statement.PREPARE_PREFETCH_ALL);
             const inMetadata = fb_utils_1.fixMetadata(status, await handler.getInputMetadataAsync(status));

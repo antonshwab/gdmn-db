@@ -1,7 +1,7 @@
 import { MessageMetadata, Statement as NativeStatement } from "node-firebird-native-api";
 import { CursorType } from "../AResultSet";
 import { AStatement, INamedParams } from "../AStatement";
-import { DefaultParamsAnalyzer } from "../default/DefaultParamsAnalyzer";
+import { CommonParamsAnalyzer } from "../common/CommonParamsAnalyzer";
 import { Result } from "./Result";
 import { ResultSet } from "./ResultSet";
 import { Transaction } from "./Transaction";
@@ -17,7 +17,7 @@ export declare class Statement extends AStatement {
     resultSets: Set<ResultSet>;
     source?: IStatementSource;
     private readonly _paramsAnalyzer;
-    protected constructor(transaction: Transaction, paramsAnalyzer: DefaultParamsAnalyzer, source?: IStatementSource);
+    protected constructor(transaction: Transaction, paramsAnalyzer: CommonParamsAnalyzer, source?: IStatementSource);
     readonly transaction: Transaction;
     readonly disposed: boolean;
     static prepare(transaction: Transaction, sql: string): Promise<Statement>;

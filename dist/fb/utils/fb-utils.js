@@ -4,8 +4,8 @@ const os_1 = require("os");
 const string_decoder_1 = require("string_decoder");
 const BlobLink_1 = require("./BlobLink");
 const BlobStream_1 = require("./BlobStream");
-const date_time_1 = require("./date-time");
 const constants_1 = require("./constants");
+const date_time_1 = require("./date-time");
 const littleEndian = os_1.endianness() === "LE";
 var SQLTypes;
 (function (SQLTypes) {
@@ -61,9 +61,10 @@ var blobInfo;
 (function (blobInfo) {
     blobInfo[blobInfo["totalLength"] = 6] = "totalLength";
 })(blobInfo = exports.blobInfo || (exports.blobInfo = {}));
-exports.code = (c) => String.fromCharCode(c);
 exports.iscVaxInteger2 = (buffer, startPos) => {
+    /* tslint:disable */
     return (buffer[startPos] & 0xff) | ((buffer[startPos + 1] & 0xff) << 8);
+    /* tslint:enable */
 };
 exports.createDpb = (dbOptions, util, status) => {
     const dbParamBuffer = (util.getXpbBuilderSync(status, constants_1.XpbBuilderParams.DPB, undefined, 0));

@@ -1,6 +1,6 @@
-import {AConnection, AConnectionPool, ATransaction, IDefaultConnectionPoolOptions} from "../../src";
+import {AConnection, AConnectionPool, ATransaction, ICommonConnectionPoolOptions} from "../../src";
 
-export function statementTest(connectionPool: AConnectionPool<IDefaultConnectionPoolOptions>): void {
+export function statementTest(connectionPool: AConnectionPool<ICommonConnectionPoolOptions>): void {
     describe("AStatement", async () => {
 
         let globalConnection: AConnection;

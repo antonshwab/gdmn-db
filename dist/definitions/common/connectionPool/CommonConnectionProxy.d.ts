@@ -4,7 +4,7 @@ import { AResultSet } from "../../AResultSet";
 import { AStatement, INamedParams } from "../../AStatement";
 import { ATransaction, ITransactionOptions } from "../../ATransaction";
 import { Result } from "../../fb/Result";
-export declare class DefaultConnectionProxy extends AConnection {
+export declare class CommonConnectionProxy extends AConnection {
     private readonly _pool;
     private readonly _connectionCreator;
     private _connection;

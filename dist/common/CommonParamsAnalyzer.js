@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class DefaultParamsAnalyzer {
+class CommonParamsAnalyzer {
     constructor(originalSql, excludePatterns, placeholderPattern) {
         this._placeholdersNames = [];
         this._tmpPlaceholders = {};
@@ -52,5 +52,5 @@ class DefaultParamsAnalyzer {
         return name;
     }
 }
-exports.DefaultParamsAnalyzer = DefaultParamsAnalyzer;
-//# sourceMappingURL=DefaultParamsAnalyzer.js.map
+exports.CommonParamsAnalyzer = CommonParamsAnalyzer;
+//# sourceMappingURL=CommonParamsAnalyzer.js.map

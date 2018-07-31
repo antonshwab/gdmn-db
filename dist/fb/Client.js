@@ -13,7 +13,7 @@ class Client {
         this._client = {
             master,
             dispatcher: (await master.getDispatcherAsync()),
-            util: (await master.getUtilInterfaceAsync()),
+            util: (await master.getUtilInterfaceAsync())
         };
     }
     async destroy() {

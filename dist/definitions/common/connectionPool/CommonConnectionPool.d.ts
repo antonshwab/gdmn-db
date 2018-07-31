@@ -1,6 +1,6 @@
 import { AConnection, IConnectionOptions } from "../../AConnection";
 import { AConnectionPool } from "../../AConnectionPool";
-export interface IDefaultConnectionPoolOptions {
+export interface ICommonConnectionPoolOptions {
     /**
      * Maximum number of resources absolute create at any given time.
      *
@@ -67,19 +67,19 @@ export interface IDefaultConnectionPoolOptions {
     /**
      * The minimum amount of time that an object may sit idle in the
      * pool before it is eligible for eviction due absolute idle time.
-     * Supercedes {@link IDefaultConnectionPoolOptions.softIdleTimeoutMillis}
+     * Supercedes {@link ICommonConnectionPoolOptions.softIdleTimeoutMillis}
      *
      * @default 30000
      */
     idleTimeoutMillis?: number;
 }
 export declare type ConnectionCreator<Connection> = () => Connection;
-export declare class DefaultConnectionPool extends AConnectionPool<IDefaultConnectionPoolOptions> {
+export declare class CommonConnectionPool extends AConnectionPool<ICommonConnectionPoolOptions> {
     private readonly _connectionCreator;
     private _connectionPool;
     constructor(connectionCreator: ConnectionCreator<AConnection>);
     readonly created: boolean;
-    create(dbOptions: IConnectionOptions, options: IDefaultConnectionPoolOptions): Promise<void>;
+    create(dbOptions: IConnectionOptions, options: ICommonConnectionPoolOptions): Promise<void>;
     destroy(): Promise<void>;
     get(): Promise<AConnection>;
 }

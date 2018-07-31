@@ -1,6 +1,7 @@
 export * from "./types";
 export * from "./AConnectionPool";
 export * from "./AConnection";
+export * from "./AService";
 export * from "./ATransaction";
 export * from "./AStatement";
 export * from "./AResultMetadata";
@@ -9,6 +10,6 @@ export * from "./AResultSet";
 export * from "./ABlob";
 export * from "./ADriver";
 export * from "./Factory";
-export * from "./default/connectionPool/DefaultConnectionPool";
-export * from "./default/DefaultParamsAnalyzer";
+export * from "./common/connectionPool/CommonConnectionPool";
+export * from "./common/CommonParamsAnalyzer";
 export * from "./DBStructure";

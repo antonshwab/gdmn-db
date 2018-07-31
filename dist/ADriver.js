@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const DefaultConnectionPool_1 = require("./default/connectionPool/DefaultConnectionPool");
+const CommonConnectionPool_1 = require("./common/connectionPool/CommonConnectionPool");
 class ADriver {
     /** Reade database structure as DBStructure object */
     async readDBStructure(connection, transaction) {
@@ -18,13 +18,19 @@ class ADriver {
         throw new Error("Unsupported yet");
     }
     /**
-     * Create object for access absolute a default connection pool of driver.
+     * Create service for backup/restore databases
+     */
+    newService() {
+        throw new Error("Unsupported yet");
+    }
+    /**
+     * Create object for access absolute a common connection pool of driver.
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}
      */
-    newDefaultConnectionPool() {
-        return new DefaultConnectionPool_1.DefaultConnectionPool(() => this.newConnection());
+    newCommonConnectionPool() {
+        return new CommonConnectionPool_1.CommonConnectionPool(() => this.newConnection());
     }
 }
 exports.ADriver = ADriver;

@@ -1,9 +1,9 @@
-import {AConnection, IConnectionOptions} from "./AConnection";
+import {AConnection} from "./AConnection";
 import {AConnectionPool} from "./AConnectionPool";
+import {AService} from "./AService";
 import {ATransaction} from "./ATransaction";
+import {CommonConnectionPool, ICommonConnectionPoolOptions} from "./common/connectionPool/CommonConnectionPool";
 import {DBStructure} from "./DBStructure";
-import {DefaultConnectionPool, IDefaultConnectionPoolOptions} from "./default/connectionPool/DefaultConnectionPool";
-import { AService } from "./AService";
 
 export abstract class ADriver<PoolOptions = any> {
 
@@ -26,14 +26,19 @@ export abstract class ADriver<PoolOptions = any> {
     }
 
     /**
-     * Create object for access absolute a default connection pool of driver.
+     * Create service for backup/restore databases
+     */
+    public newService(): AService {
+        throw new Error("Unsupported yet");
+    }
+
+    /**
+     * Create object for access absolute a common connection pool of driver.
      * Available for all drivers.
      *
      * @see {@link https://github.com/coopernurse/node-pool}
      */
-    public newDefaultConnectionPool(): AConnectionPool<IDefaultConnectionPoolOptions> {
-        return new DefaultConnectionPool(() => this.newConnection());
+    public newCommonConnectionPool(): AConnectionPool<ICommonConnectionPoolOptions> {
+        return new CommonConnectionPool(() => this.newConnection());
     }
-
-    public abstract newService(): AService;
 }

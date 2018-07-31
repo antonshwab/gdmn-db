@@ -1,12 +1,12 @@
 import {existsSync, unlinkSync} from "fs";
-import {DefaultParamsAnalyzer, Factory, IConnectionOptions} from "../src";
+import {CommonParamsAnalyzer, Factory, IConnectionOptions} from "../src";
 import {Statement} from "../src/fb/Statement";
-import {connectionTest} from "./global/AConnection";
-import {connectionPoolTest} from "./global/AConnectionPool";
-import {resultSetTest} from "./global/AResultSet";
-import {statementTest} from "./global/AStatement";
-import {transactionTest} from "./global/ATransaction";
-import { serviceTest } from "./global/AService";
+import {connectionTest} from "./common/AConnection";
+import {connectionPoolTest} from "./common/AConnectionPool";
+import {resultSetTest} from "./common/AResultSet";
+import {serviceTest} from "./common/AService";
+import {statementTest} from "./common/AStatement";
+import {transactionTest} from "./common/ATransaction";
 
 export const path = `${process.cwd()}/TEST.FDB`;
 export const dbOptions: IConnectionOptions = {
@@ -20,7 +20,7 @@ export const dbOptions: IConnectionOptions = {
 jest.setTimeout(100 * 1000);
 
 describe("Firebird driver tests", async () => {
-    const globalConnectionPool = Factory.FBDriver.newDefaultConnectionPool();
+    const globalConnectionPool = Factory.FBDriver.newCommonConnectionPool();
 
     beforeAll(async () => {
         if (existsSync(path)) {
@@ -55,8 +55,6 @@ describe("Firebird driver tests", async () => {
         expect(existsSync(path)).toBeTruthy();
     });
 
-    serviceTest(Factory.FBDriver);
-
     connectionTest(Factory.FBDriver, dbOptions);
     connectionPoolTest(Factory.FBDriver, dbOptions);
 
@@ -64,11 +62,13 @@ describe("Firebird driver tests", async () => {
     statementTest(globalConnectionPool);
     resultSetTest(globalConnectionPool);
 
-    defaultParamsAnalyzerTest(Statement.EXCLUDE_PATTERNS, Statement.PLACEHOLDER_PATTERN);
+    serviceTest(Factory.FBDriver);
+
+    commonParamsAnalyzerTest(Statement.EXCLUDE_PATTERNS, Statement.PLACEHOLDER_PATTERN);
 });
 
-function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern: RegExp): void {
-    describe("DefaultParamsAnalyzer", () => {
+function commonParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern: RegExp): void {
+    describe("CommonParamsAnalyzer", () => {
 
         it("simple sql query", () => {
             const sql =
@@ -81,7 +81,7 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
                 field$2: "field2"
             };
 
-            const analyzer = new DefaultParamsAnalyzer(sql, excludePatterns, placeholderPattern);
+            const analyzer = new CommonParamsAnalyzer(sql, excludePatterns, placeholderPattern);
             expect(analyzer.sql).toEqual(
                 "SELECT * FROM TABLE\n" +
                 "WHERE FIELD = ?       \n" +
@@ -100,7 +100,7 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
                 field2: "field2"
             };
 
-            const analyzer = new DefaultParamsAnalyzer(sql, excludePatterns, placeholderPattern);
+            const analyzer = new CommonParamsAnalyzer(sql, excludePatterns, placeholderPattern);
             expect(analyzer.sql).toEqual(
                 "SELECT * FROM TABLE --comment with :field\n" +
                 "WHERE FIELD = /* comment with :field */?      \n" +
@@ -117,7 +117,7 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
                 field1: "field1"
             };
 
-            const analyzer = new DefaultParamsAnalyzer(sql, excludePatterns, placeholderPattern);
+            const analyzer = new CommonParamsAnalyzer(sql, excludePatterns, placeholderPattern);
             expect(analyzer.sql).toEqual(
                 "SELECT * FROM TABLE\n" +
                 "WHERE FIELD = ?      \n" +
@@ -141,7 +141,7 @@ function defaultParamsAnalyzerTest(excludePatterns: RegExp[], placeholderPattern
                 id: "id"
             };
 
-            const analyzer = new DefaultParamsAnalyzer(sql, excludePatterns, placeholderPattern);
+            const analyzer = new CommonParamsAnalyzer(sql, excludePatterns, placeholderPattern);
             expect(analyzer.sql).toEqual(
                 "EXECUTE BLOCK (id int = ?  )\n" +
                 "AS /*comment :id :key*/\n" +
