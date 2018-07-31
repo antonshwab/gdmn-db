@@ -48,8 +48,8 @@ class Connection extends AConnection_1.AConnection {
         }
         await this.client.create();
         this.handler = await this.client.statusAction(async (status) => {
-            const dpb = fb_utils_1.createDpb(options);
-            return await this.client.client.dispatcher.createDatabaseAsync(status, Connection._optionsToUri(options), dpb.length, dpb);
+            const dpb = fb_utils_1.createDpb(options, this.client.client.util, status);
+            return await this.client.client.dispatcher.createDatabaseAsync(status, Connection._optionsToUri(options), dpb.getBufferLengthSync(status), dpb.getBufferSync(status));
         });
     }
     async dropDatabase() {
@@ -67,8 +67,8 @@ class Connection extends AConnection_1.AConnection {
         }
         await this.client.create();
         this.handler = await this.client.statusAction(async (status) => {
-            const dpb = fb_utils_1.createDpb(options);
-            return await this.client.client.dispatcher.attachDatabaseAsync(status, Connection._optionsToUri(options), dpb.length, dpb);
+            const dpb = fb_utils_1.createDpb(options, this.client.client.util, status);
+            return await this.client.client.dispatcher.attachDatabaseAsync(status, Connection._optionsToUri(options), dpb.getBufferLengthSync(status), dpb.getBufferSync(status));
         });
     }
     async startTransaction(options) {

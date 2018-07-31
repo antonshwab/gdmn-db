@@ -12,7 +12,8 @@ class Client {
         const master = node_firebird_native_api_1.getMaster(node_firebird_native_api_1.getDefaultLibraryFilename());
         this._client = {
             master,
-            dispatcher: (await master.getDispatcherAsync())
+            dispatcher: (await master.getDispatcherAsync()),
+            util: (await master.getUtilInterfaceAsync()),
         };
     }
     async destroy() {
