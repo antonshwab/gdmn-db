@@ -63,3 +63,8 @@ typings/
 # dotenv environment variables file
 .env
 
+*.FDB
+*.fbk
+
+.DS_Store
+.vscode/*

@@ -1,8 +1,16 @@
-import {disposeMaster, getDefaultLibraryFilename, getMaster, Master, Provider, Status} from "node-firebird-native-api";
+import {
+    disposeMaster,
+    getDefaultLibraryFilename,
+    getMaster,
+    Master,
+    Provider,
+    Status,
+    Util} from "node-firebird-native-api";
 
 export interface IClient {
     master: Master;
     dispatcher: Provider;
+    util: Util;
 }
 
 export class Client {
@@ -21,7 +29,8 @@ export class Client {
         const master = getMaster(getDefaultLibraryFilename());
         this._client = {
             master,
-            dispatcher: (await master.getDispatcherAsync())!
+            dispatcher: (await master.getDispatcherAsync())!,
+            util: (await master.getUtilInterfaceAsync())!,
         };
     }
 

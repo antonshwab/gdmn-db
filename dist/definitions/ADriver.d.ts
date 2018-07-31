@@ -3,6 +3,7 @@ import { AConnectionPool } from "./AConnectionPool";
 import { ATransaction } from "./ATransaction";
 import { DBStructure } from "./DBStructure";
 import { IDefaultConnectionPoolOptions } from "./default/connectionPool/DefaultConnectionPool";
+import { AService } from "./AService";
 export declare abstract class ADriver<PoolOptions = any> {
     /** Reade database structure as DBStructure object */
     readDBStructure(connection: AConnection, transaction?: ATransaction): Promise<DBStructure>;
@@ -20,4 +21,5 @@ export declare abstract class ADriver<PoolOptions = any> {
      * @see {@link https://github.com/coopernurse/node-pool}
      */
     newDefaultConnectionPool(): AConnectionPool<IDefaultConnectionPoolOptions>;
+    abstract newService(): AService;
 }

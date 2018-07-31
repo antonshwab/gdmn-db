@@ -1,6 +1,7 @@
 /// <reference types="node" />
-import { MessageMetadata, Status } from "node-firebird-native-api";
+import { MessageMetadata, Status, Util, XpbBuilder } from "node-firebird-native-api";
 import { Statement } from "../Statement";
+import { IConnectionOptions } from "../../AConnection";
 export declare enum SQLTypes {
     SQL_TEXT = 452,
     SQL_VARYING = 448,
@@ -47,10 +48,9 @@ export declare enum tpb {
 export declare enum blobInfo {
     totalLength = 6
 }
-export declare function createDpb(options?: {
-    username?: string;
-    password?: string;
-}): Buffer;
+export declare const code: (c: number) => string;
+export declare const iscVaxInteger2: (buffer: Buffer, startPos: number) => number;
+export declare const createDpb: (dbOptions: IConnectionOptions, util: Util, status: Status) => XpbBuilder;
 export declare enum TransactionIsolation {
     CONSISTENCY = "CONSISTENCY",
     READ_COMMITTED = "READ_COMMITTED",
@@ -67,7 +67,7 @@ export interface ITransactionOpt {
     restartRequests?: boolean;
     autoCommit?: boolean;
 }
-export declare function createTpb(options?: ITransactionOpt): Buffer;
+export declare const createTpb: (options: ITransactionOpt, util: Util, status: Status) => XpbBuilder;
 /** Changes a number from a scale to another. */
 /***
  export function changeScale(value: number, inputScale: number, outputScale: number): number {

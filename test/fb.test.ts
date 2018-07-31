@@ -6,6 +6,7 @@ import {connectionPoolTest} from "./global/AConnectionPool";
 import {resultSetTest} from "./global/AResultSet";
 import {statementTest} from "./global/AStatement";
 import {transactionTest} from "./global/ATransaction";
+import { serviceTest } from "./global/AService";
 
 export const path = `${process.cwd()}/TEST.FDB`;
 export const dbOptions: IConnectionOptions = {
@@ -15,6 +16,8 @@ export const dbOptions: IConnectionOptions = {
     password: "masterkey",
     path
 };
+
+jest.setTimeout(100 * 1000);
 
 describe("Firebird driver tests", async () => {
     const globalConnectionPool = Factory.FBDriver.newDefaultConnectionPool();
@@ -51,6 +54,8 @@ describe("Firebird driver tests", async () => {
     it(path + " exists", async () => {
         expect(existsSync(path)).toBeTruthy();
     });
+
+    serviceTest(Factory.FBDriver);
 
     connectionTest(Factory.FBDriver, dbOptions);
     connectionPoolTest(Factory.FBDriver, dbOptions);

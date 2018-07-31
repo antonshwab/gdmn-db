@@ -61,8 +61,9 @@ export class Transaction extends ATransaction {
         }
 
         const handler = await connection.client.statusAction(async (status) => {
-            const tpb = createTpb(apiOptions);
-            return await connection.handler!.startTransactionAsync(status, tpb.length, tpb);
+            const tpb = createTpb(apiOptions, connection.client.client!.util, status);
+            return await connection.handler!.startTransactionAsync(
+                status, tpb.getBufferLengthSync(status), tpb.getBufferSync(status));
         });
 
         return new Transaction(connection, options, handler!);

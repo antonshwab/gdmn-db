@@ -1,9 +1,10 @@
-import {AConnection} from "../AConnection";
+import {AConnection, IConnectionOptions} from "../AConnection";
 import {ADriver} from "../ADriver";
 import {DBStructure} from "../DBStructure";
 import {Connection} from "./Connection";
 import {DBStructureReader} from "./DBStructureReader";
 import {Transaction} from "./Transaction";
+import { Service } from "./Service";
 
 export class Driver extends ADriver {
 
@@ -13,5 +14,9 @@ export class Driver extends ADriver {
 
     public newConnection(): AConnection {
         return new Connection();
+    }
+
+    public newService(): Service {
+        return new Service();
     }
 }

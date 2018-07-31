@@ -1,8 +1,9 @@
-import {AConnection} from "./AConnection";
+import {AConnection, IConnectionOptions} from "./AConnection";
 import {AConnectionPool} from "./AConnectionPool";
 import {ATransaction} from "./ATransaction";
 import {DBStructure} from "./DBStructure";
 import {DefaultConnectionPool, IDefaultConnectionPoolOptions} from "./default/connectionPool/DefaultConnectionPool";
+import { AService } from "./AService";
 
 export abstract class ADriver<PoolOptions = any> {
 
@@ -33,4 +34,6 @@ export abstract class ADriver<PoolOptions = any> {
     public newDefaultConnectionPool(): AConnectionPool<IDefaultConnectionPoolOptions> {
         return new DefaultConnectionPool(() => this.newConnection());
     }
+
+    public abstract newService(): AService;
 }

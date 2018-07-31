@@ -1,7 +1,8 @@
-import { Master, Provider, Status } from "node-firebird-native-api";
+import { Master, Provider, Status, Util } from "node-firebird-native-api";
 export interface IClient {
     master: Master;
     dispatcher: Provider;
+    util: Util;
 }
 export declare class Client {
     private _client?;

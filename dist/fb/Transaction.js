@@ -47,8 +47,8 @@ class Transaction extends ATransaction_1.ATransaction {
                 apiOptions.accessMode = "READ_WRITE";
         }
         const handler = await connection.client.statusAction(async (status) => {
-            const tpb = fb_utils_1.createTpb(apiOptions);
-            return await connection.handler.startTransactionAsync(status, tpb.length, tpb);
+            const tpb = fb_utils_1.createTpb(apiOptions, connection.client.client.util, status);
+            return await connection.handler.startTransactionAsync(status, tpb.getBufferLengthSync(status), tpb.getBufferSync(status));
         });
         return new Transaction(connection, options, handler);
     }

@@ -1,10 +1,12 @@
-import {MessageMetadata, Status} from "node-firebird-native-api";
+import {MessageMetadata, Status, Util, XpbBuilder} from "node-firebird-native-api";
 import {endianness} from "os";
 import {StringDecoder} from "string_decoder";
 import {Statement} from "../Statement";
 import {BlobLink} from "./BlobLink";
 import {BlobStream} from "./BlobStream";
 import {decodeDate, decodeTime, encodeDate, encodeTime} from "./date-time";
+import { IConnectionOptions } from "../../AConnection";
+import { XpbBuilderParams, isc_dpb } from "./constants";
 
 const littleEndian = endianness() === "LE";
 
@@ -62,38 +64,19 @@ export enum blobInfo {
     totalLength = 6
 }
 
-export function createDpb(options?: { username?: string, password?: string }): Buffer {
-    const code = (c: number) => String.fromCharCode(c);
-    let ret = `${code(dpb.isc_dpb_version1)}`;
+export const code = (c: number) => String.fromCharCode(c);
 
-    const dialect = 3;
-    ret += `${code(dpb.isc_dpb_set_db_sql_dialect)}${code(dialect.toString().length)}${code(dialect)}`;
+export const iscVaxInteger2 = (buffer: Buffer, startPos: number) => {
+    return (buffer[startPos] & 0xff) | ((buffer[startPos + 1] & 0xff) << 8);
+};
 
-    const charSet = "utf8";
-    ret += `${code(dpb.lc_ctype)}${code(charSet.length)}${charSet}`;
-
-    if (!options) {
-        options = {};
-    }
-
-    if (!options.username) {
-        options.username = process.env.ISC_USER;
-    }
-
-    if (!options.password) {
-        options.password = process.env.ISC_PASSWORD;
-    }
-
-    if (options.username) {
-        ret += `${code(dpb.user_name)}${code(options.username.length)}${options.username}`;
-    }
-
-    if (options.password) {
-        ret += `${code(dpb.password)}${code(options.password.length)}${options.password}`;
-    }
-
-    return Buffer.from(ret);
-}
+export const createDpb = (dbOptions: IConnectionOptions, util: Util, status: Status): XpbBuilder => {
+    const dbParamBuffer = (util.getXpbBuilderSync(status, XpbBuilderParams.DPB, undefined, 0))!;
+    dbParamBuffer.insertIntSync(status, isc_dpb.page_size, 4 * 1024);
+    dbParamBuffer.insertStringSync(status, isc_dpb.user_name, dbOptions.username || "sysdba");
+    dbParamBuffer.insertStringSync(status, isc_dpb.password, dbOptions.password || "masterkey");
+    return dbParamBuffer;
+};
 
 export enum TransactionIsolation {
     CONSISTENCY = "CONSISTENCY",
@@ -114,69 +97,67 @@ export interface ITransactionOpt {
     //// TODO: lockTimeOut?: number;
 }
 
-export function createTpb(options?: ITransactionOpt): Buffer {
-    const code = (c: number) => String.fromCharCode(c);
-    let ret = code(tpb.isc_tpb_version1);
-
-    if (!options) {
-        options = {};
-    }
+export const createTpb = (options: ITransactionOpt, util: Util, status: Status): XpbBuilder => {
+    const tnxParamBuffer = (util.getXpbBuilderSync(status, XpbBuilderParams.TPB, undefined, 0))!;
 
     switch (options.accessMode) {
         case "READ_ONLY":
-            ret += code(tpb.isc_tpb_read);
+            tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_read);
             break;
 
         case "READ_WRITE":
-            ret += code(tpb.isc_tpb_write);
+            tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_write);
             break;
     }
 
     switch (options.waitMode) {
         case "NO_WAIT":
-            ret += code(tpb.isc_tpb_nowait);
+            tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_nowait);
             break;
 
         case "WAIT":
-            ret += code(tpb.isc_tpb_wait);
+            tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_wait);
             break;
     }
 
     switch (options.isolation) {
         case TransactionIsolation.CONSISTENCY:
-            ret += code(tpb.isc_tpb_consistency);
+            tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_consistency);
             break;
 
         case TransactionIsolation.SNAPSHOT:
-            ret += code(tpb.isc_tpb_concurrency);
+            tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_concurrency);
             break;
 
         case TransactionIsolation.READ_COMMITTED:
-            ret += code(tpb.isc_tpb_read_committed) +
-                code(options.readCommittedMode === "RECORD_VERSION"
-                    ? tpb.isc_tpb_rec_version
-                    : tpb.isc_tpb_no_rec_version);
+            tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_read_committed);
+            if (options.readCommittedMode === "RECORD_VERSION") {
+                tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_rec_version);
+            } else {
+                tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_no_rec_version);
+            }
             break;
     }
 
     if (options.noAutoUndo) {
-        ret += code(tpb.isc_tpb_no_auto_undo);
+        tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_no_auto_undo);
     }
 
     if (options.ignoreLimbo) {
-        ret += code(tpb.isc_tpb_ignore_limbo);
+        tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_ignore_limbo);
+
     }
 
     if (options.restartRequests) {
-        ret += code(tpb.isc_tpb_restart_requests);
+        tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_restart_requests);
     }
 
     if (options.autoCommit) {
-        ret += code(tpb.isc_tpb_autocommit);
+        tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_autocommit);
     }
 
-    return Buffer.from(ret);
-}
+    return tnxParamBuffer;
+};
 
 /** Changes a number from a scale to another. */
 

@@ -26,6 +26,8 @@
       "array-destructuring"
     ],
     "align": false,
-    "one-line": false
+    "one-line": false,
+    "ordered-imports": false,
+    "no-bitwise": false
   }
 }
