@@ -12,6 +12,8 @@ export function serviceTest( driver: ADriver, dbOptions: IConnectionOptions): vo
         const svcOptions: IServiceOptions = {
             username: "SYSDBA",
             password: "masterkey",
+            host: "localhost",
+            port: 3050
         };
 
         const restoredTestDbPath = path.format({
@@ -110,7 +112,7 @@ export function serviceTest( driver: ADriver, dbOptions: IConnectionOptions): vo
         it("backup/restore", async () => {
             const svcManager: AService = driver.newService();
 
-            await svcManager.attachService(svcOptions);
+            await svcManager.attach(svcOptions);
             await svcManager.backupDatabase(dbOptions.path, backupTestDbPath);
 
             expect(fs.existsSync(backupTestDbPath)).toBeTruthy();
@@ -118,7 +120,7 @@ export function serviceTest( driver: ADriver, dbOptions: IConnectionOptions): vo
             try {
                 await svcManager.restoreDatabase(restoredTestDbPath, backupTestDbPath);
             } finally {
-                await svcManager.detachService();
+                await svcManager.detach();
             }
 
             expect(fs.existsSync(restoredTestDbPath)).toBeTruthy();

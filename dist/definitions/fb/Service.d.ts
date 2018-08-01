@@ -3,13 +3,15 @@ import { AService } from "../AService";
 export interface IServiceOptions {
     username: string;
     password: string;
+    host: string;
+    port: number;
 }
 export declare class Service implements AService {
     svc?: NativeService;
     BUFFER_SIZE: number;
     private client;
-    attachService(options: IServiceOptions): Promise<void>;
-    detachService(): Promise<void>;
+    attach(options: IServiceOptions): Promise<void>;
+    detach(): Promise<void>;
     backupDatabase(dbPath: string, backupPath: string): Promise<void>;
     restoreDatabase(dbPath: string, backupPath: string): Promise<void>;
     private executeServicesAction;

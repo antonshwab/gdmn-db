@@ -18,18 +18,20 @@ class Service {
         this.BUFFER_SIZE = 1024;
         this.client = new Client_1.Client();
     }
-    async attachService(options) {
+    async attach(options) {
         if (this.svc) {
             throw new Error("Service already attached");
         }
         await this.client.create();
         const util = this.client.client.util;
+        const attachObject = "service_mgr";
+        const attachUrl = `${options.host}/${options.port}:${attachObject}`;
         this.svc = await this.client.statusAction(async (status) => {
             const attachSpb = createServiceAttachmentBuffer(options, util, status);
-            return await this.client.client.dispatcher.attachServiceManagerAsync(status, "service_mgr", attachSpb.getBufferLengthSync(status), attachSpb.getBufferSync(status));
+            return await this.client.client.dispatcher.attachServiceManagerAsync(status, attachUrl, attachSpb.getBufferLengthSync(status), attachSpb.getBufferSync(status));
         });
     }
-    async detachService() {
+    async detach() {
         if (!this.svc) {
             throw new Error("Service already detached");
         }
