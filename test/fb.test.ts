@@ -1,4 +1,5 @@
 import {existsSync, unlinkSync} from "fs";
+import path from "path";
 import {CommonParamsAnalyzer, Factory, IConnectionOptions} from "../src";
 import {Statement} from "../src/fb/Statement";
 import {connectionTest} from "./common/AConnection";
@@ -8,13 +9,18 @@ import {serviceTest} from "./common/AService";
 import {statementTest} from "./common/AStatement";
 import {transactionTest} from "./common/ATransaction";
 
-export const path = `${process.cwd()}/TEST.FDB`;
+const cwd = `${process.cwd()}`;
+export const fixturesPath = path.join(cwd, "test", "fixtures");
+export const testDbPath = path.join(fixturesPath, "TEST.FDB");
+export const dbFileExt = ".FDB";
+export const bkpFileExt = ".bkp";
+
 export const dbOptions: IConnectionOptions = {
     host: "localhost",
     port: 3050,
     username: "SYSDBA",
     password: "masterkey",
-    path
+    path: testDbPath
 };
 
 jest.setTimeout(100 * 1000);
@@ -23,8 +29,8 @@ describe("Firebird driver tests", async () => {
     const globalConnectionPool = Factory.FBDriver.newCommonConnectionPool();
 
     beforeAll(async () => {
-        if (existsSync(path)) {
-            unlinkSync(path);
+        if (existsSync(testDbPath)) {
+            unlinkSync(testDbPath);
         }
         const connection = Factory.FBDriver.newConnection();
 
@@ -51,18 +57,21 @@ describe("Firebird driver tests", async () => {
         expect(connection.connected).toBeFalsy();
     });
 
-    it(path + " exists", async () => {
-        expect(existsSync(path)).toBeTruthy();
+    it(testDbPath + " exists", async () => {
+        expect(existsSync(testDbPath)).toBeTruthy();
     });
 
     connectionTest(Factory.FBDriver, dbOptions);
+
     connectionPoolTest(Factory.FBDriver, dbOptions);
 
     transactionTest(globalConnectionPool);
+
     statementTest(globalConnectionPool);
+
     resultSetTest(globalConnectionPool);
 
-    serviceTest(Factory.FBDriver);
+    serviceTest(Factory.FBDriver, dbOptions);
 
     commonParamsAnalyzerTest(Statement.EXCLUDE_PATTERNS, Statement.PLACEHOLDER_PATTERN);
 });
