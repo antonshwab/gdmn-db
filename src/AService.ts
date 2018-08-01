@@ -1,8 +1,9 @@
 import {IConnectionOptions} from "./AConnection";
+import { IServiceOptions } from "./fb/Service";
 
 export abstract class AService {
 
-    public abstract async attachService(options: IConnectionOptions): Promise<void>;
+    public abstract async attachService(options: IServiceOptions): Promise<void>;
 
     public abstract async detachService(): Promise<void>;
 

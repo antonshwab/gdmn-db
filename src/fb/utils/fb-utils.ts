@@ -64,19 +64,19 @@ export enum blobInfo {
     totalLength = 6
 }
 
-export const iscVaxInteger2 = (buffer: Buffer, startPos: number) => {
+export function iscVaxInteger2(buffer: Buffer, startPos: number): number {
     /* tslint:disable */
     return (buffer[startPos] & 0xff) | ((buffer[startPos + 1] & 0xff) << 8);
     /* tslint:enable */
-};
+}
 
-export const createDpb = (dbOptions: IConnectionOptions, util: Util, status: Status): XpbBuilder => {
+export function createDpb(dbOptions: IConnectionOptions, util: Util, status: Status): XpbBuilder {
     const dbParamBuffer = (util.getXpbBuilderSync(status, XpbBuilderParams.DPB, undefined, 0))!;
     dbParamBuffer.insertIntSync(status, isc_dpb.page_size, 4 * 1024);
     dbParamBuffer.insertStringSync(status, isc_dpb.user_name, dbOptions.username || "sysdba");
     dbParamBuffer.insertStringSync(status, isc_dpb.password, dbOptions.password || "masterkey");
     return dbParamBuffer;
-};
+}
 
 export enum TransactionIsolation {
     CONSISTENCY = "CONSISTENCY",
@@ -97,7 +97,7 @@ export interface ITransactionOpt {
     //// TODO: lockTimeOut?: number;
 }
 
-export const createTpb = (options: ITransactionOpt, util: Util, status: Status): XpbBuilder => {
+export function createTpb(options: ITransactionOpt, util: Util, status: Status): XpbBuilder {
     const tnxParamBuffer = (util.getXpbBuilderSync(status, XpbBuilderParams.TPB, undefined, 0))!;
 
     switch (options.accessMode) {
@@ -157,7 +157,7 @@ export const createTpb = (options: ITransactionOpt, util: Util, status: Status):
     }
 
     return tnxParamBuffer;
-};
+}
 
 /** Changes a number from a scale to another. */
 

@@ -61,25 +61,27 @@ var blobInfo;
 (function (blobInfo) {
     blobInfo[blobInfo["totalLength"] = 6] = "totalLength";
 })(blobInfo = exports.blobInfo || (exports.blobInfo = {}));
-exports.iscVaxInteger2 = (buffer, startPos) => {
+function iscVaxInteger2(buffer, startPos) {
     /* tslint:disable */
     return (buffer[startPos] & 0xff) | ((buffer[startPos + 1] & 0xff) << 8);
     /* tslint:enable */
-};
-exports.createDpb = (dbOptions, util, status) => {
+}
+exports.iscVaxInteger2 = iscVaxInteger2;
+function createDpb(dbOptions, util, status) {
     const dbParamBuffer = (util.getXpbBuilderSync(status, constants_1.XpbBuilderParams.DPB, undefined, 0));
     dbParamBuffer.insertIntSync(status, constants_1.isc_dpb.page_size, 4 * 1024);
     dbParamBuffer.insertStringSync(status, constants_1.isc_dpb.user_name, dbOptions.username || "sysdba");
     dbParamBuffer.insertStringSync(status, constants_1.isc_dpb.password, dbOptions.password || "masterkey");
     return dbParamBuffer;
-};
+}
+exports.createDpb = createDpb;
 var TransactionIsolation;
 (function (TransactionIsolation) {
     TransactionIsolation["CONSISTENCY"] = "CONSISTENCY";
     TransactionIsolation["READ_COMMITTED"] = "READ_COMMITTED";
     TransactionIsolation["SNAPSHOT"] = "SNAPSHOT";
 })(TransactionIsolation = exports.TransactionIsolation || (exports.TransactionIsolation = {}));
-exports.createTpb = (options, util, status) => {
+function createTpb(options, util, status) {
     const tnxParamBuffer = (util.getXpbBuilderSync(status, constants_1.XpbBuilderParams.TPB, undefined, 0));
     switch (options.accessMode) {
         case "READ_ONLY":
@@ -127,7 +129,8 @@ exports.createTpb = (options, util, status) => {
         tnxParamBuffer.insertTagSync(status, tpb.isc_tpb_autocommit);
     }
     return tnxParamBuffer;
-};
+}
+exports.createTpb = createTpb;
 /** Changes a number from a scale to another. */
 /***
  export function changeScale(value: number, inputScale: number, outputScale: number): number {

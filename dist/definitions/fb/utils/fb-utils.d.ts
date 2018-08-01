@@ -48,8 +48,8 @@ export declare enum tpb {
 export declare enum blobInfo {
     totalLength = 6
 }
-export declare const iscVaxInteger2: (buffer: Buffer, startPos: number) => number;
-export declare const createDpb: (dbOptions: IConnectionOptions, util: Util, status: Status) => XpbBuilder;
+export declare function iscVaxInteger2(buffer: Buffer, startPos: number): number;
+export declare function createDpb(dbOptions: IConnectionOptions, util: Util, status: Status): XpbBuilder;
 export declare enum TransactionIsolation {
     CONSISTENCY = "CONSISTENCY",
     READ_COMMITTED = "READ_COMMITTED",
@@ -66,7 +66,7 @@ export interface ITransactionOpt {
     restartRequests?: boolean;
     autoCommit?: boolean;
 }
-export declare const createTpb: (options: ITransactionOpt, util: Util, status: Status) => XpbBuilder;
+export declare function createTpb(options: ITransactionOpt, util: Util, status: Status): XpbBuilder;
 /** Changes a number from a scale to another. */
 /***
  export function changeScale(value: number, inputScale: number, outputScale: number): number {

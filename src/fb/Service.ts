@@ -1,33 +1,28 @@
 import {Service as NativeService, Status, Util, XpbBuilder} from "node-firebird-native-api";
 import {setTimeout} from "timers";
-import {IConnectionOptions} from "../AConnection";
 import {AService} from "../AService";
 import {Client} from "./Client";
 import {isc_action_svc, isc_info, isc_info_svc, isc_spb, isc_spb_bkp, XpbBuilderParams} from "./utils/constants";
 import {iscVaxInteger2} from "./utils/fb-utils";
 
-interface IServiceOptions {
-    user?: string;
-    password?: string;
-    host?: string;
-    port?: number;
-    dbPath?: string;
+export interface IServiceOptions {
+    username: string;
+    password: string;
 }
 
 type ServiceRequestBuffer = XpbBuilder;
 type ServiceParameterBuffer = XpbBuilder;
 
-const createServiceAttachmentBuffer = (svcOptions: IServiceOptions, util: Util, status: Status): XpbBuilder => {
+function createServiceAttachmentBuffer(svcOptions: IServiceOptions, util: Util, status: Status): XpbBuilder {
     const svcAttachB = (util.getXpbBuilderSync(status, XpbBuilderParams.SPB_ATTACH, undefined, 0))!;
-    svcAttachB.insertStringSync(status, isc_spb.user_name, svcOptions.user || "sysdba");
+    svcAttachB.insertStringSync(status, isc_spb.user_name, svcOptions.username || "sysdba");
     svcAttachB.insertStringSync(status, isc_spb.password, svcOptions.password || "masterkey");
-    svcAttachB.insertStringSync(status, isc_spb.expected_db, svcOptions.dbPath);
     return svcAttachB;
-};
+}
 
-const createServiceRequestBuffer = (status: Status, util: Util): XpbBuilder => {
+function createServiceRequestBuffer(status: Status, util: Util): XpbBuilder {
     return (util.getXpbBuilderSync(status, XpbBuilderParams.SPB_START, undefined, 0))!;
-};
+}
 
 export class Service implements AService {
 
@@ -36,7 +31,7 @@ export class Service implements AService {
 
     private client = new Client();
 
-    public async attachService(options: IConnectionOptions): Promise<void> {
+    public async attachService(options: IServiceOptions): Promise<void> {
         if (this.svc) {
             throw new Error("Service already attached");
         }
@@ -45,7 +40,7 @@ export class Service implements AService {
 
         const util = this.client.client!.util;
         this.svc = await this.client.statusAction(async (status) => {
-            const attachSpb = createServiceAttachmentBuffer(options as IServiceOptions, util, status);
+            const attachSpb = createServiceAttachmentBuffer(options, util, status);
             return await this.client.client!.dispatcher!.attachServiceManagerAsync(
                 status,
                 "service_mgr",

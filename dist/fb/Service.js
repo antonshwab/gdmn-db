@@ -4,16 +4,15 @@ const timers_1 = require("timers");
 const Client_1 = require("./Client");
 const constants_1 = require("./utils/constants");
 const fb_utils_1 = require("./utils/fb-utils");
-const createServiceAttachmentBuffer = (svcOptions, util, status) => {
+function createServiceAttachmentBuffer(svcOptions, util, status) {
     const svcAttachB = (util.getXpbBuilderSync(status, constants_1.XpbBuilderParams.SPB_ATTACH, undefined, 0));
-    svcAttachB.insertStringSync(status, constants_1.isc_spb.user_name, svcOptions.user || "sysdba");
+    svcAttachB.insertStringSync(status, constants_1.isc_spb.user_name, svcOptions.username || "sysdba");
     svcAttachB.insertStringSync(status, constants_1.isc_spb.password, svcOptions.password || "masterkey");
-    svcAttachB.insertStringSync(status, constants_1.isc_spb.expected_db, svcOptions.dbPath);
     return svcAttachB;
-};
-const createServiceRequestBuffer = (status, util) => {
+}
+function createServiceRequestBuffer(status, util) {
     return (util.getXpbBuilderSync(status, constants_1.XpbBuilderParams.SPB_START, undefined, 0));
-};
+}
 class Service {
     constructor() {
         this.BUFFER_SIZE = 1024;
