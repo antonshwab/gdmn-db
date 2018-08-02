@@ -8,6 +8,8 @@ import {iscVaxInteger2} from "./utils/fb-utils";
 export interface IServiceOptions {
     username: string;
     password: string;
+    host: string;
+    port: number;
 }
 
 type ServiceRequestBuffer = XpbBuilder;
@@ -31,7 +33,7 @@ export class Service implements AService {
 
     private client = new Client();
 
-    public async attachService(options: IServiceOptions): Promise<void> {
+    public async attach(options: IServiceOptions): Promise<void> {
         if (this.svc) {
             throw new Error("Service already attached");
         }
@@ -39,18 +41,22 @@ export class Service implements AService {
         await this.client.create();
 
         const util = this.client.client!.util;
+
+        const attachObject = "service_mgr";
+        const attachUrl = `${options.host}/${options.port}:${attachObject}`;
+
         this.svc = await this.client.statusAction(async (status) => {
             const attachSpb = createServiceAttachmentBuffer(options, util, status);
             return await this.client.client!.dispatcher!.attachServiceManagerAsync(
                 status,
-                "service_mgr",
+                attachUrl,
                 attachSpb.getBufferLengthSync(status),
                 attachSpb.getBufferSync(status)
             );
         });
     }
 
-    public async detachService(): Promise<void> {
+    public async detach(): Promise<void> {
         if (!this.svc) {
             throw new Error("Service already detached");
         }
