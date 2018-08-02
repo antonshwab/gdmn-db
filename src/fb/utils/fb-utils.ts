@@ -73,6 +73,13 @@ export function iscVaxInteger2(buffer: Buffer, startPos: number): number {
 export function createDpb(dbOptions: IConnectionOptions, util: Util, status: Status): XpbBuilder {
     const dbParamBuffer = (util.getXpbBuilderSync(status, XpbBuilderParams.DPB, undefined, 0))!;
     dbParamBuffer.insertIntSync(status, isc_dpb.page_size, 4 * 1024);
+
+    const dialect = 3;
+    dbParamBuffer.insertIntSync(status, dpb.isc_dpb_set_db_sql_dialect, dialect);
+
+    const charSet = "utf8";
+    dbParamBuffer.insertStringSync(status, dpb.lc_ctype, charSet);
+
     dbParamBuffer.insertStringSync(status, isc_dpb.user_name, dbOptions.username || "sysdba");
     dbParamBuffer.insertStringSync(status, isc_dpb.password, dbOptions.password || "masterkey");
     return dbParamBuffer;

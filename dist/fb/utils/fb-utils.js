@@ -70,6 +70,12 @@ exports.iscVaxInteger2 = iscVaxInteger2;
 function createDpb(dbOptions, util, status) {
     const dbParamBuffer = (util.getXpbBuilderSync(status, constants_1.XpbBuilderParams.DPB, undefined, 0));
     dbParamBuffer.insertIntSync(status, constants_1.isc_dpb.page_size, 4 * 1024);
+    // const dialect = "3";
+    // dbParamBuffer.insertStringSync(status, dpb.isc_dpb_set_db_sql_dialect, dialect);
+    const dialect = 3;
+    dbParamBuffer.insertIntSync(status, dpb.isc_dpb_set_db_sql_dialect, dialect);
+    const charSet = "utf8";
+    dbParamBuffer.insertStringSync(status, dpb.lc_ctype, charSet);
     dbParamBuffer.insertStringSync(status, constants_1.isc_dpb.user_name, dbOptions.username || "sysdba");
     dbParamBuffer.insertStringSync(status, constants_1.isc_dpb.password, dbOptions.password || "masterkey");
     return dbParamBuffer;
