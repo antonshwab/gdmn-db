@@ -1,5 +1,8 @@
-import {IConnectionOptions} from "./AConnection";
 import { IServiceOptions } from "./fb/Service";
+
+export interface IRestoreOptions {
+    replace?: boolean;
+}
 
 export abstract class AService {
 
@@ -9,5 +12,5 @@ export abstract class AService {
 
     public abstract async backupDatabase(dbPath: string, backupPath: string): Promise<void>;
 
-    public abstract async restoreDatabase(dbPath: string, backupPath: string): Promise<void>;
+    public abstract async restoreDatabase(dbPath: string, backupPath: string, options?: IRestoreOptions): Promise<void>;
 }

@@ -53,7 +53,7 @@ class Service {
             await this.executeServicesAction(srb);
         });
     }
-    async restoreDatabase(dbPath, backupPath) {
+    async restoreDatabase(dbPath, backupPath, options) {
         if (!this.svc) {
             throw new Error("Need attached Service");
         }
@@ -63,6 +63,11 @@ class Service {
             srb.insertTagSync(status, constants_1.isc_action_svc.restore);
             srb.insertStringSync(status, constants_1.isc_spb.dbname, dbPath);
             srb.insertStringSync(status, constants_1.isc_spb_bkp.file, backupPath);
+            if (options) {
+                if (options.replace) {
+                    srb.insertIntSync(status, constants_1.isc_spb.options, constants_1.isc_spb_res.replace);
+                }
+            }
             await this.executeServicesAction(srb);
         });
     }

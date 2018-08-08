@@ -255,6 +255,26 @@ export enum isc_spb_bkp {
     zip =	0x010000
 }
 
+/*****************************************
+ * Parameters for isc_action_svc_restore *
+ *****************************************/
+export enum isc_spb_res {
+  skip_data	= isc_spb_bkp.skip_data,
+  buffers	=	9,
+  page_size	=	10,
+  length =	11,
+  access_mode	=	12,
+  fix_fss_data=	13,
+  fix_fss_metadata =	14,
+  deactivate_idx=	0x0100,
+  no_shadow	=	0x0200,
+  no_validity	=	0x0400,
+  one_at_a_time	=	0x0800,
+  replace =	0x1000,
+  create =	0x2000,
+  use_all_space	=	0x4000
+}
+
 /* Common, structural codes */
 /****************************/
 export enum isc_info {

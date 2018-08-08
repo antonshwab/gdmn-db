@@ -244,6 +244,25 @@ export declare enum isc_spb_bkp {
     no_triggers = 32768,
     zip = 65536
 }
+/*****************************************
+ * Parameters for isc_action_svc_restore *
+ *****************************************/
+export declare enum isc_spb_res {
+    skip_data = 8,
+    buffers = 9,
+    page_size = 10,
+    length = 11,
+    access_mode = 12,
+    fix_fss_data = 13,
+    fix_fss_metadata = 14,
+    deactivate_idx = 256,
+    no_shadow = 512,
+    no_validity = 1024,
+    one_at_a_time = 2048,
+    replace = 4096,
+    create = 8192,
+    use_all_space = 16384
+}
 /****************************/
 export declare enum isc_info {
     isc_info_end = 1,
