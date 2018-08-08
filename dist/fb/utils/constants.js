@@ -257,6 +257,26 @@ var isc_spb_bkp;
     isc_spb_bkp[isc_spb_bkp["no_triggers"] = 32768] = "no_triggers";
     isc_spb_bkp[isc_spb_bkp["zip"] = 65536] = "zip";
 })(isc_spb_bkp = exports.isc_spb_bkp || (exports.isc_spb_bkp = {}));
+/*****************************************
+ * Parameters for isc_action_svc_restore *
+ *****************************************/
+var isc_spb_res;
+(function (isc_spb_res) {
+    isc_spb_res[isc_spb_res["skip_data"] = 8] = "skip_data";
+    isc_spb_res[isc_spb_res["buffers"] = 9] = "buffers";
+    isc_spb_res[isc_spb_res["page_size"] = 10] = "page_size";
+    isc_spb_res[isc_spb_res["length"] = 11] = "length";
+    isc_spb_res[isc_spb_res["access_mode"] = 12] = "access_mode";
+    isc_spb_res[isc_spb_res["fix_fss_data"] = 13] = "fix_fss_data";
+    isc_spb_res[isc_spb_res["fix_fss_metadata"] = 14] = "fix_fss_metadata";
+    isc_spb_res[isc_spb_res["deactivate_idx"] = 256] = "deactivate_idx";
+    isc_spb_res[isc_spb_res["no_shadow"] = 512] = "no_shadow";
+    isc_spb_res[isc_spb_res["no_validity"] = 1024] = "no_validity";
+    isc_spb_res[isc_spb_res["one_at_a_time"] = 2048] = "one_at_a_time";
+    isc_spb_res[isc_spb_res["replace"] = 4096] = "replace";
+    isc_spb_res[isc_spb_res["create"] = 8192] = "create";
+    isc_spb_res[isc_spb_res["use_all_space"] = 16384] = "use_all_space";
+})(isc_spb_res = exports.isc_spb_res || (exports.isc_spb_res = {}));
 /* Common, structural codes */
 /****************************/
 (function (isc_info) {

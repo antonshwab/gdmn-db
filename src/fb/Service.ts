@@ -1,8 +1,10 @@
 import {Service as NativeService, Status, Util, XpbBuilder} from "node-firebird-native-api";
 import {setTimeout} from "timers";
-import {AService} from "../AService";
+import {AService, IRestoreOptions} from "../AService";
 import {Client} from "./Client";
-import {isc_action_svc, isc_info, isc_info_svc, isc_spb, isc_spb_bkp, XpbBuilderParams} from "./utils/constants";
+import {
+    isc_action_svc,
+    isc_info, isc_info_svc, isc_spb, isc_spb_bkp, isc_spb_res, XpbBuilderParams} from "./utils/constants";
 import {iscVaxInteger2} from "./utils/fb-utils";
 
 export interface IServiceOptions {
@@ -81,7 +83,7 @@ export class Service implements AService {
         });
     }
 
-    public async restoreDatabase(dbPath: string, backupPath: string): Promise<void> {
+    public async restoreDatabase(dbPath: string, backupPath: string, options?: IRestoreOptions): Promise<void> {
         if (!this.svc) {
             throw new Error("Need attached Service");
         }
@@ -91,6 +93,13 @@ export class Service implements AService {
             srb.insertTagSync(status, isc_action_svc.restore);
             srb.insertStringSync(status, isc_spb.dbname, dbPath);
             srb.insertStringSync(status, isc_spb_bkp.file, backupPath);
+
+            if (options) {
+                if (options.replace) {
+                    srb.insertIntSync(status, isc_spb.options, isc_spb_res.replace);
+                }
+            }
+
             await this.executeServicesAction(srb);
         });
     }

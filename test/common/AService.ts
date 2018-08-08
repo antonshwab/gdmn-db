@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import {AConnection, ADriver, IConnectionOptions} from "../../src";
-import {AService} from "../../src/AService";
+import {AService, IRestoreOptions} from "../../src/AService";
 import { IServiceOptions } from "../../src/fb/Service";
 import { bkpFileExt, dbFileExt, fixturesPath } from "../fb.test";
 import {getData, IDataItem} from "../fixtures/getData";
@@ -119,6 +119,8 @@ export function serviceTest( driver: ADriver, dbOptions: IConnectionOptions): vo
 
             try {
                 await svcManager.restoreDatabase(restoredTestDbPath, backupTestDbPath);
+            } catch (error) {
+                console.error(error);
             } finally {
                 await svcManager.detach();
             }
@@ -148,6 +150,74 @@ export function serviceTest( driver: ADriver, dbOptions: IConnectionOptions): vo
                                 expect(result[5]).toBeNull();
                                 expect(result[6]).toEqual(dataItem.textBlob);
                             }
+                        }
+                    })
+                })
+            });
+        });
+
+        it("restore with 'replace'", async () => {
+            const connection = driver.newConnection();
+
+            const changedName = "SuperName";
+
+            await AConnection.executeConnection({
+                connection,
+                options: restoredDbOptions,
+                callback: (_connection) => AConnection.executeTransaction({
+                    connection: _connection,
+                    callback: async (transaction) => {
+                        await _connection.execute(transaction, `
+                        UPDATE ${tableName}
+                            SET name = :name
+                        WHERE id = :id
+                        `, {
+                        name: changedName,
+                        id: 1,
+                        });
+                    }
+                })
+            });
+
+            const svcManager: AService = driver.newService();
+
+            await svcManager.attach(svcOptions);
+            await svcManager.backupDatabase(restoredDbOptions.path, backupTestDbPath);
+
+            try {
+                const resOptions: IRestoreOptions = {
+                    replace: true
+                };
+                await svcManager.restoreDatabase(restoredDbOptions.path, backupTestDbPath, resOptions);
+            } finally {
+                await svcManager.detach();
+            }
+
+            await AConnection.executeConnection({
+                connection,
+                options: restoredDbOptions,
+                callback: (_connection) => AConnection.executeTransaction({
+                    connection: _connection,
+                    callback: (transaction) => AConnection.executeQueryResultSet({
+                        connection,
+                        transaction,
+                        sql: `
+                          SELECT
+                            name
+                          FROM ${tableName}
+                          WHERE id = :id
+                        `,
+                        params: {id: 1},
+                        callback: async (resultSet) => {
+                          const result = [];
+                          while (await resultSet.next()) {
+                            result.push({
+                              name: resultSet.getString("NAME")
+                            });
+                          }
+                          console.log("result", result);
+                          const [ { name } ]: [{name: string}] = result as [{name: string}];
+                          expect(name).toEqual(changedName);
                         }
                     })
                 })
