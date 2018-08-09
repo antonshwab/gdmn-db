@@ -1,4 +1,9 @@
-import { IServiceOptions } from "./fb/Service";
+export interface IServiceOptions {
+    username: string;
+    password: string;
+    host: string;
+    port: number;
+}
 export interface IRestoreOptions {
     replace?: boolean;
 }

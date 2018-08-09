@@ -1,11 +1,5 @@
 import { Service as NativeService } from "node-firebird-native-api";
-import { AService, IRestoreOptions } from "../AService";
-export interface IServiceOptions {
-    username: string;
-    password: string;
-    host: string;
-    port: number;
-}
+import { AService, IRestoreOptions, IServiceOptions } from "../AService";
 export declare class Service implements AService {
     svc?: NativeService;
     BUFFER_SIZE: number;

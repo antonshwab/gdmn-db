@@ -1,8 +1,7 @@
 import fs from "fs";
 import path from "path";
 import {AConnection, ADriver, IConnectionOptions} from "../../src";
-import {AService, IRestoreOptions} from "../../src/AService";
-import { IServiceOptions } from "../../src/fb/Service";
+import {AService, IRestoreOptions, IServiceOptions} from "../../src/AService";
 import { bkpFileExt, dbFileExt, fixturesPath } from "../fb.test";
 import {getData, IDataItem} from "../fixtures/getData";
 
@@ -215,7 +214,6 @@ export function serviceTest( driver: ADriver, dbOptions: IConnectionOptions): vo
                               name: resultSet.getString("NAME")
                             });
                           }
-                          console.log("result", result);
                           const [ { name } ]: [{name: string}] = result as [{name: string}];
                           expect(name).toEqual(changedName);
                         }

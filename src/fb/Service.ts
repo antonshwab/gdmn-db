@@ -1,18 +1,11 @@
 import {Service as NativeService, Status, Util, XpbBuilder} from "node-firebird-native-api";
 import {setTimeout} from "timers";
-import {AService, IRestoreOptions} from "../AService";
+import {AService, IRestoreOptions, IServiceOptions} from "../AService";
 import {Client} from "./Client";
 import {
     isc_action_svc,
     isc_info, isc_info_svc, isc_spb, isc_spb_bkp, isc_spb_res, XpbBuilderParams} from "./utils/constants";
 import {iscVaxInteger2} from "./utils/fb-utils";
-
-export interface IServiceOptions {
-    username: string;
-    password: string;
-    host: string;
-    port: number;
-}
 
 type ServiceRequestBuffer = XpbBuilder;
 type ServiceParameterBuffer = XpbBuilder;
